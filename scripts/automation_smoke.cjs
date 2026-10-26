@@ -8,7 +8,7 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local test
  const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];
  page.on('pageerror',x=>errors.push(x.message));page.on('console',x=>{if(x.type()==='error')errors.push(x.text())});
  const out=path.resolve('test-results');fs.mkdirSync(out,{recursive:true});
- await page.goto(base+'/#dashboard');await page.waitForSelector('#auto-start-form');
+ await page.goto(base+'/#dashboard');await page.waitForSelector('#manufacturer-setup');await page.locator('#manufacturer-setup').evaluate(el=>el.open=true);
  await page.getByRole('button',{name:'+ Software anlegen'}).click();
  await page.locator('[name="manufacturer"]').fill('Synthetic Browser Company');await page.locator('[name="software"]').fill('Browser Payroll');await page.locator('[name="software_version"]').fill('1.0');
  await page.locator('[name="auto_on_rule_change"]').uncheck();await page.getByRole('button',{name:'Prüfziel speichern'}).click();await page.waitForFunction(()=>!document.querySelector('dialog').open);

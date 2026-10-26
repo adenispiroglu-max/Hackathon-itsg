@@ -183,3 +183,28 @@ through the API and reads resulting reports through the retained UI. No user-fac
 execution screen is restored by tests. See VALIDATION.md for final results before publish.
 
 0.3.1 final local check: 80 Python tests passed (8.430 s); JavaScript syntax, compileall and diff checks passed.
+
+# 0.3.2 minimal dashboard / icon assistant
+
+User invoked Figma and requested a simpler, less dense UI with beautiful overview graphics
+and an icon-only assistant in the corner. Created an editable Figma concept at
+https://www.figma.com/design/bmj0psVtlm26tSuizevY52?node-id=2-395 using discovered library
+instances, auto-layout, editable labels and vectors. Verified native node types/no image
+fills and Inter typography, corrected clipped layout and SVG ring rendering. Figma values
+are illustrative. No app data, original documents or credentials were uploaded to Figma.
+
+Implemented in existing native frontend: three KPIs (package jobs, distinct generated
+profiles, waiting imports), latest completed manufacturer-import ring with text legend,
+next-action card, three latest package rows/Alle anzeigen, collapsed setup/change tools,
+icon-only accessible chat/spark corner button and calmer shared spacing/panels/headings.
+Latest result is ordered by finish time, not creation time; simulations and superseded
+suite runs do not enter the graphic. Default view does not open a report or technical form.
+No chart library or external font/runtime dependency. Existing package/import/review flow
+is unchanged. Local branch codex/clean-dashboard; starting local commit c62a768.
+
+Observed: 80 Python tests passed (8.304 s). All three browser suites passed at 1440/390 px
+with zero page errors. Added browser checks for exactly three metrics, icon-only accessible
+trigger, collapsed setup, completion-time/import-only summary semantics, graphic values
+matching stored counts and expanding/collapsing the full package list. Final desktop/mobile
+screenshots inspected. Sources/reviews/imports/PDF/assistant and backend 4,000-case checks
+remain covered. Publish to existing codex/auditflow-prototype with expected-head lease.

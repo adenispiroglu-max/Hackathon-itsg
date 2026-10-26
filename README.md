@@ -1,6 +1,6 @@
 # AuditFlow
 
-**AuditFlow 0.3.1: software review projects → authorised templates → up to 4,000 profiles and cases → automatic execution → targeted change regression.**
+**AuditFlow 0.3.2: software review projects → authorised templates → up to 4,000 profiles and cases → automatic execution → targeted change regression.**
 
 A complete local demo with three Python backend modules and a responsive German web UI.
 Core runtime uses Python's standard library. No Node build, cloud account or model key is needed to explore the offline workflow.
@@ -18,6 +18,18 @@ missing-data cases, preserving rule links and pending human review. **Quellen & 
 Dokument importieren** accepts an optional PDF page range with original page numbers.
 Hilfe & Ablauf explains the manufacturer handoff workflow. No Base44 login or Node build is
 required; cloud auth was not migrated. See [integration scope](docs/MERGE.md).
+
+## Clear overview (0.3.2)
+
+The dashboard shows three essential metrics, a labelled result ring for the latest completed
+manufacturer import and the three most recent package jobs. Historical simulations and older
+runs are not added into that graphic. Its next-action card points to review or import work.
+Setup, rule-change tools and report details open only when needed; all packages remain
+available through Alle anzeigen. The evidence assistant uses an accessible icon-only corner
+button. No external fonts, image assets or chart dependencies are downloaded.
+
+Editable Figma concept: https://www.figma.com/design/bmj0psVtlm26tSuizevY52?node-id=2-395
+Figma values are explicitly illustrative; runtime figures come from the stored job data.
 
 ## Start on Windows
 

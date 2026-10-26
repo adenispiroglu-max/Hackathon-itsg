@@ -99,3 +99,12 @@ http://127.0.0.1:8080/#dashboard. Real inference remains unverified.
 - Desktop dashboard screenshot visually inspected. No backend schema/data migration.
 
 0.3.1 final local check: 80 Python tests passed (8.430 s); JavaScript syntax, compileall and diff checks passed.
+
+## 0.3.2 observed local validation
+
+80 Python tests passed (8.304 s). All three browser suites passed with zero page errors at
+1440/390 px. New checks verify three KPIs, accessible icon-only assistant, initially collapsed
+setup, last-completed-import-only result selection, chart values against stored counts and
+full-list expansion. Dashboard screenshots were inspected at desktop/mobile widths. Existing
+review/source/PDF/import/targeted-package/assistant paths still pass. Figma concept is editable
+and uses labelled illustrative values; it is not evidence of real vendor inference or tests.

@@ -11,6 +11,16 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  page.on('pageerror',x=>errors.push(x.message));
  const api=async(p,body)=>{const r=await page.request.post(base+'/api/'+p,{data:body});if(!r.ok())throw Error(await r.text());return r.json();};
  await page.goto(base);await page.waitForSelector('.workspace-stages');
+ if(await page.locator('.dashboard-kpi').count()!==3)throw Error('Overview must show exactly three metrics');
+ if((await page.locator('#assistant-toggle').textContent()).trim())throw Error('Assistant trigger must be icon-only');
+ if(await page.locator('#assistant-toggle').getAttribute('aria-label')!=='Befund-Assistent öffnen')throw Error('Assistant accessibility label missing');
+ if(await page.locator('#manufacturer-setup').getAttribute('open')!==null)throw Error('Setup should be collapsed initially');
+ const proof=await page.evaluate(()=>dashboardSummary({jobs:[
+  {id:'simulation',suite_id:'x',mode:'simulation',status:'completed',created_at:'2026-10-26T22:00:00Z',finished_at:'2026-10-26T22:00:00Z'},
+  {id:'old-created-new-import',suite_id:'a',mode:'import',status:'completed',created_at:'2026-10-25T10:00:00Z',finished_at:'2026-10-26T21:00:00Z'},
+  {id:'new-created-old-import',suite_id:'a',mode:'import',status:'completed',created_at:'2026-10-26T11:00:00Z',finished_at:'2026-10-26T12:00:00Z'}],suites:[{generated:9}]}));
+ if(proof.latest.id!=='old-created-new-import'||proof.profiles!==9||proof.packages!==3)throw Error('Dashboard mixed historical or repeated results');
+
  const expectedNav=['Übersicht','Quellen & KI','Anforderungen','Profile & Testfälle','Prüfberichte','Testabdeckung','Hilfe & Ablauf'];
  const actualNav=await page.locator('#nav a').evaluateAll(links=>links.map(a=>a.childNodes[1].textContent.trim()));
  if(JSON.stringify(actualNav)!==JSON.stringify(expectedNav))throw Error('Unexpected navigation: '+actualNav);
@@ -80,6 +90,13 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  await page.locator('#assistant-mode').selectOption('offline');await page.locator('#ws-assistant-form button').click();await page.waitForSelector('#assistant-answer .assistant-prose');
  if(!(await page.locator('#assistant-answer').textContent()).includes('package_hash'))throw Error('Automation evidence missing');
  await page.locator('#assistant-close').click();
+ await page.getByRole('button',{name:'Bericht schließen',exact:true}).click();
+ const latest=await page.evaluate(()=>dashboardSummary(state.automation).latest);
+ if(!latest||!await page.locator('.result-ring').count())throw Error('Imported result graphic missing');
+ const graphic=await page.locator('.result-ring').getAttribute('aria-label');
+ if(!graphic.includes('Bestanden: '+latest.counts.pass)||!graphic.includes('Nicht beurteilbar: '+latest.counts.not_assessable))throw Error('Chart does not match stored result counts');
+ if(await page.locator('.package-row').count()>3)throw Error('Package list not compact');
+ if(await page.getByRole('button',{name:'Alle anzeigen',exact:true}).count()){await page.getByRole('button',{name:'Alle anzeigen',exact:true}).click();if(await page.locator('.package-row').count()!==await page.evaluate(()=>state.automation.jobs.length))throw Error('Full package list unavailable');await page.getByRole('button',{name:'Weniger anzeigen',exact:true}).click();}
  fs.mkdirSync('test-results',{recursive:true});
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:width===390?844:1000});
@@ -93,6 +110,6 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
   await page.screenshot({path:path.join('test-results',`assistant-${width}.png`),fullPage:true});
   await page.locator('#assistant-close').click();
  }
- console.log(JSON.stringify({views:[1440,390],navigation:7,retiredRoutes:'redirected',sourceVersionComparison:'passed',typedDrafts:3,negativeCase:'pass',pdfOriginalPages:[2,3],assistant:['stored-single','stored-bulk','escaped-mock-output','explicit-failure'],pageErrors:errors}));
+ console.log(JSON.stringify({views:[1440,390],navigation:7,overviewMetrics:3,assistantTrigger:'icon-only',chart:'stored-import-only',retiredRoutes:'redirected',sourceVersionComparison:'passed',typedDrafts:3,negativeCase:'pass',pdfOriginalPages:[2,3],assistant:['stored-single','stored-bulk','escaped-mock-output','explicit-failure'],pageErrors:errors}));
  await browser.close();if(errors.length)process.exit(1);
 })().catch(e=>{console.error(e);process.exit(1)});
