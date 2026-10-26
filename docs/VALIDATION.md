@@ -72,3 +72,13 @@ Stop the old server first, restart `python -m auditflow`, and open `/#automation
 - Desktop dashboard and mobile assistant screenshots were visually inspected locally.
 - No live model inference or Base44 authentication was verified or claimed. Mocked output
   is only UI/error-handling evidence. Source archive and credentials were not uploaded.
+
+## 0.3 GitHub verification observed
+
+Published code commit `d7e68783117ab136e52fecd4822c1e1ea7012d2f` to the existing
+`codex/auditflow-prototype` branch / PR #1. All six GitHub jobs passed in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40407389909:
+backend Python 3.11/3.12/3.13/3.14, JavaScript syntax and Windows/Python 3.14.
+No merge into main was performed. The user can stop the server, run
+`git pull origin codex/auditflow-prototype`, then `python -m auditflow` and open
+http://127.0.0.1:8080/#dashboard. Real inference remains unverified.
