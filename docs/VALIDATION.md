@@ -23,3 +23,6 @@ Automatic review rejected original fixture and original source-excerpt uploads. 
 
 Reproduction: `scripts/browser_smoke.cjs` requires Playwright/Chromium and a disposable local
 server database; the guard prevents accidental execution without explicit test opt-in.
+
+## GitHub CI observed
+Workflow run https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40390304421 completed all four jobs successfully: backend on Python 3.11, 3.12 and 3.13; frontend JavaScript syntax. Tested code commit: `69d7a0e5f180ba85bfe7fb3397afe1798b32b7fa`. Pull request: https://github.com/adenispiroglu-max/Hackathon-itsg/pull/1.

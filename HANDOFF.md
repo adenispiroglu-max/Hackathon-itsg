@@ -74,3 +74,6 @@ full EEL certification, independent benefit calculation or a live payroll audit.
 
 ## Final handoff priorities
 The implementation and documented demo are ready for local use. Run the README start commands and import authorised originals locally. The next substantive improvement is authoritative source-to-executable-rule mapping plus independent software/reference validation, not additional cosmetic code. UI regression script and backend tests should be rerun after changes.
+
+## GitHub CI observed
+Workflow run https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40390304421 completed all four jobs successfully: backend on Python 3.11, 3.12 and 3.13; frontend JavaScript syntax. Tested code commit: `69d7a0e5f180ba85bfe7fb3397afe1798b32b7fa`. Pull request: https://github.com/adenispiroglu-max/Hackathon-itsg/pull/1.
