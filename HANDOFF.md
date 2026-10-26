@@ -77,3 +77,32 @@ The implementation and documented demo are ready for local use. Run the README s
 
 ## GitHub CI observed
 Workflow run https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40390304421 completed all four jobs successfully: backend on Python 3.11, 3.12 and 3.13; frontend JavaScript syntax. Tested code commit: `69d7a0e5f180ba85bfe7fb3397afe1798b32b7fa`. Pull request: https://github.com/adenispiroglu-max/Hackathon-itsg/pull/1.
+
+# Active update: 0.2 bulk automation and ITSG-inspired UI
+
+User requested end-to-end automation, then added an ITSG-style frontend requirement.
+Local working branch: codex/automation-update. Publish tested files back to the existing
+remote codex/auditflow-prototype branch / PR #1 so the user's existing clone can git pull.
+Remote starting head: eec21eb1eff3bd7277bea6ace4492c7c77f7bf79.
+
+Implemented: persistent software projects, versioned reviewed synthetic packages, 1–4,000
+profiles/cases, analytical template expectations separate from target simulator, background
+execution, paginated results, missing-safe software JSON import, JSON/CSV bulk reports,
+change-impact selection, optional automatic dispatch on package approval, full suite reruns,
+stop/resume and restart recovery. Existing 0.1 data/screens are preserved.
+
+Frontend adds Automatisierung, automatically refreshed progress and ITSG-inspired red
+#D50032 / white / charcoal styling. The reference color was observed in the public ITSG
+site HTML. No official asset or source document was uploaded. See docs/DESIGN.md.
+
+Important boundaries: these are authored synthetic DBVO templates, not arbitrary law-to-code
+compilation; only three structured types are in bulk automation. Income/hours are metadata.
+Model access remains unverified. No external payroll product or independent legal oracle is
+connected. Recurring full checks are explicit actions, not a configured calendar scheduler.
+
+Verification complete: 69 tests passed, including a 4,000-case run,
+restart after a committed partial chunk, auto change dispatch and missing import results.
+Legacy and automation Playwright scripts exercise desktop/mobile UI and downloads.
+Update docs/VALIDATION.md with final observed results before publishing.
+
+0.2 final local checks: all 69 unittests passed. Both browser scripts passed with no page errors; automation additionally verified result import with eight missing observations. Structured package review automatically triggers enabled project reruns; full reruns reuse profiles. Original sources and credentials remain outside the repository.

@@ -7,7 +7,7 @@ import os
 import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse,parse_qs
 from . import __version__
 from .domain import InputError
 from .model import Model, ModelError
@@ -89,18 +89,37 @@ def handler_for(service):
                 if path=='/api/state':
                     docs=service.store.list('document');reqs=service.store.list('requirement');runs=service.store.list('run')
                     return self.send({'version':__version__,'documents':docs,'requirements':reqs,'cases':service.store.list('case'),
-                      'runs':list(reversed(runs)),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage()})
+                      'runs':list(reversed(runs)),'automation':service.automation.state(),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage()})
                 if path=='/api/health':return self.send({'status':'ok','version':__version__,'mode':'local-demo'})
                 if path=='/api/events':return self.send(service.store.events())
+                if path.startswith('/api/automation/'):
+                    parts=path.split('/');query=parse_qs(urlparse(self.path).query)
+                    offset=int(query.get('offset',['0'])[0]);limit=int(query.get('limit',['25'])[0])
+                    if offset<0 or not 1<=limit<=100:raise InputError('Ungültige Seitengröße.')
+                    if parts[3]=='state':return self.send(service.automation.state())
+                    if parts[3]=='cases' and len(parts)==5:return self.send(service.automation.cases(parts[4],offset,limit))
+                    if parts[3]=='jobs' and len(parts)>=5:
+                        id=parts[4]
+                        if len(parts)==5:return self.send(service.automation.detail(id))
+                        if parts[5]=='results':return self.send(service.automation.results(id,offset,limit))
+                        if parts[5] in ['input','report']:
+                            return self.send(service.automation.export(id,parts[5]),filename='AuditFlow-'+parts[5]+'-'+id+'.json')
+                        if parts[5]=='csv':
+                            import csv
+                            buf=io.StringIO();w=csv.writer(buf);w.writerow(['case_id','profile_id','status','expected_message','actual_message','package_hash'])
+                            for r in service.automation.export(id,'report')['results']:
+                                w.writerow([r['case_id'],r['profile_id'],r['status'],r['expected']['message_present'],r['actual']['message_present'],r['package_hash']])
+                            return self.send(buf.getvalue().encode('utf-8-sig'),mime='text/csv; charset=utf-8',filename='AuditFlow-'+id+'.csv')
+                    return self.send({'error':'Automatik-Endpunkt nicht gefunden.'},404)
                 if path.startswith('/api/runs/'):
                     parts=path.split('/');run=service.store.get('run',parts[3])
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
-                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8')}
+                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8')}
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
-            except InputError as e:return self.send({'error':str(e)},422)
+            except (InputError,ValueError) as e:return self.send({'error':str(e)},422)
 
         def do_POST(self):
             if not self.authorized():return
@@ -116,7 +135,17 @@ def handler_for(service):
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
                 path=urlparse(self.path).path
                 with service.store.lock:
-                    if path=='/api/review':result=service.approve(body['kind'],body['id'],body)
+                    if path=='/api/automation/package':result=service.automation.package_version(body)
+                    elif path=='/api/automation/approve':result=service.automation.approve_package(body)
+                    elif path=='/api/automation/project':result=service.automation.create_project(body)
+                    elif path=='/api/automation/start':result=service.automation.launch(body)
+                    elif path=='/api/automation/impact':result=service.automation.impact(body)
+                    elif path=='/api/automation/rerun':result=service.automation.rerun(body)
+                    elif path=='/api/automation/full-rerun':result=service.automation.full_rerun(body)
+                    elif path=='/api/automation/import':result=service.automation.import_results(body)
+                    elif path=='/api/automation/cancel':result=service.automation.cancel(body['job_id'])
+                    elif path=='/api/automation/resume':result=service.automation.resume(body['job_id'])
+                    elif path=='/api/review':result=service.approve(body['kind'],body['id'],body)
                     elif path=='/api/import':result=service.import_document(body)
                     elif path=='/api/draft':result=service.draft(body)
                     elif path=='/api/cases':result=service.create_case(body)
@@ -143,11 +172,15 @@ def main():
     p.add_argument('--host',default='127.0.0.1');p.add_argument('--port',type=int,default=8080);args=p.parse_args()
     if args.host not in ['127.0.0.1','localhost','::1'] and not os.environ.get('AUDITFLOW_ACCESS_TOKEN'):
         p.error('Für Netzwerkbetrieb AUDITFLOW_ACCESS_TOKEN setzen. Keine öffentliche Produktion ohne zusätzliche Absicherung.')
-    server=ThreadingHTTPServer((args.host,args.port),handler_for(create_service()))
+    service=create_service()
+    service.automation.start()
+    server=ThreadingHTTPServer((args.host,args.port),handler_for(service))
     server.daemon_threads=True
     print(f'AuditFlow läuft auf http://{args.host}:{args.port} — lokale Hackathon-Demo',flush=True)
     try:server.serve_forever()
     except KeyboardInterrupt:pass
-    finally:server.server_close()
+    finally:
+        service.automation.close()
+        server.server_close()
 
 if __name__=='__main__':main()

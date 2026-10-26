@@ -26,3 +26,22 @@ server database; the guard prevents accidental execution without explicit test o
 
 ## GitHub CI observed
 Workflow run https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40390304421 completed all four jobs successfully: backend on Python 3.11, 3.12 and 3.13; frontend JavaScript syntax. Tested code commit: `69d7a0e5f180ba85bfe7fb3397afe1798b32b7fa`. Pull request: https://github.com/adenispiroglu-max/Hackathon-itsg/pull/1.
+
+
+# Version 0.2 automation + ITSG-inspired UI
+
+- **69 unittest tests passed** in the local environment.
+- A 4,000-case run generated 4,000 distinct synthetic profile IDs, completed all results,
+  preserved missing/unknown states and exported all 4,000 report rows.
+- Persistence test interrupted a run after 100 committed results, reopened the database,
+  resumed and finished 250 rows without duplicate results or counters.
+- Automatic change-dispatch and full recurring profile reuse are tested.
+- JSON imports reject duplicate/unknown IDs and wrong value types. Partial output leaves
+  omitted cases not assessable, including an HTTP-route test.
+- Legacy browser checks still pass. New automation E2E passed at desktop/mobile widths:
+  project/package review, 36-profile bulk run, profile inspection, JSON/CSV export,
+  rule-version change, 17-case impact subset (19 skipped), 8 outdated-target failures,
+  and imported output with 8 intentionally missing observations.
+- No page errors in either browser script. ITSG-inspired red/white/charcoal layout inspected.
+- The new pipeline uses separate analytical and target-simulator implementations; this
+  remains internal synthetic testing and does not establish legal or vendor conformance.

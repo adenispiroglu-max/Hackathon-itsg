@@ -1,6 +1,6 @@
 # AuditFlow
 
-**ITSG DTA-EEL hackathon prototype: sources → reviewed requirements → synthetic cases → evidence.**
+**AuditFlow 0.2: software review projects → authorised templates → up to 4,000 profiles and cases → automatic execution → targeted change regression.**
 
 A complete local demo with three Python backend modules and a responsive German web UI.
 Core runtime uses Python's standard library. No Node build, cloud account or model key is needed to explore the offline workflow.
@@ -24,7 +24,52 @@ python3 -m pip install -r requirements.txt
 python3 -m auditflow
 ```
 
-## Demonstrate in five minutes
+## New: end-to-end automation
+
+Open **Automatisierung** in the left menu.
+
+1. Create a software target with manufacturer, software name and version. The optional
+   change-trigger checkbox enables automatic affected-test execution after a new package approval.
+2. Inspect and authorise the synthetic rule/template package once, with your name, reason
+   and explicit acknowledgement of the demo scope. This is not official legal approval.
+3. Choose 36 cases for a short demo, or **4,000** for a bulk run. Every case gets its own
+   reproducible synthetic employee profile. Nine template families vary dates, certificate
+   status and thresholds; income/hours are metadata, not payroll calculation inputs here.
+4. Start. Profile generation, analytical expectations, simulator execution, comparison,
+   progress and the JSON/CSV report run automatically in the background.
+5. Open a case/profile, inspect pass/fail/not-assessable counts and download the report.
+6. Create a new version (for example the explicitly fictional **30 → 32 day** change),
+   inspect it and authorise it. Enabled projects automatically queue affected tests plus
+   core regression. Manual impact preview and a full recurring rerun are also available.
+
+No separate fabricated approval is assigned to each generated case. The expectation basis
+is the authorised, versioned synthetic template; changing its parameters needs a new review.
+A separate analytical expectation module and a standalone mock target replace the old
+single-checker simulation loop for automation. They are independent code paths, not an
+independently certified legal oracle or an actual vendor integration.
+
+### Imported software output
+
+Choose **Testpaket exportieren · echte Ergebnisse importieren**. The worker generates a JSON
+input package containing profile data and case IDs, without expected outcomes, then waits.
+The target software/operator must produce a JSON file:
+
+```json
+{"records": [{"case_id": "<exported case ID>", "observed": {"message_present": true}}]}
+```
+
+Import it in the job report. Automatic evaluation then resumes. Duplicate/unknown case IDs
+and wrong types are rejected; omitted or unknown results stay not assessable. Imported JSON
+is not automatically authenticated as a particular vendor's output. No vendor API is invented.
+
+Generation/results/cursors are committed in chunks. Interrupted running jobs resume on
+server restart. A user can stop and continue a job. Historical reports retain their frozen
+rule package. Existing 0.1 data and single-case screens remain available after updating.
+
+The ITSG-inspired frontend uses the public site's red accent, white surfaces and charcoal
+text, and retains a clear hackathon-prototype label. See `docs/DESIGN.md`.
+
+## Existing single-case demo
 
 1. Open **Anforderungen**. Inspect the authored demo statements for C1–C4. Record your own review decisions and reasons. All rules start pending; no human approval is fabricated.
 2. Open **Profile & Testfälle**. Inspect `CASE-001`, review its expected request and its synthetic scope. Approve only within an explicitly acknowledged demo scope.
@@ -44,8 +89,8 @@ A scenario eligibility failure is not itself a software defect: a correctly supp
 - No payroll vendor integration, real insurer exchange, official certification or independently implemented benefit calculation.
 - The 41→61→01→61→88→01→62 scenario is shown as a sourced timeline. Only a synthetic 41 file has executable raw-file support.
 - Exact six-month boundaries, twelve-month clipping and uncertified periods with seamless follow-up require specialist clarification. Open-AU counting requires an explicit policy and is not auto-approved.
-- Simulator and condition checker share logic. This is not independent software validation.
-- Verified citation ≠ approved interpretation. Generated requirements are drafts without executable mappings.
+- The legacy single-case simulator shares its checker. The new bulk pipeline uses separate analytical and mock-target modules; neither establishes external vendor conformance.
+- Verified citation ≠ approved interpretation. Generated free-text requirements remain drafts without executable mappings; automation uses only the supported, reviewed structured template types.
 - Reports retain their scenario and requirement snapshots. The local event hash chain supports traceability, **not tamper-proof external audit storage**.
 
 ## Optional model connection

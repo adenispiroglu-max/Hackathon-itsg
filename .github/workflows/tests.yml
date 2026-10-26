@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13']
+        python-version: ['3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,3 +26,13 @@ jobs:
           node-version: '22'
       - run: node --check auditflow/static/app.js
       - run: node --check scripts/browser_smoke.cjs
+      - run: node --check auditflow/static/automation.js
+      - run: node --check scripts/automation_smoke.cjs
+  windows-runtime:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: python -m unittest discover -s tests -v

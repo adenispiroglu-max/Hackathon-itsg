@@ -67,3 +67,17 @@ for a properly authorised, source-validated pilot.
 
 **What does the annual audit get?** A versioned test baseline and a traceable report, with
 final judgement remaining with the competent reviewer.
+
+## Updated automation demonstration (0.2)
+
+Open Automatisierung. Show the manufacturer/software version, the one-time reviewed
+synthetic package, and a 36-case run (or 4,000 in a prepared background demonstration).
+Every case has a generated employee profile and an expectation from the authorised template.
+
+Show the fictional 30→32-day version change. Explain package approval and the project-level
+automatic change policy. Demonstrate selected cases plus core regression and the outdated
+mock target's failures. A tested 36-case example selected 17, skipped 19 and detected 8
+mismatches; these are demo observations, not extrapolated product savings.
+
+Then show exported input and imported JSON output. Distinguish a synthetic target from real
+software output, and missing results from passes. Bulk automation does not certify software.

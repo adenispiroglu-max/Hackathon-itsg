@@ -51,3 +51,8 @@ Only `fixture-2026` has executable rules. Newly extracted requirements remain un
 if approved; arbitrary legal text is not compiled into executable code. Supporting a new
 ruleset requires a reviewed implementation and independent fixtures. There is no public
 multi-user permission model, hosted deployment or real insurer connector.
+
+## Automation 0.2
+
+The persistent bulk workflow, supported package schemas, imports, automatic change events
+and new endpoints are documented in `AUTOMATION.md`. Single-case APIs remain compatible.
