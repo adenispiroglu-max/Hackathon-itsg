@@ -62,6 +62,11 @@ class ServiceTests(unittest.TestCase):
     def test_deduplicated_import(self):
         body={'name':'example.txt','version':'1','base64':base64.b64encode('Ein sinnvoller Quelltext für eine Beispielregel.'.encode()).decode()}
         self.assertEqual(self.service.import_document(body)['id'],self.service.import_document(body)['id'])
+    def test_same_content_new_version_kept_separate(self):
+        body={'name':'example.txt','version':'1','base64':base64.b64encode(b'Synthetic demo text.').decode()}
+        old=self.service.import_document(body)
+        new=self.service.import_document({**body,'version':'2'})
+        self.assertNotEqual(old['id'],new['id'])
     def test_scope_mismatch_rejected(self):
         c=self.service.store.get('case','CASE-001');c['ruleset']='2027';self.service.store.put('case',c)
         with self.assertRaises(InputError):self.service.run({})
@@ -79,6 +84,26 @@ class ServiceTests(unittest.TestCase):
         self.service.store.put('document',old);self.service.store.put('document',new)
         r=self.service.store.get('requirement','C1');r.update(source_id='old',section_id='3.120');self.service.store.put('requirement',r)
         self.assertEqual(self.service.diff({'old_id':'old','new_id':'new'})['requirements'],[])
+    def test_generated_boundaries_are_drafts(self):
+        self.ready()
+        created=self.service.generate_cases({'case_id':'CASE-001','mode':'boundary'})
+        self.assertEqual(len(created),4)
+        self.assertEqual([x['expected_message'] for x in created],[False,True,True,None])
+        self.assertTrue(all(x['review_status']=='pending' for x in created))
+    def test_generation_requires_approved_rules(self):
+        with self.assertRaises(InputError):self.service.generate_cases({})
+    def test_invalid_live_generation_saves_nothing(self):
+        self.ready();count=len(self.service.store.list('case'))
+        with patch('auditflow.service.Model.call',return_value='{"cases":[{"name":"wrong"}]}'):
+            with self.assertRaises(ModelError):self.service.generate_cases({'mode':'live'})
+        self.assertEqual(len(self.service.store.list('case')),count)
+    def test_pdf_export_contains_expected_text(self):
+        try:import reportlab
+        except ImportError:self.skipTest('optional reportlab not installed')
+        from auditflow.server import report_pdf
+        self.ready();raw=report_pdf(self.service.run({}))
+        self.assertTrue(raw.startswith(b'%PDF'))
+
     def test_events_hash_chain(self):
         self.ready();events=self.service.store.events()
         self.assertGreater(len(events),1)

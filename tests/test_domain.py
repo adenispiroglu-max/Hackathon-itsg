@@ -59,6 +59,10 @@ class CalendarTests(unittest.TestCase):
         s['prior']=[{'begin':'2025-01-01','end':'2025-01-31','certified':True}]
         self.assertEqual(check_chain(s['prior'],s)['status'],'fail')
 
+    def test_invalid_current_proof_status_rejected(self):
+        s=copy.deepcopy(SEED['cases'][0]['scenario']);s['current']['certified']='yes'
+        with self.assertRaises(InputError):assess(s)
+
     def test_empty_results_not_pass(self):self.assertEqual(aggregate([]),'not_assessable')
 
 class FixtureParserTests(unittest.TestCase):

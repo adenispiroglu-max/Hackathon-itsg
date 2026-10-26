@@ -26,11 +26,21 @@ def create_service(db_path=None):
 def report_pdf(run):
     try:
         from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        import reportlab
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
         from xml.sax.saxutils import escape
     except ImportError:
         raise InputError('PDF-Export benötigt reportlab; JSON-Export ist verfügbar.') from None
     output=io.BytesIO();styles=getSampleStyleSheet();story=[]
+    fonts=Path(reportlab.__file__).parent/'fonts'
+    for name,file in [('AuditSans','Vera.ttf'),('AuditSansBold','VeraBd.ttf')]:
+        if name not in pdfmetrics.getRegisteredFontNames():pdfmetrics.registerFont(TTFont(name,str(fonts/file)))
+    for name in ['BodyText','Normal']:styles[name].fontName='AuditSans'
+    for name in ['Title','Heading2','Heading3']:styles[name].fontName='AuditSansBold'
+    styles['BodyText'].fontSize=9
+    styles['BodyText'].leading=13
     def text(s,style='BodyText'):
         story.append(Paragraph(escape(str(s)).replace('\n','<br/>'),styles[style]));story.append(Spacer(1,8))
     text('AuditFlow / Demo assessment','Title');text(run['case_name'],'Heading2')
@@ -110,6 +120,7 @@ def handler_for(service):
                     elif path=='/api/import':result=service.import_document(body)
                     elif path=='/api/draft':result=service.draft(body)
                     elif path=='/api/cases':result=service.create_case(body)
+                    elif path=='/api/generate':result=service.generate_cases(body)
                     elif path=='/api/run':result=service.run(body)
                     elif path=='/api/diff':result=service.diff(body)
                     elif path=='/api/verify':

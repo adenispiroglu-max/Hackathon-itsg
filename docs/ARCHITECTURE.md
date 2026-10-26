@@ -1,0 +1,43 @@
+# Architecture and rationale
+
+## Three backends, one reproducible application
+
+1. **Sources and AI**: `model.py` and source operations in `service.py` ingest versioned
+   text, draft requirements and verify quotation provenance. Model output remains data.
+2. **Profiles and tests**: case operations in `service.py` create synthetic scenarios,
+   deterministic boundary drafts and optional model drafts. `domain.py` makes calendar
+   assumptions explicit. Human-reviewed expectations are a separate gate.
+3. **Checks and evidence**: `parser.py` preserves byte positions for a narrow fixture.
+   `service.py` distinguishes eligibility, file checks and expectation matching. Reports
+   keep snapshots and `store.py` persists them in SQLite.
+
+The standard-library HTTP server provides a simple local demo without a build toolchain.
+The UI uses static HTML/CSS/JavaScript, fetches same-origin APIs and renders escaped text.
+PDF/DOCX support is optional; the prepared demo has no network dependency.
+
+## Why no autonomous agent
+
+The valuable task is repeatable evidence handling. The app explicitly chooses which step
+runs, which source/version it uses and what must be reviewed. An autonomous planner adds
+little value to the first demo. The model adapter can be replaced independently.
+
+## Why the repository contains synthetic sources
+
+Automatic upload review rejected the original fixture and later source-derived material.
+No bypass was used. The committed seed is authored from scratch with synthetic dates and
+IDs. Original authoritative documents may be imported by the operator. The seed's literal
+quote matching demonstrates provenance mechanics, not verification against legislation.
+
+## Practical next steps beyond the hackathon
+
+- Obtain matching technical record annexes and authoritative rule/version decisions.
+- Replace fixture-only layout handling with a versioned schema implementation.
+- Implement and validate the full correction sequence, not only its timeline.
+- Connect a real vendor sandbox; record actual software/configuration versions.
+- Establish an independent reference calculator before claiming monetary validation.
+- Add robust source section alignment and transitive dependency tracking.
+- Add authentication, authorisation, durable object storage, backups and external audit
+  storage before any shared production deployment.
+- Validate actual model access in the organizer's network; current attempt returned 403.
+
+No invented cost/time saving, certification success rate or model-accuracy claim is used.

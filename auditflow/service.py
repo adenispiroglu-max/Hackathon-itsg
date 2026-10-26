@@ -74,7 +74,7 @@ class Service:
         else:raise InputError('Unterstützt: TXT, MD, PDF, DOCX.')
         if not sections or not any(x['text'].strip() for x in sections):raise InputError('Kein Text erkannt. Für Scans ist externe OCR erforderlich.')
         hash=hashlib.sha256(raw).hexdigest()
-        existing=next((d for d in self.store.list('document') if d['sha256']==hash),None)
+        existing=next((d for d in self.store.list('document') if d['sha256']==hash and d.get('version')==(body.get('version') or 'unbekannt') and d.get('valid_from')==(body.get('valid_from') or None)),None)
         if existing:return existing
         doc={'id':str(uuid4()),'name':name,'version':body.get('version') or 'unbekannt','valid_from':body.get('valid_from') or None,
              'sha256':hash,'sections':sections,'kind':suffix,'note':'Importiert; Gültigkeit und Vollständigkeit prüfen.'}
@@ -116,6 +116,52 @@ class Service:
               'review_status':'pending','expectation_source':body.get('expectation_source','Manueller Entwurf; Quelle ergänzen.'),
               'requirement_ids':['C1','C2','C4'],'fixture_questions':[]}
         self.store.put('case',item);self.store.event('case_created',{'id':item['id']});return item
+
+    def generate_cases(self,body):
+        from datetime import timedelta
+        from .domain import iso, add_months
+        baseline=self.store.get('case',body.get('case_id','CASE-001'))
+        rules=[self.store.get('requirement',id) for id in ['C1','C2','C4']]
+        if any(r['status']!='approved' for r in rules):
+            raise InputError('Zuerst C1, C2 und C4 fachlich freigeben.')
+        mode=body.get('mode','boundary');drafts=[]
+        if mode=='live':
+            reply=Model().call(
+                'Create at most 4 synthetic DBVO demo test-case DRAFTS from the approved demo rules. '
+                'Do not claim legal validity or approve expectations. Return ONLY JSON: '
+                '{"cases":[{"name":"...","scenario":{"current":{"begin":"YYYY-MM-DD","end":"YYYY-MM-DD",'
+                '"certified":true},"prior":[{"begin":"YYYY-MM-DD","end":"YYYY-MM-DD","certified":true}],'
+                '"report_date":"YYYY-MM-DD"},"expected_message":true,"expectation_source":"draft rationale"}]}. '
+                'Expected message may be true, false or null. Explain uncertain outcomes. No real personal data.',
+                json.dumps({'rules':rules,'baseline':baseline['scenario']},ensure_ascii=False))
+            try:
+                reply=re.sub(r'^```(?:json)?\s*|\s*```$','',reply.strip())
+                drafts=json.loads(reply)['cases']
+                if not isinstance(drafts,list) or not 1<=len(drafts)<=4:raise ValueError()
+                for d in drafts:
+                    if not isinstance(d,dict) or not isinstance(d.get('name'),str) or not d['name'].strip():raise ValueError()
+                    validate_scenario(d['scenario'])
+                    if d.get('expected_message') is not None and not isinstance(d['expected_message'],bool):raise ValueError()
+                    d['expectation_source']='KI-Entwurf, unabhängig zu prüfen: '+str(d.get('expectation_source',''))
+            except (KeyError,ValueError,TypeError):
+                raise ModelError('Ungültiger Testfallentwurf; keine KI-Testfälle gespeichert.') from None
+        elif mode=='boundary':
+            start=iso(baseline['scenario']['current']['begin'])
+            for n in [29,30,31]:
+                scenario=copy.deepcopy(baseline['scenario'])
+                scenario['current']['end']=str(start+timedelta(days=9))
+                a=add_months(start.replace(day=1),-1)
+                scenario['prior']=[{'begin':str(a),'end':str(a+timedelta(days=n-11)),'certified':True}]
+                scenario['current']['certified']=True
+                drafts.append({'name':f'Generierter Grenzfall: {n} Tage','scenario':scenario,'expected_message':n>=30,
+                               'expectation_source':'Deterministischer synthetischer Entwurf; 10 aktuelle Tage plus '+str(n-10)+' frühere Tage. Fachlich prüfen.'})
+            scenario=copy.deepcopy(baseline['scenario']);scenario['current']['end']=None;scenario.pop('open_end_policy',None)
+            drafts.append({'name':'Generierter Grenzfall: offene AU','scenario':scenario,'expected_message':None,
+                           'expectation_source':'Zählkonvention nicht bestätigt; Erwartung bleibt offen.'})
+        else:raise InputError('Unbekannter Generierungsmodus.')
+        created=[self.create_case({**d,'ruleset':baseline['ruleset']}) for d in drafts]
+        self.store.event('cases_generated',{'mode':mode,'baseline':baseline['id'],'ids':[c['id'] for c in created]})
+        return created
 
     def run(self,body):
         case=self.store.get('case',body.get('case_id','CASE-001'))

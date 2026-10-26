@@ -92,3 +92,11 @@ See **`HANDOFF.md`** for exact progress, reproducible commands and next steps fo
 
 ## Fixture privacy
 The committed sample is constructed from scratch with synthetic name/contact fields. No original identifying header/contact bytes are uploaded. It preserves the narrow layout, synthetic scenario dates and explicitly supplied example references. The untouched original was inspected only locally.
+
+## Boundary and AI test drafts
+
+After reviewing C1/C2/C4, **Grenzfälle ableiten** creates 29/30/31-day drafts and an unresolved
+open-AU case. **KI-Testentwürfe** uses the configured real model, validates its structured
+output and keeps every expectation pending. It cannot replace an independent reference.
+
+The pitch script is in `docs/PITCH.md`; API contracts and design rationale are in `docs/`.

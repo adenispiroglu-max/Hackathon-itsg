@@ -56,3 +56,21 @@ Use a temporary AUDITFLOW_DB for demos/tests rather than changing shipped seed d
 
 ## Automatic upload review
 The original raw fixture and later original source excerpts/scenario identifiers were rejected for GitHub upload by automatic review. Do not retry uploading them indirectly. The repository data was replaced with entirely authored demo statements, new synthetic dates and generic IDs. A separate local-only source copy may exist in the originating scratch workspace; do not export it without resolving authorization.
+
+## Latest completed checkpoint
+- Added deterministic boundary generation and optional model test drafting; all outputs pending.
+- Fixed browser form submission (`name="id"` shadowing form.id) using getAttribute('id').
+- Fixed mobile grid overflow and verified all nine views at desktop/mobile widths.
+- **44 tests passed**; E2E passed reviews, golden synthetic file, mutation failure, downloads,
+  boundary drafts, document import and literal extraction with zero page errors.
+- Added scripts/browser_smoke.cjs and GitHub Actions configuration.
+- Added docs/API.md, docs/ARCHITECTURE.md, docs/PITCH.md and updated validation notes.
+- First GitHub checkpoint commit: `4aee193d4cad7d2dfb90fd72559da1ed571f4e85`.
+
+## Remaining external dependencies
+Only real inference access (403 here), normative technical annexes, expert confirmation of
+boundary rules and a vendor sandbox remain unverified. Do not describe the prototype as
+full EEL certification, independent benefit calculation or a live payroll audit.
+
+## Final handoff priorities
+The implementation and documented demo are ready for local use. Run the README start commands and import authorised originals locally. The next substantive improvement is authoritative source-to-executable-rule mapping plus independent software/reference validation, not additional cosmetic code. UI regression script and backend tests should be rerun after changes.

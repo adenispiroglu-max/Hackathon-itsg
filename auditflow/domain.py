@@ -26,6 +26,10 @@ def add_months(day, months):
 
 def validate_scenario(s):
     start = iso(s['current']['begin'])
+    if not isinstance(s.get('prior',[]),list) or len(s.get('prior',[]))>200:
+        raise InputError('Maximal 200 Vorerkrankungen.')
+    if s['current'].get('certified') is not None and not isinstance(s['current']['certified'],bool):
+        raise InputError('Nachweisstatus muss true, false oder null sein.')
     if s['current'].get('end') and iso(s['current']['end']) < start:
         raise InputError('Aktuelle AU endet vor ihrem Beginn.')
     if s.get('report_date') and iso(s['report_date']) < start:
@@ -39,7 +43,7 @@ def validate_scenario(s):
         if previous and a <= previous:
             raise InputError('Überlappende Vorerkrankungen: zuerst fachlich klären.')
         previous = b
-        if p.get('certified') not in (True, False, None):
+        if p.get('certified') is not None and not isinstance(p['certified'],bool):
             raise InputError('Nachweisstatus muss true, false oder null sein.')
     return s
 
