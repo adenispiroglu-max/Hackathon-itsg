@@ -106,3 +106,12 @@ Legacy and automation Playwright scripts exercise desktop/mobile UI and download
 Update docs/VALIDATION.md with final observed results before publishing.
 
 0.2 final local checks: all 69 unittests passed. Both browser scripts passed with no page errors; automation additionally verified result import with eight missing observations. Structured package review automatically triggers enabled project reruns; full reruns reuse profiles. Original sources and credentials remain outside the repository.
+
+
+## 0.2 GitHub verification observed
+
+Code commit `2299a3b459ad9dc44144a781936d3c516daaaee7` passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40400880383:
+frontend syntax, backend Python 3.11/3.12/3.13/3.14, and Windows/Python 3.14.
+The user's existing clone can update via `git pull origin codex/auditflow-prototype`.
+Stop the old server first, restart `python -m auditflow`, and open `/#automation`.

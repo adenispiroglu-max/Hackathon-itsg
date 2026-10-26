@@ -45,3 +45,12 @@ Workflow run https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40
 - No page errors in either browser script. ITSG-inspired red/white/charcoal layout inspected.
 - The new pipeline uses separate analytical and target-simulator implementations; this
   remains internal synthetic testing and does not establish legal or vendor conformance.
+
+
+## 0.2 GitHub verification observed
+
+Code commit `2299a3b459ad9dc44144a781936d3c516daaaee7` passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40400880383:
+frontend syntax, backend Python 3.11/3.12/3.13/3.14, and Windows/Python 3.14.
+The user's existing clone can update via `git pull origin codex/auditflow-prototype`.
+Stop the old server first, restart `python -m auditflow`, and open `/#automation`.
