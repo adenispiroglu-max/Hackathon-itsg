@@ -41,3 +41,45 @@ document.getElementById('refresh').onclick=()=>load().catch(err=>toast(err.messa
 document.getElementById('access').onclick=()=>{const t=prompt('Optionaler Zugriffstoken für Netzwerkbetrieb. Leer lassen für lokalen Betrieb.');if(t!==null){sessionStorage.setItem('auditflow-token',t);load().catch(err=>toast(err.message));}};
 window.addEventListener('hashchange',render);
 load().catch(err=>{document.getElementById('content').innerHTML='<div class="panel"><h1>Verbindung nicht verfügbar</h1><p>'+e(err.message)+'</p><p>Backend starten oder Zugriffstoken oben unter „Zugang“ eintragen.</p></div>';});
+
+// Collapsible sidebar. Desktop remembers the choice; on narrow screens it opens as a drawer.
+(()=>{
+ const body=document.body,sidebar=document.querySelector('.sidebar'),main=document.querySelector('.main'),crumb=document.getElementById('breadcrumb');
+ const narrow=window.matchMedia('(max-width:760px)');
+ sidebar.id='sidebar';
+ const button=document.createElement('button');
+ button.type='button';button.className='icon-button sidebar-toggle';button.setAttribute('aria-controls','sidebar');
+ button.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg>';
+ const left=document.createElement('div');left.className='topbar-left';
+ crumb.before(left);left.append(button,crumb);
+ const backdrop=document.createElement('div');backdrop.className='sidebar-backdrop';backdrop.hidden=true;body.append(backdrop);
+ // The drawer covers the toggle on narrow screens, so it carries its own close button.
+ const close=document.createElement('button');
+ close.type='button';close.className='icon-button sidebar-close';close.setAttribute('aria-label','Navigation schließen');close.title='Navigation schließen';
+ close.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+ sidebar.prepend(close);
+ const stored=()=>{try{return localStorage.getItem('auditflow.sidebar');}catch{return null;}};
+ const store=v=>{try{localStorage.setItem('auditflow.sidebar',v);}catch{}};
+ const isOpen=()=>narrow.matches?body.classList.contains('sidebar-open'):!body.classList.contains('sidebar-collapsed');
+ function sync(){
+  const open=isOpen(),label=open?'Navigation ausblenden':'Navigation einblenden';
+  button.setAttribute('aria-expanded',String(open));button.setAttribute('aria-label',label);button.title=label;
+  sidebar.inert=!open;main.inert=narrow.matches&&open;backdrop.hidden=!(narrow.matches&&open);
+ }
+ function set(open,focus){
+  if(narrow.matches)body.classList.toggle('sidebar-open',open);
+  else{body.classList.toggle('sidebar-collapsed',!open);store(open?'open':'collapsed');}
+  sync();
+  if(focus)(open?sidebar.querySelector('.nav-item.active')||sidebar.querySelector('a'):button)?.focus();
+ }
+ button.addEventListener('click',()=>set(!isOpen(),narrow.matches));
+ backdrop.addEventListener('click',()=>set(false,true));
+ close.addEventListener('click',()=>set(false,true));
+ sidebar.addEventListener('click',ev=>{if(narrow.matches&&ev.target.closest('a'))set(false,false);});
+ document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&narrow.matches&&isOpen()&&!document.getElementById('dialog').open)set(false,true);});
+ narrow.addEventListener('change',()=>{body.classList.remove('sidebar-open');sync();});
+ body.classList.toggle('sidebar-collapsed',stored()==='collapsed');
+ sync();
+ // Enable transitions only after the first paint, so the stored state does not animate on load.
+ requestAnimationFrame(()=>requestAnimationFrame(()=>body.classList.add('sidebar-ready')));
+})();
