@@ -157,3 +157,54 @@ backend Python 3.11/3.12/3.13/3.14, JavaScript syntax and Windows/Python 3.14.
 No merge into main was performed. The user can stop the server, run
 `git pull origin codex/auditflow-prototype`, then `python -m auditflow` and open
 http://127.0.0.1:8080/#dashboard. Real inference remains unverified.
+
+# 0.3.1 navigation simplification — current UI contract
+
+User asked to remove separate Automatisierung, Prüfung starten, Änderungen,
+Nachrichtenfolge and Glossar pages. Navigation now has exactly seven entries: Übersicht,
+Quellen & KI, Anforderungen, Profile & Testfälle, Prüfberichte, Testabdeckung, Hilfe & Ablauf.
+Manufacturer package preparation and result import are embedded once in Übersicht; its
+summary is not duplicated as a second page. Quellversionen vergleichen is below document
+inspection in Quellen & KI. Glossary/timeline/direct execution renderers and their action
+links are removed. Old bookmarked hashes redirect to dashboard, sources or reports.
+
+The user clarified manufacturers execute the tests. UI launch and explicit subset/full
+reruns now create import-mode packages, never simulations. New packages wait for
+manufacturer observations; simulation controls and fictitious fault-run buttons are not
+available in the UI. Existing simulation reports remain labelled as historical simulation;
+legacy APIs remain compatible for backend tests and existing integrations. No records were
+deleted. Existing opted-in project events retain backend policy semantics; newly UI-created
+import suites also wait for imports after rule changes.
+
+Local branch codex/simplify-navigation; parent remote head observed
+6209f2e0a27a855f2ac6f58d2db6b65983be45f2. Browser scripts updated to use the embedded
+manufacturer workflow. The original smoke script exercises legacy execution compatibility
+through the API and reads resulting reports through the retained UI. No user-facing
+execution screen is restored by tests. See VALIDATION.md for final results before publish.
+
+0.3.1 final local check: 80 Python tests passed (8.430 s); JavaScript syntax, compileall and diff checks passed.
+
+# 0.3.2 minimal dashboard / icon assistant
+
+User invoked Figma and requested a simpler, less dense UI with beautiful overview graphics
+and an icon-only assistant in the corner. Created an editable Figma concept at
+https://www.figma.com/design/bmj0psVtlm26tSuizevY52?node-id=2-395 using discovered library
+instances, auto-layout, editable labels and vectors. Verified native node types/no image
+fills and Inter typography, corrected clipped layout and SVG ring rendering. Figma values
+are illustrative. No app data, original documents or credentials were uploaded to Figma.
+
+Implemented in existing native frontend: three KPIs (package jobs, distinct generated
+profiles, waiting imports), latest completed manufacturer-import ring with text legend,
+next-action card, three latest package rows/Alle anzeigen, collapsed setup/change tools,
+icon-only accessible chat/spark corner button and calmer shared spacing/panels/headings.
+Latest result is ordered by finish time, not creation time; simulations and superseded
+suite runs do not enter the graphic. Default view does not open a report or technical form.
+No chart library or external font/runtime dependency. Existing package/import/review flow
+is unchanged. Local branch codex/clean-dashboard; starting local commit c62a768.
+
+Observed: 80 Python tests passed (8.304 s). All three browser suites passed at 1440/390 px
+with zero page errors. Added browser checks for exactly three metrics, icon-only accessible
+trigger, collapsed setup, completion-time/import-only summary semantics, graphic values
+matching stored counts and expanding/collapsing the full package list. Final desktop/mobile
+screenshots inspected. Sources/reviews/imports/PDF/assistant and backend 4,000-case checks
+remain covered. Publish to existing codex/auditflow-prototype with expected-head lease.

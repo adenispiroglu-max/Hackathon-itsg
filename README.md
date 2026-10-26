@@ -1,6 +1,6 @@
 # AuditFlow
 
-**AuditFlow 0.3: software review projects → authorised templates → up to 4,000 profiles and cases → automatic execution → targeted change regression.**
+**AuditFlow 0.3.2: software review projects → authorised templates → up to 4,000 profiles and cases → automatic execution → targeted change regression.**
 
 A complete local demo with three Python backend modules and a responsive German web UI.
 Core runtime uses Python's standard library. No Node build, cloud account or model key is needed to explore the offline workflow.
@@ -16,8 +16,20 @@ server-side model configuration below and never silently falls back to a fake AI
 **Profile & Testfälle → Gezielte Testentwürfe** offers positive, negative, boundary and
 missing-data cases, preserving rule links and pending human review. **Quellen & KI →
 Dokument importieren** accepts an optional PDF page range with original page numbers.
-Glossar and Hilfe & Ablauf explain the end-to-end demo. No Base44 login or Node build is
+Hilfe & Ablauf explains the manufacturer handoff workflow. No Base44 login or Node build is
 required; cloud auth was not migrated. See [integration scope](docs/MERGE.md).
+
+## Clear overview (0.3.2)
+
+The dashboard shows three essential metrics, a labelled result ring for the latest completed
+manufacturer import and the three most recent package jobs. Historical simulations and older
+runs are not added into that graphic. Its next-action card points to review or import work.
+Setup, rule-change tools and report details open only when needed; all packages remain
+available through Alle anzeigen. The evidence assistant uses an accessible icon-only corner
+button. No external fonts, image assets or chart dependencies are downloaded.
+
+Editable Figma concept: https://www.figma.com/design/bmj0psVtlm26tSuizevY52?node-id=2-395
+Figma values are explicitly illustrative; runtime figures come from the stored job data.
 
 ## Start on Windows
 
@@ -40,7 +52,7 @@ python3 -m auditflow
 
 ## New: end-to-end automation
 
-Open **Automatisierung** in the left menu.
+Open **Übersicht → Testpakete & Herstellerergebnisse**. There is no separate automation page.
 
 1. Create a software target with manufacturer, software name and version. The optional
    change-trigger checkbox enables automatic affected-test execution after a new package approval.
@@ -49,12 +61,12 @@ Open **Automatisierung** in the left menu.
 3. Choose 36 cases for a short demo, or **4,000** for a bulk run. Every case gets its own
    reproducible synthetic employee profile. Nine template families vary dates, certificate
    status and thresholds; income/hours are metadata, not payroll calculation inputs here.
-4. Start. Profile generation, analytical expectations, simulator execution, comparison,
-   progress and the JSON/CSV report run automatically in the background.
+4. Create the package. Export the input JSON for the manufacturer to run in its own software.
+   Import the manufacturer JSON output; comparison and reporting resume automatically.
 5. Open a case/profile, inspect pass/fail/not-assessable counts and download the report.
 6. Create a new version (for example the explicitly fictional **30 → 32 day** change),
-   inspect it and authorise it. Enabled projects automatically queue affected tests plus
-   core regression. Manual impact preview and a full recurring rerun are also available.
+   inspect it and authorise it. Enabled projects automatically prepare affected manufacturer packages plus
+   core regression; these wait for new output. Manual impact preview and a full recurring rerun are also available.
 
 No separate fabricated approval is assigned to each generated case. The expectation basis
 is the authorised, versioned synthetic template; changing its parameters needs a new review.
@@ -83,17 +95,16 @@ rule package. Existing 0.1 data and single-case screens remain available after u
 The ITSG-inspired frontend uses the public site's red accent, white surfaces and charcoal
 text, and retains a clear hackathon-prototype label. See `docs/DESIGN.md`.
 
-## Existing single-case demo
+## Simplified navigation (0.3.1)
 
-1. Open **Anforderungen**. Inspect the authored demo statements for C1–C4. Record your own review decisions and reasons. All rules start pending; no human approval is fabricated.
-2. Open **Profile & Testfälle**. Inspect `CASE-001`, review its expected request and its synthetic scope. Approve only within an explicitly acknowledged demo scope.
-3. **Prüfung starten → DBVO-Datei prüfen → Synthetische Demo-Fixture**. With the relevant approvals, the narrow fixture checks and comparison pass.
-4. Choose **Fehler einbauen: falsches AZVU**. The expectation comparison detects the mutation.
-5. Review `CASE-002`, then run **Szenario-Simulation** with healthy and buggy behavior. A missing certificate should prevent an enquiry; the buggy simulator always sends it.
-6. Open the report, source excerpts, input snapshot and JSON/PDF export.
-7. Demonstrate an open AU or exact six-month boundary. Unresolved assumptions remain **not assessable**.
-
-A scenario eligibility failure is not itself a software defect: a correctly suppressed message can pass its expected-behavior comparison. In message mode, an ineligible enquiry is a rule failure. The report labels these axes separately.
+The navigation contains Übersicht, Quellen & KI, Anforderungen, Profile & Testfälle,
+Prüfberichte, Testabdeckung and Hilfe & Ablauf. The former Änderungen view is part of
+Quellen & KI. Separate Automatisierung, Prüfung starten, Nachrichtenfolge and Glossar
+screens are removed; old bookmarked routes redirect to the relevant current workspace.
+Existing reports and database records remain available. Legacy execution APIs remain for
+compatibility and backend regression checks; the UI does not offer direct simulation or
+file-test execution. New and manual rerun packages created from the UI always use import
+mode: the manufacturer executes the tests and returns observations.
 
 ## Scope and honesty
 

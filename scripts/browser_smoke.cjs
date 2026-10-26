@@ -14,7 +14,7 @@ const output=path.resolve('test-results');fs.mkdirSync(output,{recursive:true});
  page.on('pageerror',x=>errors.push(x.message));
  await page.goto(base);await page.waitForSelector('h1');
  await page.screenshot({path:path.join(output,'desktop.png'),fullPage:true});
- const pages=['dashboard','sources','requirements','cases','check','reports','coverage','changes','chain'];
+ const pages=['dashboard','sources','requirements','cases','reports','coverage','help'];
  for(const name of pages){await page.goto(base+'/#'+name);await page.waitForTimeout(80);if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Desktop overflow: '+name);}
  async function review(kind,id){
   await page.goto(base+'/#'+(kind==='case'?'cases':'requirements'));
@@ -27,9 +27,12 @@ const output=path.resolve('test-results');fs.mkdirSync(output,{recursive:true});
  for(const id of ['C1','C2','C3','C4'])await review('requirement',id);
  await review('case','CASE-001');
  async function run(mutation){
-  await page.goto(base+'/#check');await page.locator('#run-mode').selectOption('message');
-  await page.locator('#mutation').selectOption(mutation);
-  await page.getByRole('button',{name:'Prüfung ausführen'}).click();
+  // The direct-execution screen was retired. Exercise legacy API compatibility,
+  // then inspect its historical report through the retained UI.
+  const response=await page.request.post(base+'/api/run',{data:{mode:'message',mutation}});
+  if(!response.ok())throw Error(await response.text());const report=await response.json();
+  await page.goto(base+'/#reports');await page.reload();
+  await page.locator(`[data-action="open-run"][data-id="${report.id}"]`).click();
   await page.waitForSelector('.big-status');
  }
  await run('');if(!await page.locator('.big-status.pass').count())throw Error('Golden synthetic sample did not pass.');
@@ -56,6 +59,6 @@ const output=path.resolve('test-results');fs.mkdirSync(output,{recursive:true});
  await page.goto(base+'/#dashboard');await page.waitForTimeout(100);
  await page.screenshot({path:path.join(output,'mobile.png'),fullPage:true});
  for(const name of pages){await page.goto(base+'/#'+name);await page.waitForTimeout(80);if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile overflow: '+name);}
- console.log(JSON.stringify({pages:9,viewports:[1440,390],review:'passed',goldenSample:'passed',mutation:'detected',downloads:['json','pdf'],boundaryDrafts:4,documentImport:'passed',literalDraft:'passed',pageErrors:errors}));
+ console.log(JSON.stringify({pages:7,viewports:[1440,390],review:'passed',goldenSample:'passed',mutation:'detected',downloads:['json','pdf'],boundaryDrafts:4,documentImport:'passed',literalDraft:'passed',pageErrors:errors}));
  await browser.close();if(errors.length)process.exit(1);
 })().catch(e=>{console.error(e);process.exit(1)});

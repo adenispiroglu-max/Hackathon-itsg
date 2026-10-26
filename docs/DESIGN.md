@@ -22,3 +22,20 @@ implemented in the existing native frontend (workspace.js), using existing API/s
 semantics and ITSG-inspired red tokens. No React bundle, Base44 cloud auth, external
 font request, static source excerpt or original sample was imported. The assistant panel
 is read-only and labels local evidence explanations separately from real model output.
+
+## 0.3.2 minimal dashboard / Figma
+
+Figma concept: https://www.figma.com/design/bmj0psVtlm26tSuizevY52?node-id=2-395
+Session: a0fde1ba-626d-4ced-baa6-b81f68bd93c8. Native editable text, auto-layout,
+library Stats Card/Button/Icon Button instances and vector graphics; no rasterized screen.
+Three essential KPIs, a per-package result ring, next action and compact package list.
+The design uses Inter (available in Figma); web CSS prefers locally available Inter, then
+Segoe UI/Arial, with no external font download. The ITSG-inspired red is retained.
+Figma data are illustrative, explicitly labelled. Result proportions were visually checked
+and corrected using native arcs. Runtime dashboard values are not taken from the concept.
+
+The application removes duplicate hero, phase cards, history totals and repeated tables from
+its overview. New package setup, source-change follow-up and complete lists remain accessible
+with progressive disclosure. A white-ringed red chat/spark SVG replaces the labelled assistant
+trigger; title/aria-label preserve discoverability and keyboard accessibility. Softer panel
+radii, more whitespace and simplified headings apply throughout the application.
