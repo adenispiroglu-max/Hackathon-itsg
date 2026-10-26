@@ -11,6 +11,21 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  page.on('pageerror',x=>errors.push(x.message));
  const api=async(p,body)=>{const r=await page.request.post(base+'/api/'+p,{data:body});if(!r.ok())throw Error(await r.text());return r.json();};
  await page.goto(base);await page.waitForSelector('.workspace-stages');
+ const expectedNav=['Übersicht','Quellen & KI','Anforderungen','Profile & Testfälle','Prüfberichte','Testabdeckung','Hilfe & Ablauf'];
+ const actualNav=await page.locator('#nav a').evaluateAll(links=>links.map(a=>a.childNodes[1].textContent.trim()));
+ if(JSON.stringify(actualNav)!==JSON.stringify(expectedNav))throw Error('Unexpected navigation: '+actualNav);
+ for(const [old,target] of [['automation','dashboard'],['check','reports'],['changes','sources'],['chain','dashboard'],['glossary','dashboard']]){
+  await page.goto(base+'/#'+old);await page.waitForURL('**/#'+target);
+  if(await page.locator('#run-form').count())throw Error('Retired execution screen still present');
+ }
+ await page.goto(base+'/#sources');await page.waitForSelector('#diff-form');
+ if(await page.locator('a[href="#automation"],a[href="#changes"],a[href="#chain"],a[href="#glossary"],a[href="#check"]').count())throw Error('Retired route linked');
+ const doc1=await api('import',{name:'Synthetic version comparison.txt',version:'1',base64:Buffer.from('Synthetic original requirement with a deliberately long source statement.').toString('base64')});
+ const doc2=await api('import',{name:'Synthetic version comparison.txt',version:'2',base64:Buffer.from('Synthetic revised requirement with a deliberately long changed source statement.').toString('base64')});
+ await page.reload();await page.waitForSelector('#diff-form');
+ await page.locator('#diff-form [name="old_id"]').selectOption(doc1.id);await page.locator('#diff-form [name="new_id"]').selectOption(doc2.id);
+ await page.locator('#diff-form button').click();await page.waitForSelector('#diff-results details');
+
  for(const id of ['C1','C2','C3','C4'])await api('review',{kind:'requirement',id,approve:true,reviewer:'Workspace E2E',note:'Synthetic test only'});
  await page.goto(base+'/#cases');
  for(const kind of ['positive','negative','missing_data']){
@@ -60,7 +75,7 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  const project=await api('automation/project',{manufacturer:'Synthetic',software:'WorkspaceExample',software_version:'1'});
  const job=await api('automation/start',{project_id:project.id,package_id:pkg.id,count:9,mode:'simulation',behavior:'healthy'});
  for(let i=0;i<100;i++){const j=await (await page.request.get(base+'/api/automation/jobs/'+job.id)).json();if(j.status==='completed')break;await page.waitForTimeout(100);}
- await page.goto(base+'/#dashboard');await page.reload();await page.locator(`[data-action="ws-job"][data-id="${job.id}"]`).click();
+ await page.goto(base+'/#dashboard');await page.reload();await page.locator(`[data-action="auto-open"][data-id="${job.id}"]`).click();
  await page.waitForSelector('.auto-detail');await page.locator('.auto-detail [data-action="ws-explain"]').first().click();
  await page.locator('#assistant-mode').selectOption('offline');await page.locator('#ws-assistant-form button').click();await page.waitForSelector('#assistant-answer .assistant-prose');
  if(!(await page.locator('#assistant-answer').textContent()).includes('package_hash'))throw Error('Automation evidence missing');
@@ -68,7 +83,7 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  fs.mkdirSync('test-results',{recursive:true});
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:width===390?844:1000});
-  for(const route of ['dashboard','glossary','help','automation','reports']){
+  for(const route of ['dashboard','sources','help','reports']){
    await page.goto(base+'/#'+route);await page.waitForTimeout(100);
    if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Overflow '+route+' '+width);
   }
@@ -78,6 +93,6 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
   await page.screenshot({path:path.join('test-results',`assistant-${width}.png`),fullPage:true});
   await page.locator('#assistant-close').click();
  }
- console.log(JSON.stringify({views:[1440,390],typedDrafts:3,negativeCase:'pass',pdfOriginalPages:[2,3],assistant:['stored-single','stored-bulk','escaped-mock-output','explicit-failure'],pageErrors:errors}));
+ console.log(JSON.stringify({views:[1440,390],navigation:7,retiredRoutes:'redirected',sourceVersionComparison:'passed',typedDrafts:3,negativeCase:'pass',pdfOriginalPages:[2,3],assistant:['stored-single','stored-bulk','escaped-mock-output','explicit-failure'],pageErrors:errors}));
  await browser.close();if(errors.length)process.exit(1);
 })().catch(e=>{console.error(e);process.exit(1)});

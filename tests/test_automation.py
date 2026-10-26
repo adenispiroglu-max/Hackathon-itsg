@@ -220,7 +220,7 @@ class AutomationHTTPTests(unittest.TestCase):
         with self.assertRaises(sqlite3.ProgrammingError):connection.execute('SELECT 1')
     def test_state_and_automation_asset(self):
         self.assertIn('packages',json.loads(self.request('/api/automation/state')))
-        self.assertIn(b'automationPage',self.request('/automation.js'))
+        self.assertIn(b'manufacturerWorkspace',self.request('/automation.js'))
     def test_job_routes_import_and_csv(self):
         p=json.loads(self.request('/api/automation/project',{'manufacturer':'HTTP demo','software':'HTTP mock','software_version':'1'}))
         self.request('/api/automation/approve',{'package_id':'AUTO-PACKAGE-1','reviewer':'HTTP test','note':'Synthetic only','acknowledge_demo':True})

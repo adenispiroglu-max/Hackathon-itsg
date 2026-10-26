@@ -82,3 +82,20 @@ backend Python 3.11/3.12/3.13/3.14, JavaScript syntax and Windows/Python 3.14.
 No merge into main was performed. The user can stop the server, run
 `git pull origin codex/auditflow-prototype`, then `python -m auditflow` and open
 http://127.0.0.1:8080/#dashboard. Real inference remains unverified.
+
+## 0.3.1 navigation and manufacturer handoff
+
+- All three browser suites passed at 1440/390 px, with zero page errors.
+- Seven navigation entries verified. Retired automation/check/changes/chain/glossary
+  bookmarks redirect; no direct execution form or obsolete navigation link remains.
+- Source version comparison executed from Quellen & KI against two synthetic versions.
+- Embedded dashboard workflow creates import-mode packages, exports results, imports
+  synthetic manufacturer observations, selects 17/36 cases for a fictional rule change,
+  waits for new observations and preserves eight missing observations as not assessable.
+  The intentionally all-true manufacturer fixture yields 12 deviations in the selected
+  subset; this is fixture behavior, not a real manufacturer assessment.
+- Typed drafts, PDF page ranges, assistant evidence and historical report downloads still
+  pass. The legacy API path is tested for compatibility without restoring its removed UI.
+- Desktop dashboard screenshot visually inspected. No backend schema/data migration.
+
+0.3.1 final local check: 80 Python tests passed (8.430 s); JavaScript syntax, compileall and diff checks passed.

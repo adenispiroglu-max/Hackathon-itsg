@@ -62,3 +62,11 @@ real inference. Existing 4,000 profiles represent controlled template variations
 4,000 independently sourced legal obligations. No real payroll vendor or monetary oracle
 has been added. Use Python 3.11+ and `python -m auditflow`; optional PDF dependencies
 remain in requirements.txt.
+
+## Subsequent UI simplification (0.3.1)
+
+The glossary, illustrative timeline and direct execution screens were removed at the
+user's request. The manufacturer package workspace is embedded in Übersicht; source
+version comparison is embedded in Quellen & KI. New/manual rerun packages from the UI
+always wait for manufacturer output. No direct simulation/execution controls remain in
+the UI, while stored historical reports and compatibility APIs are preserved.

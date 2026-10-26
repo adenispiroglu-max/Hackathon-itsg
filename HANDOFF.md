@@ -157,3 +157,29 @@ backend Python 3.11/3.12/3.13/3.14, JavaScript syntax and Windows/Python 3.14.
 No merge into main was performed. The user can stop the server, run
 `git pull origin codex/auditflow-prototype`, then `python -m auditflow` and open
 http://127.0.0.1:8080/#dashboard. Real inference remains unverified.
+
+# 0.3.1 navigation simplification — current UI contract
+
+User asked to remove separate Automatisierung, Prüfung starten, Änderungen,
+Nachrichtenfolge and Glossar pages. Navigation now has exactly seven entries: Übersicht,
+Quellen & KI, Anforderungen, Profile & Testfälle, Prüfberichte, Testabdeckung, Hilfe & Ablauf.
+Manufacturer package preparation and result import are embedded once in Übersicht; its
+summary is not duplicated as a second page. Quellversionen vergleichen is below document
+inspection in Quellen & KI. Glossary/timeline/direct execution renderers and their action
+links are removed. Old bookmarked hashes redirect to dashboard, sources or reports.
+
+The user clarified manufacturers execute the tests. UI launch and explicit subset/full
+reruns now create import-mode packages, never simulations. New packages wait for
+manufacturer observations; simulation controls and fictitious fault-run buttons are not
+available in the UI. Existing simulation reports remain labelled as historical simulation;
+legacy APIs remain compatible for backend tests and existing integrations. No records were
+deleted. Existing opted-in project events retain backend policy semantics; newly UI-created
+import suites also wait for imports after rule changes.
+
+Local branch codex/simplify-navigation; parent remote head observed
+6209f2e0a27a855f2ac6f58d2db6b65983be45f2. Browser scripts updated to use the embedded
+manufacturer workflow. The original smoke script exercises legacy execution compatibility
+through the API and reads resulting reports through the retained UI. No user-facing
+execution screen is restored by tests. See VALIDATION.md for final results before publish.
+
+0.3.1 final local check: 80 Python tests passed (8.430 s); JavaScript syntax, compileall and diff checks passed.
