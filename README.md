@@ -1,9 +1,23 @@
 # AuditFlow
 
-**AuditFlow 0.2: software review projects → authorised templates → up to 4,000 profiles and cases → automatic execution → targeted change regression.**
+**AuditFlow 0.3: software review projects → authorised templates → up to 4,000 profiles and cases → automatic execution → targeted change regression.**
 
 A complete local demo with three Python backend modules and a responsive German web UI.
 Core runtime uses Python's standard library. No Node build, cloud account or model key is needed to explore the offline workflow.
+
+## New: shared audit workspace (0.3)
+
+The selected workflows from the supplied React/Base44 ZIP have been adapted to the
+existing local app. The dashboard now combines single-case and bulk work. Reports and
+bulk result rows include an **Erklären** button for a read-only evidence assistant:
+local explanation without a key, or explicit live-model mode. The latter needs the
+server-side model configuration below and never silently falls back to a fake AI answer.
+
+**Profile & Testfälle → Gezielte Testentwürfe** offers positive, negative, boundary and
+missing-data cases, preserving rule links and pending human review. **Quellen & KI →
+Dokument importieren** accepts an optional PDF page range with original page numbers.
+Glossar and Hilfe & Ablauf explain the end-to-end demo. No Base44 login or Node build is
+required; cloud auth was not migrated. See [integration scope](docs/MERGE.md).
 
 ## Start on Windows
 

@@ -56,3 +56,20 @@ multi-user permission model, hosted deployment or real insurer connector.
 
 The persistent bulk workflow, supported package schemas, imports, automatic change events
 and new endpoints are documented in `AUTOMATION.md`. Single-case APIs remain compatible.
+
+## Adapted workspace 0.3
+
+- `POST /api/import`: additive `pages_from` / `pages_to` positive integer fields for PDF
+  only. Both must be present if either is supplied; inclusive range <=100 pages. A range
+  past the PDF is rejected. Original section IDs/page numbers and whole-file hash remain.
+- `POST /api/generate`: existing `boundary` / `live` modes remain; `template` adds offline
+  typed drafts. `test_type` is `positive`, `negative`, `boundary`, or `missing_data`.
+  Generated cases retain requirement IDs/snapshots, model_id, prompt_version and mode.
+- `POST /api/assistant/explain`: `{question, mode: "offline"|"live", ref}`. For a single
+  report use `ref:{kind:"run",id, finding_id?}`; for a bulk result use
+  `ref:{kind:"automation",job_id,case_id}`. Server-resolved evidence only. Output contains
+  answer, explicit mode/model/prompt version, evidence, next_steps and scope note.
+  Unknown references, missing question/evidence or unsupported modes are errors. Existing
+  access token and same-origin requirements apply. Live inference failures return 502.
+  The endpoint has no approval/update capability and does not hold the store lock over
+  network inference. No persistent chat history is created.

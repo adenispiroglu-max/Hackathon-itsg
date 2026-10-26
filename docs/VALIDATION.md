@@ -54,3 +54,21 @@ https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40400880383:
 frontend syntax, backend Python 3.11/3.12/3.13/3.14, and Windows/Python 3.14.
 The user's existing clone can update via `git pull origin codex/auditflow-prototype`.
 Stop the old server first, restart `python -m auditflow`, and open `/#automation`.
+
+## 0.3 selective integration — observed local verification
+
+- 80 Python tests passed (8.400 s in the recorded complete run), including the unchanged
+  4,000-profile pipeline and new evidence-reference, negative/missing draft, PDF range
+  identity/deduplication and HTTP authorization/failure tests.
+- Legacy browser smoke: all nine original views at desktop/mobile, review gates, synthetic
+  file pass, mutation failure, JSON/PDF export, boundary drafts and document import passed.
+- Automation browser smoke: 36 profiles, 17 selected/19 skipped on fictional rule change,
+  eight detected target errors, JSON/CSV export and missing-result import passed.
+- New workspace browser smoke: typed positive/negative/missing-data drafts through the UI,
+  correctly suppressed negative case passes, PDF pages 2–3 retain original page IDs,
+  assistant reads stored single and bulk evidence, mocked model markup is escaped and
+  mocked inference failure stays an explicit error. New dashboard/help/glossary and
+  assistant tested at 1440 and 390 px; no horizontal document overflow or page errors.
+- Desktop dashboard and mobile assistant screenshots were visually inspected locally.
+- No live model inference or Base44 authentication was verified or claimed. Mocked output
+  is only UI/error-handling evidence. Source archive and credentials were not uploaded.

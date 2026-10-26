@@ -13,3 +13,12 @@ imported official logo asset. The UI remains explicitly labelled a hackathon pro
 This is a visual adaptation, not a claim of exact compliance with an unpublished design guide.
 
 Desktop and mobile views are checked through the reproducible browser smoke scripts.
+
+## 0.3 adapted workspace
+
+The supplied Base44 app informed the four workflow cards, evidence assistant panel,
+structured test-type selection, PDF range controls, glossary and help patterns. These are
+implemented in the existing native frontend (workspace.js), using existing API/status
+semantics and ITSG-inspired red tokens. No React bundle, Base44 cloud auth, external
+font request, static source excerpt or original sample was imported. The assistant panel
+is read-only and labels local evidence explanations separately from real model output.

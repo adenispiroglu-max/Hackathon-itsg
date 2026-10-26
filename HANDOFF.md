@@ -115,3 +115,35 @@ https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40400880383:
 frontend syntax, backend Python 3.11/3.12/3.13/3.14, and Windows/Python 3.14.
 The user's existing clone can update via `git pull origin codex/auditflow-prototype`.
 Stop the old server first, restart `python -m auditflow`, and open `/#automation`.
+
+# 0.3 completed local checkpoint — selective ZIP integration
+
+User approved integrating useful parts of `itsg-ai-payroll-audit (1).zip`. Inspected its
+React/Base44 source and isolated problematic evaluator paths; see docs/MERGE.md.
+Implemented selected UI/workflow patterns in the existing native frontend, preserving
+Python startup, SQLite data and all bulk automation. This is NOT a wholesale React port,
+Base44 deploy or merge of a second git history. No cloud auth/account was migrated.
+
+New: unified dashboard/live job refresh, four workflow cards, source-specific PDF page
+ranges, typed linked test drafts with rule snapshots/provenance, glossary/help and a
+read-only evidence assistant for legacy reports and bulk results. Explicit offline mode
+uses stored facts; explicit live mode uses Model. Request references are resolved by the
+server; model markup is escaped and failures never become a fabricated AI success.
+No store-wide lock is held over assistant inference. No new runtime dependencies.
+Version 0.3.0; existing database entities remain compatible, no destructive migration.
+
+Local branch codex/merge-audit-ui. Starting remote head observed
+54b2e5dbb321d2c150200620c56f2621f30e273e on codex/auditflow-prototype / PR #1.
+Publish verified changed files to that existing remote branch with expected-head lease,
+so the user's existing Windows clone can pull normally. Do not merge main automatically.
+
+Verification: 80 Python tests pass. Three browser suites pass at desktop/mobile with zero
+page errors. New suite covers typed drafts, real local PDF range import, single/bulk
+assistant evidence, escaped mocked AI output and explicit failure. Existing suite verifies
+36-case fictional change regression (17 selected/19 skipped/eight detected mismatches).
+Desktop/mobile screenshots inspected. Real inference, real vendor connection, normative
+legal mapping, monetary calculation and multi-user identity remain outside verified scope.
+
+Next: publish, observe CI and record exact code commit/run. Run `python -m auditflow`,
+then open /#dashboard. Reports/bulk rows -> Erklären; Fälle -> Gezielte Testentwürfe;
+Quellen import -> optional PDF pages; Hilfe & Ablauf -> short demo instructions.

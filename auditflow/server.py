@@ -115,7 +115,7 @@ def handler_for(service):
                     parts=path.split('/');run=service.store.get('run',parts[3])
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
-                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8')}
+                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8')}
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
@@ -134,6 +134,10 @@ def handler_for(service):
                 body=json.loads(self.rfile.read(length))
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
                 path=urlparse(self.path).path
+                if path=='/api/assistant/explain':
+                    from .assistant import explain
+                    # Network inference must not hold the worker's database lock.
+                    return self.send(explain(service.store,body))
                 with service.store.lock:
                     if path=='/api/automation/package':result=service.automation.package_version(body)
                     elif path=='/api/automation/approve':result=service.automation.approve_package(body)

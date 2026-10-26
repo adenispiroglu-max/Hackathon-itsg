@@ -41,3 +41,13 @@ quote matching demonstrates provenance mechanics, not verification against legis
 - Validate actual model access in the organizer's network; current attempt returned 403.
 
 No invented cost/time saving, certification success rate or model-accuracy claim is used.
+
+## 0.3 selected integration
+
+`static/workspace.js` adds dashboard/help/glossary, typed-draft UI and an evidence drawer
+without a frontend build. `assistant.py` resolves stored report/result references and
+returns deterministic evidence explanations or explicitly requested model explanations.
+The server runs this endpoint outside the store-wide mutation lock. Document imports
+can retain a selected physical PDF page range, with range-aware deduplication. Existing
+ruleset execution, review gates, bulk jobs and database entities are preserved. MERGE.md
+documents the source comparison, retained boundaries and deliberately excluded paths.

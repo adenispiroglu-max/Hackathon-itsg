@@ -28,6 +28,8 @@ jobs:
       - run: node --check scripts/browser_smoke.cjs
       - run: node --check auditflow/static/automation.js
       - run: node --check scripts/automation_smoke.cjs
+      - run: node --check auditflow/static/workspace.js
+      - run: node --check scripts/workspace_smoke.cjs
   windows-runtime:
     runs-on: windows-latest
     steps:

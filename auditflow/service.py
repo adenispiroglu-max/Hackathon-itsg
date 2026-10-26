@@ -51,6 +51,13 @@ class Service:
         if len(raw)>5_000_000:raise InputError('Maximal 5 MB je Dokument.')
         sections=[]
         suffix=name.lower().rsplit('.',1)[-1]
+        page_range=None
+        if body.get('pages_from') is not None or body.get('pages_to') is not None:
+            if suffix!='pdf':raise InputError('Eine Seitenauswahl ist nur bei PDF möglich.')
+            start,end=body.get('pages_from'),body.get('pages_to')
+            if type(start) is not int or type(end) is not int or not 1<=start<=end or end-start>=100:
+                raise InputError('PDF-Seitenbereich: positive ganze Zahlen, höchstens 100 Seiten, von ≤ bis.')
+            page_range={'from':start,'to':end}
         if suffix in ['txt','md']:
             try:text=raw.decode('utf-8-sig')
             except UnicodeError:raise InputError('Textdatei muss UTF-8 sein.') from None
@@ -61,7 +68,10 @@ class Service:
                 import pdfplumber
                 with pdfplumber.open(io.BytesIO(raw)) as pdf:
                     if len(pdf.pages)>500:raise InputError('Maximal 500 PDF-Seiten.')
-                    sections=[{'id':f'page-{i+1}','page':i+1,'location':f'PDF-Seite {i+1}','text':p.extract_text() or ''} for i,p in enumerate(pdf.pages)]
+                    if page_range and page_range['to']>len(pdf.pages):
+                        raise InputError(f'Der Seitenbereich liegt außerhalb des PDF ({len(pdf.pages)} Seiten).')
+                    selected=range(page_range['from']-1,page_range['to']) if page_range else range(len(pdf.pages))
+                    sections=[{'id':f'page-{i+1}','page':i+1,'location':f'PDF-Seite {i+1}','text':pdf.pages[i].extract_text() or ''} for i in selected]
             except ImportError:raise InputError('PDF-Import benötigt die optionalen Pakete aus requirements.txt.') from None
         elif suffix=='docx':
             try:
@@ -76,10 +86,11 @@ class Service:
         else:raise InputError('Unterstützt: TXT, MD, PDF, DOCX.')
         if not sections or not any(x['text'].strip() for x in sections):raise InputError('Kein Text erkannt. Für Scans ist externe OCR erforderlich.')
         hash=hashlib.sha256(raw).hexdigest()
-        existing=next((d for d in self.store.list('document') if d['sha256']==hash and d.get('version')==(body.get('version') or 'unbekannt') and d.get('valid_from')==(body.get('valid_from') or None)),None)
+        existing=next((d for d in self.store.list('document') if d['sha256']==hash and d.get('version')==(body.get('version') or 'unbekannt') and d.get('valid_from')==(body.get('valid_from') or None) and d.get('page_range')==page_range),None)
         if existing:return existing
         doc={'id':str(uuid4()),'name':name,'version':body.get('version') or 'unbekannt','valid_from':body.get('valid_from') or None,
-             'sha256':hash,'sections':sections,'kind':suffix,'note':'Importiert; Gültigkeit und Vollständigkeit prüfen.'}
+             'sha256':hash,'sections':sections,'kind':suffix,'page_range':page_range,
+             'note':('Teilimport: Originalseiten '+str(page_range['from'])+'–'+str(page_range['to'])+'. ' if page_range else '')+'Importiert; Gültigkeit und Vollständigkeit prüfen.'}
         self.store.put('document',doc);self.store.event('document_import',{'id':doc['id'],'name':name,'hash':hash})
         return doc
 
@@ -114,7 +125,9 @@ class Service:
         if ruleset!='fixture-2026':raise InputError('Nur Fixture-Regelsatz ist ausführbar; andere Versionen sind nicht implementiert.')
         expected=body.get('expected_message')
         if expected is not None and not isinstance(expected,bool):raise InputError('Erwartung muss true, false oder null sein.')
-        item={'id':str(uuid4()),'name':name,'scenario':s,'expected_message':expected,'ruleset':ruleset,
+        test_type=body.get('test_type','custom')
+        if test_type not in ['custom','positive','negative','boundary','missing_data']:raise InputError('Unbekannte Testfallart.')
+        item={'id':str(uuid4()),'name':name,'scenario':s,'expected_message':expected,'ruleset':ruleset,'test_type':test_type,
               'review_status':'pending','expectation_source':body.get('expectation_source','Manueller Entwurf; Quelle ergänzen.'),
               'requirement_ids':['C1','C2','C4'],'fixture_questions':[]}
         self.store.put('case',item);self.store.event('case_created',{'id':item['id']});return item
@@ -123,10 +136,13 @@ class Service:
         from datetime import timedelta
         from .domain import iso, add_months
         baseline=self.store.get('case',body.get('case_id','CASE-001'))
+        if baseline['ruleset']!='fixture-2026':raise InputError('Kein ausführbarer Vorlagenstand für diesen Ausgangsfall.')
         rules=[self.store.get('requirement',id) for id in ['C1','C2','C4']]
         if any(r['status']!='approved' for r in rules):
             raise InputError('Zuerst C1, C2 und C4 fachlich freigeben.')
         mode=body.get('mode','boundary');drafts=[]
+        test_type=body.get('test_type','boundary')
+        if test_type not in ['positive','negative','boundary','missing_data']:raise InputError('Unbekannte Testfallart.')
         if mode=='live':
             reply=Model().call(
                 'Create at most 4 synthetic DBVO demo test-case DRAFTS from the approved demo rules. '
@@ -135,7 +151,8 @@ class Service:
                 '"certified":true},"prior":[{"begin":"YYYY-MM-DD","end":"YYYY-MM-DD","certified":true}],'
                 '"report_date":"YYYY-MM-DD"},"expected_message":true,"expectation_source":"draft rationale"}]}. '
                 'Expected message may be true, false or null. Explain uncertain outcomes. No real personal data.',
-                json.dumps({'rules':rules,'baseline':baseline['scenario']},ensure_ascii=False))
+                json.dumps({'rules':rules,'baseline':baseline['scenario'],'test_type':test_type,
+                            'instruction':'Generate this requested test type only. Unresolved boundaries stay null; missing data is not a confirmed rejection.'},ensure_ascii=False))
             try:
                 reply=re.sub(r'^```(?:json)?\s*|\s*```$','',reply.strip())
                 drafts=json.loads(reply)['cases']
@@ -147,6 +164,18 @@ class Service:
                     d['expectation_source']='KI-Entwurf, unabhängig zu prüfen: '+str(d.get('expectation_source',''))
             except (KeyError,ValueError,TypeError):
                 raise ModelError('Ungültiger Testfallentwurf; keine KI-Testfälle gespeichert.') from None
+        elif mode=='template':
+            # Authored synthetic fixtures; no legal rules are inferred from arbitrary text.
+            scenario={'current':{'begin':'2026-06-01','end':'2026-06-10','certified':True},
+                      'prior':[{'begin':'2026-05-01','end':'2026-05-25','certified':True}],
+                      'report_date':'2026-06-10'}
+            if test_type=='boundary':return self.generate_cases({**body,'mode':'boundary'})
+            if test_type=='negative':scenario['current']['certified']=False
+            if test_type=='missing_data':scenario['current']['certified']=None
+            expected={'positive':True,'negative':False,'missing_data':None}[test_type]
+            drafts=[{'name':{'positive':'Positivfall: attestierte Anfrage','negative':'Negativfall: Anfrage unterdrücken','missing_data':'Fehlende Daten: Nachweisstatus unbekannt'}[test_type],
+                     'scenario':scenario,'expected_message':expected,
+                     'expectation_source':'Synthetische Vorlage, 35 Tage im Demobestand. Erwartung und fachlichen Kontext unabhängig prüfen.'}]
         elif mode=='boundary':
             start=iso(baseline['scenario']['current']['begin'])
             for n in [29,30,31]:
@@ -161,7 +190,12 @@ class Service:
             drafts.append({'name':'Generierter Grenzfall: offene AU','scenario':scenario,'expected_message':None,
                            'expectation_source':'Zählkonvention nicht bestätigt; Erwartung bleibt offen.'})
         else:raise InputError('Unbekannter Generierungsmodus.')
-        created=[self.create_case({**d,'ruleset':baseline['ruleset']}) for d in drafts]
+        created=[self.create_case({**d,'ruleset':baseline['ruleset'],'test_type':test_type if mode!='boundary' else 'boundary'}) for d in drafts]
+        for item in created:
+            item.update(generation_mode=mode,model_id=Model().model if mode=='live' else None,
+                        prompt_version='test-drafts-v2',requirement_ids=[r['id'] for r in rules],
+                        requirements_snapshot=copy.deepcopy(rules))
+            self.store.put('case',item)
         self.store.event('cases_generated',{'mode':mode,'baseline':baseline['id'],'ids':[c['id'] for c in created]})
         return created
 
