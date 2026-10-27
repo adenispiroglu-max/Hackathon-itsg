@@ -8,7 +8,7 @@ import re
 import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse,parse_qs
+from urllib.parse import urlparse,parse_qs,quote
 from . import __version__
 from .domain import InputError
 from .model import Model, ModelError
@@ -74,7 +74,10 @@ def handler_for(service):
             self.send_response(status);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)))
             self.send_header('X-Content-Type-Options','nosniff');self.send_header('Cache-Control','no-store')
             self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'")
-            if filename:self.send_header('Content-Disposition',f'{"inline" if inline else "attachment"}; filename="{filename}"')
+            if filename:
+                # ASCII fallback plus RFC 5987 UTF-8 name, so umlauts or quotes cannot break the header.
+                safe=re.sub(r'[^A-Za-z0-9._-]','_',filename)[:200] or 'download'
+                self.send_header('Content-Disposition',f'{"inline" if inline else "attachment"}; filename="{safe}"; filename*=UTF-8\'\'{quote(filename,safe="")}')
             self.end_headers();self.wfile.write(data)
 
         def authorized(self):

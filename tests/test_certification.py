@@ -324,6 +324,12 @@ class CertHTTPTests(unittest.TestCase):
         code,data,headers=self.call('/api/cert/submission/'+s['id'])
         self.assertEqual(code,200);self.assertEqual(data,raw);self.assertTrue(headers['Content-Type'].startswith('text/plain'))
         self.assertIn('bericht.txt',headers['Content-Disposition'])
+        u=self.ok('/api/cert/submission',{'version_id':v['id'],'name':'Prüfbericht Ä.txt','base64':base64.b64encode(raw).decode(),'reviewer':'Anna'})
+        _,_,headers=self.call('/api/cert/submission/'+u['id'])
+        # The route stores an ASCII-cleaned name; the header adds an RFC 5987 form next to the plain fallback.
+        self.assertIn('filename="Pr_fbericht__.txt"',headers['Content-Disposition'])
+        self.assertIn("filename*=UTF-8''Pr_fbericht%20_.txt",headers['Content-Disposition'])
+        self.ok('/api/cert/submission/review',{'id':u['id'],'approve':True,'reviewer':'Chef','note':'ok'})
         self.error('/api/cert/submission/missing',code=404)
         self.error('/api/cert/submission/review',{'id':s['id'],'approve':True,'reviewer':'Chef'})
         self.assertEqual(self.ok('/api/cert/submission/review',{'id':s['id'],'approve':True,'reviewer':'Chef','note':'ok'})['status'],'approved')

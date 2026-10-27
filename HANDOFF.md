@@ -335,3 +335,9 @@ assistant ref; update `scripts/*_smoke.cjs` for the new routes.
   (inclusive days)/Bescheinigt; German dates; certified `null` now shows "unbekannt" (was wrongly
   "Nein"); sum line of certified prior days (+ current AU). Field lists now render plain ISO dates
   as dd.mm.yyyy and map `synthetic-demo` to "Synthetische Demo-Kasse (fiktiv)". Tests: 140 OK.
+
+## Selective port from codex/auditflow-prototype (2026-10-27)
+- `send()` now writes an ASCII fallback plus an RFC 5987 `filename*=UTF-8''…` name (from prototype 9201959); inline/attachment choice kept. All current routes already pass ASCII-cleaned names, so this protects future routes; test added in test_certification.
+- CI: Python 3.13 installs the optional extras from `requirements.txt` (file already existed, unchanged); node --check added for library.js, results.js, customers.js, icons.js. The Windows job already existed.
+- Not ported: prototype contract scripts (they test prototype-only workflow.js/controls.js/customers.js), controls/trash, locale/dark theme, conveyor workflow, prototype Kunden and document library (incompatible store schemas for manufacturer/software_version/submission).
+- Observed: 140 tests OK (5 skipped), node --check on all static JS and scripts OK, workflow YAML parses. GitHub CI not yet run on this commit.
