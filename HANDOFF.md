@@ -496,3 +496,21 @@ jobs, interrupted sections retaining their cursor, Gemini JSON-only tasks versus
 chat, and escaped failed/running progress rendering. Three Node contracts, static JS
 syntax, compileall and diff check pass. No native browser/live Gemini/SMTP call or user
 PDF/database access. Publish with expected remote parent 76c100d8, no main merge.
+
+
+## Model timeout diagnostics (2026-10-27)
+User screenshot now reports the former combined “not reachable or timeout” error on PDF
+page 1. This does not prove which network cause occurred. No local user server, key or
+live API access is available. Raised default per-socket model timeout 45→120 seconds and
+added validated AUDITFLOW_MODEL_TIMEOUT (10–300). Model status exposes timeout_seconds.
+Network exceptions now distinguish timeout, DNS, TLS verification/handshake, refused and
+other unreachable errors without exposing raw URLs/transport details/keys. TLS verification
+stays enabled; no blind retry, fake successful extraction or approval bypass. Update/retry
+in existing workflow retains completed sections. Tests cover overrides/bounds/error types;
+full validation follows. Local branch codex/model-timeout-diagnostics; no main merge.
+
+Timeout follow-up final validation: 166 Python tests pass (15.600s), including configurable
+timeout validation/transport propagation and distinct redacted timeout, DNS, TLS and
+connection-refused errors. Existing three Node suites, JS syntax, compileall and diff
+checks pass. No live API request or runtime key access. Remote expected parent 74c5185e;
+no claim that extending a timeout fixes an unreachable endpoint.

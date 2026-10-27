@@ -4,6 +4,8 @@ No SDK dependency; provider-specific secrets stay in the process environment.
 import json
 import os
 import re
+import socket
+import ssl
 import urllib.error
 import urllib.request
 
@@ -23,15 +25,18 @@ class Model:
         # Gemini keys only go to the fixed official host, never to a stale Hessian URL override.
         self.url=('https://generativelanguage.googleapis.com/v1beta/models/'+self.model+':generateContent') if self.provider=='gemini' else os.environ.get('AUDITFLOW_MODEL_URL','https://hip-gw.hessian.ai/v1/chat/completions')
         self.transport=transport or urllib.request.urlopen
+        try:self.timeout=int(os.environ.get('AUDITFLOW_MODEL_TIMEOUT','120'))
+        except ValueError:self.timeout=None
 
     def status(self):
-        return {'configured':bool(self.key),'provider':self.provider,'key_variable':self.key_name,'model':self.model,'prompt_version':PROMPT_VERSION,
+        return {'configured':bool(self.key),'provider':self.provider,'key_variable':self.key_name,'model':self.model,'timeout_seconds':self.timeout,'prompt_version':PROMPT_VERSION,
                 'note':'Configured does not mean connectivity verified.'}
 
     def call_json(self,system,user):
         return self.call(system,user,json_output=True)
 
     def call(self,system,user,json_output=False):
+        if self.timeout is None or not 10<=self.timeout<=300:raise ModelError('AUDITFLOW_MODEL_TIMEOUT muss eine ganze Zahl von 10 bis 300 Sekunden sein.')
         if self.provider not in ['hessian','gemini']:raise ModelError('AUDITFLOW_MODEL_PROVIDER muss hessian oder gemini sein.')
         if not self.key:raise ModelError('Kein serverseitiger '+self.key_name+' konfiguriert. Offline-Modus bleibt verfügbar.')
         if self.provider=='gemini' and not re.fullmatch(r'gemini-[A-Za-z0-9._-]+',self.model):
@@ -49,7 +54,7 @@ class Model:
             headers={'Authorization':'Bearer '+self.key,'Content-Type':'application/json'}
         req=urllib.request.Request(self.url,data=json.dumps(payload).encode(),headers=headers,method='POST')
         try:
-            with self.transport(req,timeout=45) as response:
+            with self.transport(req,timeout=self.timeout) as response:
                 body=response.read(2_000_001)
                 if len(body)>2_000_000:raise ModelError('Modellantwort zu groß.')
             obj=json.loads(body)
@@ -70,8 +75,16 @@ class Model:
         except urllib.error.HTTPError as e:
             hints={400:'Anfrage oder Modelleinstellungen ungültig.',401:'API-Schlüssel ungültig oder abgelaufen.',403:'Zugriff verweigert; Schlüsselberechtigungen und API-Freigabe prüfen.',404:'Modell oder Endpunkt nicht gefunden; Modell-ID prüfen.',429:'Anfragelimit oder Kontingent erreicht; beim Anbieter prüfen und später erneut versuchen.',500:'Modellanbieter meldet einen Serverfehler.',503:'Modellanbieter vorübergehend nicht verfügbar.'}
             raise ModelError(f'Modell-HTTP-Fehler {e.code}: '+hints.get(e.code,'Zugang, Modell-ID oder Limit prüfen.')) from None
-        except (urllib.error.URLError,TimeoutError,OSError):
-            raise ModelError('Modell nicht erreichbar oder Zeitlimit überschritten.') from None
+        except (urllib.error.URLError,TimeoutError,OSError) as error:
+            reason=error.reason if isinstance(error,urllib.error.URLError) else error
+            if isinstance(reason,TimeoutError) or str(reason).lower() in ['timed out','timeout']:
+                message=f'Modellanfrage hat das Verbindungs-/Lesezeitlimit von {self.timeout} Sekunden überschritten. Verbindung testen und danach erneut versuchen; bei langsamen Antworten AUDITFLOW_MODEL_TIMEOUT bis maximal 300 erhöhen.'
+            elif isinstance(reason,ssl.SSLCertVerificationError):message='TLS-Zertifikat des Modell-Endpunkts konnte nicht geprüft werden. Systemzeit, Zertifikate oder Unternehmensproxy prüfen; Zertifikatsprüfung nicht deaktivieren.'
+            elif isinstance(reason,ssl.SSLError):message='TLS-Verbindung zum Modell-Endpunkt fehlgeschlagen. Netzwerk oder Proxy prüfen.'
+            elif isinstance(reason,socket.gaierror):message='DNS-Auflösung des Modell-Endpunkts fehlgeschlagen. Internetverbindung und DNS prüfen.'
+            elif isinstance(reason,ConnectionRefusedError):message='Verbindung zum Modell-Endpunkt abgelehnt. Netzwerk, Proxy oder Erreichbarkeit des Anbieters prüfen.'
+            else:message='Modell nicht erreichbar. Internetverbindung, Proxy/VPN und Erreichbarkeit des Anbieters prüfen.'
+            raise ModelError(message) from None
         except (ValueError,KeyError,IndexError,TypeError,AttributeError):
             raise ModelError('Ungültige Antwortstruktur vom Modell.') from None
 

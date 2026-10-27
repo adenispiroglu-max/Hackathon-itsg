@@ -113,7 +113,7 @@ class ModelTests(unittest.TestCase):
     def test_hessian_curl_contract_and_explicit_override(self):
         def transport(request,timeout):
             self.assertEqual(request.full_url,'https://hip-gw.hessian.ai/v1/chat/completions')
-            self.assertEqual(request.get_method(),'POST');self.assertEqual(timeout,45)
+            self.assertEqual(request.get_method(),'POST');self.assertEqual(timeout,120)
             self.assertEqual(request.get_header('Authorization'),'Bearer synthetic-contract-token')
             self.assertEqual(json.loads(request.data)['model'],'vllm/GLM-Flash:Latest')
             return io.BytesIO(b'{"choices":[{"message":{"content":"Synthetic reply"}}]}')

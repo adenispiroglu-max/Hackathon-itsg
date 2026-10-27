@@ -279,3 +279,11 @@ and does not repeat already completed documents in the same mode. No re-upload/n
 is needed. Restart Python in the same terminal so the model environment remains available.
 Gemini structured tasks request JSON output; human approvals and strict validation remain.
 A connection test alone does not prove that a full document fits provider quotas or limits.
+
+
+Model network timeout defaults to 120 seconds per socket connect/read operation (formerly
+45), configurable as `AUDITFLOW_MODEL_TIMEOUT` from 10–300. For example in PowerShell:
+`$env:AUDITFLOW_MODEL_TIMEOUT = "180"`, then restart Python in that same terminal. This is
+not an overall document completion deadline. Errors distinguish actual timeouts, DNS, TLS
+certificate/handshake failure and refused connections; raw transport details are not echoed.
+A longer timeout cannot fix unreachable endpoints, invalid credentials or exhausted quota.

@@ -2,6 +2,8 @@
 import io
 import json
 import os
+import socket
+import ssl
 import unittest
 import urllib.error
 from unittest.mock import patch
@@ -9,9 +11,29 @@ from auditflow.model import Model,ModelError
 
 
 class GeminiTests(unittest.TestCase):
+    def test_configurable_timeout_and_invalid_values(self):
+        with patch.dict(os.environ,{'AUDITFLOW_MODEL_PROVIDER':'gemini','GEMINI_API_KEY':'synthetic-only','AUDITFLOW_MODEL_TIMEOUT':'180'},clear=True):
+            calls=[]
+            def transport(request,timeout):calls.append(timeout);return io.BytesIO(json.dumps(self.reply('OK')).encode())
+            m=Model(transport=transport);self.assertEqual(m.call('System','Question'),'OK');self.assertEqual(calls,[180]);self.assertEqual(m.status()['timeout_seconds'],180)
+            for value in ['0','9','301','invalid','120.5']:
+                with patch.dict(os.environ,{'AUDITFLOW_MODEL_TIMEOUT':value}):
+                    with self.assertRaisesRegex(ModelError,'10 bis 300'):Model(transport=lambda *a,**kw:self.fail('Invalid timeout must not call network')).call('S','Q')
+
+    def test_distinct_timeout_dns_tls_and_connection_errors(self):
+        cases=[(TimeoutError('private timeout context'),'120 Sekunden'),(urllib.error.URLError(TimeoutError()),'120 Sekunden'),
+               (urllib.error.URLError(socket.gaierror('private DNS context')),'DNS'),
+               (urllib.error.URLError(ssl.SSLCertVerificationError('private certificate context')),'Zertifikat'),
+               (ssl.SSLError('private TLS context'),'TLS'),(ConnectionRefusedError('private refused context'),'abgelehnt')]
+        for failure,expected in cases:
+            with self.subTest(error=type(failure).__name__):
+                def transport(*a,**kw):raise failure
+                with patch.dict(os.environ,{'AUDITFLOW_MODEL_PROVIDER':'gemini','GEMINI_API_KEY':'synthetic-only'},clear=True):
+                    with self.assertRaises(ModelError) as error:Model(transport=transport).call('System','Question')
+                self.assertIn(expected,str(error.exception));self.assertNotIn('private',str(error.exception));self.assertNotIn('synthetic-only',str(error.exception))
     def configured(self,reply,**env):
         def transport(request,timeout):
-            self.assertEqual(request.get_method(),'POST');self.assertEqual(timeout,45)
+            self.assertEqual(request.get_method(),'POST');self.assertEqual(timeout,120)
             self.assertEqual(request.full_url,'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent')
             self.assertEqual(request.get_header('X-goog-api-key'),'synthetic-gemini-token')
             self.assertIsNone(request.get_header('Authorization'));self.assertNotIn('synthetic-gemini-token',request.full_url)
