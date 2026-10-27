@@ -436,3 +436,64 @@ Remote parent before this fix 0994dda2530ec8ba2fbc99ee4925c171ddad4dd1; do not m
 Demo-gate fix validation: 151 Python tests passed (15.912s), all static JS syntax, three
 Node contract suites including the new empty-list regression, compileall and diff check
 passed. No new native browser or live model test. Publication on existing PR branch follows.
+
+## Visual polish checkpoint (2026-10-27)
+
+Applied the `impeccable` frontend polish pass to the shared AuditFlow UI. The dashboard
+now uses a clearer heading without decorative kicker labels, stronger primary actions,
+calmer KPI grouping, more legible workflow summary metrics, visible keyboard focus,
+improved empty-state hierarchy, and mobile-safe spacing. Existing ITSG red/white/charcoal
+language, German copy, offline behavior and workflow functionality are preserved.
+
+Changed `auditflow/static/style.css`, `auditflow/static/workflow.js` and
+`auditflow/static/workspace.js`. Verified at 1440px and 390px with no horizontal
+overflow. `python -m unittest discover -s tests -v`: 151 passed, 4 optional skipped.
+Frontend `node --check` and `scripts/frontend_contracts.cjs`: passed. Editor diagnostics
+for all three changed frontend files: no errors. The local server runs at
+http://127.0.0.1:8080/#dashboard. The Impeccable context launcher was unavailable from
+the checkout, so project `DESIGN.md`, operate/polish guidance and the craft-floor were
+read directly before editing.
+
+## Typography readability checkpoint (2026-10-27)
+
+Design-only pass requested by the user. No backend procedure or Python source was changed.
+Updated `auditflow/static/style.css` with a role-based readable type scale: 16px body
+floor, 36px desktop page headings, 30px mobile headings, 20px section headings, 16px
+primary content paragraphs, 14px controls/secondary copy and 12px metadata. Inputs use
+16px text to avoid small-screen zoom behavior; line heights and responsive rules were
+adjusted with the scale. Verified on Requirements at 1440px and 390px with no horizontal
+overflow. CSS diagnostics are clean; frontend Node syntax checks and `git diff --check`
+passed. The Impeccable launcher could not start because its engine cache requires extra
+network/write permissions, so the typeset and craft-floor references were read directly.
+
+## AuditFlow presentation dashboard checkpoint (2026-10-27)
+
+Design-only dashboard enhancement requested by the user. `auditflow/static/workflow.js`
+now presents AuditFlow above the live work queue with a product-introduction hero, three
+principles (source-based, human-reviewed, traceable) and four linked workflow steps.
+The existing German workflow list, filters, empty state, actions and routes remain below
+the presentation layer; the system name remains AuditFlow. `auditflow/static/style.css`
+adds the desktop/mobile layout, deep-red presentation surface, responsive process cards,
+dark-theme handling and reduced-motion behavior. No backend or procedure changed.
+Browser checks passed at 1440px and 390px with no horizontal overflow; CSS diagnostics,
+Node syntax checks, frontend contracts and `git diff --check` passed.
+
+## Typography second lift (2026-10-27)
+
+User requested a further small increase for eye comfort. Frontend-only change in
+`auditflow/static/style.css`: body/content roles now use 17px, controls and secondary
+copy 15px, metadata 13px, desktop page headings 38px and mobile page headings 32px.
+No backend or procedure was changed. CSS diagnostics, frontend syntax checks and
+`git diff --check` pass. The local server was restarted at http://127.0.0.1:8080.
+## Topbar and AuditFlow brand checkpoint (2026-10-27)
+
+- `auditflow/static/style.css` centers the ITSG mark in the full topbar independently of the breadcrumb and right-side controls, including a compact mobile treatment.
+- `auditflow/static/workflow.js` keeps the system name `AuditFlow` and presents it as a larger, high-weight product wordmark in the explanatory dashboard hero.
+- Backend routes, API calls, data flow, and review procedures were not changed.
+- Static validation passed: JavaScript syntax checks and the frontend contract suite passed. The local server process was unstable during the final browser refresh, so the browser tab may need a reload once the existing local server is running.
+## AuditFlow motion checkpoint (2026-10-27)
+
+- `auditflow/static/style.css` adds a restrained dashboard entrance, a slow hero-orbit drift, stagger-ready panel timing, and hover/focus feedback for principles and process steps.
+- Motion uses transform and opacity for lightweight rendering; `prefers-reduced-motion` removes movement and preserves the usable static layout.
+- No backend, API route, data flow, or review procedure changed.
+- JavaScript syntax checks, frontend contracts, and editor diagnostics passed.

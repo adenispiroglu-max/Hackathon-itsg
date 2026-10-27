@@ -71,3 +71,342 @@ tr[data-ux-id] td:first-child{position:relative;padding-right:38px}tr[data-ux-id
 .cust-version>div:first-of-type,.cust-submission>div:first-of-type{flex:1;min-width:180px}.cust-version small,.cust-submission small{display:block;margin-top:5px;color:var(--muted)}
 .cust-version a{color:inherit;text-decoration:none}.cust-version a:hover{text-decoration:underline}.cust-submission details{width:100%}.cust-workflows{display:grid;gap:10px;margin:18px 0}.cust-gate{list-style:none;padding:0}.cust-gate li{display:flex;gap:10px;align-items:center;margin:12px 0}.cust-history,.cust-reminder{padding:14px 0;border-top:1px solid var(--line)}.cust-history p,.cust-reminder p{overflow-wrap:anywhere}.cust-card h2{overflow-wrap:anywhere}
 @media(max-width:760px){.cust-version,.cust-submission{align-items:flex-start}.cust-version .actions,.cust-submission .actions{width:100%;flex-wrap:wrap}}
+
+/* 2026 design refinement: calmer hierarchy, clearer actions, stronger accessible states. */
+:root{
+  --surface:#fff;
+  --surface-soft:#fafbfc;
+  --line-strong:#d7dbe1;
+  --focus:#8f0025;
+}
+body{background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--brand) 38%,transparent);
+  outline-offset:3px;
+}
+main{max-width:1360px;padding:40px 48px 56px}
+.topbar{padding-inline:48px}
+.dashboard-heading{margin-bottom:30px}
+.dashboard-heading h1{font-size:36px;line-height:1.12;letter-spacing:-1.35px;margin:0 0 9px}
+.dashboard-heading p{font-size:14px;line-height:1.55;max-width:48ch}
+.dashboard-heading>.btn{min-height:44px;padding-inline:17px}
+.dashboard-kpis{gap:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:24px}
+.dashboard-kpi{border:0;border-right:1px solid var(--line);border-radius:0;padding:22px 24px;background:transparent;transition:background 160ms ease-out}
+.dashboard-kpi:last-child{border-right:0}
+.dashboard-kpi:hover{background:var(--surface-soft)}
+.kpi-icon{width:38px;height:38px;border-radius:10px;background:var(--brand-soft)}
+.dashboard-kpi strong{font-variant-numeric:tabular-nums;font-size:32px}
+.dashboard-insights{gap:24px}
+.dashboard-insights .panel{padding:28px}
+.dashboard-insights .panel-header{margin-bottom:20px}
+.dashboard-insights .panel-header h2{font-size:17px}
+.subtle-chip{background:var(--surface-soft);color:#555b65}
+.next-panel{background:var(--surface);border-top:3px solid var(--brand);padding-top:25px!important}
+.next-icon{margin-bottom:14px}
+.next-panel h2{font-size:23px;line-height:1.18}
+.next-panel>p{line-height:1.7}
+.mini-handoff{border-top:1px solid var(--line);padding-top:16px;margin-top:20px}
+.package-list{padding:25px 28px}
+.package-row{padding:16px 0}
+.package-row:hover{background:var(--surface-soft)}
+.workspace-tools{border-radius:12px;background:var(--surface)}
+.workspace-tools>details>summary{min-height:52px}
+.btn{min-height:40px;border-color:var(--line-strong);font-weight:650;transition:background 160ms ease-out,border-color 160ms ease-out,color 160ms ease-out,transform 160ms ease-out}
+.btn.primary,.btn.lime{box-shadow:0 2px 6px #8f002522}
+.btn.primary:hover,.btn.lime:hover{transform:translateY(-1px)}
+.btn:not(.primary):not(.lime):hover{border-color:#c5c9d0;background:var(--surface-soft)}
+.panel,.dashboard-kpis,.workspace-tools{border-color:var(--line-strong)}
+.panel-header p,.dashboard-heading p,.dashboard-kpi small,.chart-empty p,.package-row-main small{color:#606773}
+.empty,.loading{color:#606773}
+.assistant-toggle{border-color:var(--surface)!important}
+html[data-theme=dark]{--surface:#20252e;--surface-soft:#262c35;--line-strong:#4a5260;--focus:#ff6688}
+html[data-theme=dark] .dashboard-kpis{border-color:var(--line-strong)}
+html[data-theme=dark] .dashboard-kpi{border-right-color:var(--line-strong)}
+html[data-theme=dark] .next-panel{background:var(--surface)}
+html[data-theme=dark] .subtle-chip{background:var(--surface-soft);color:var(--muted)}
+@media(max-width:1100px){
+  main{padding:32px 28px 48px}
+  .topbar{padding-inline:28px}
+  .dashboard-heading h1{font-size:32px}
+}
+@media(max-width:760px){
+  main{padding:24px 16px 48px}
+  .dashboard-heading{margin-bottom:22px}
+  .dashboard-heading h1{font-size:28px;letter-spacing:-.9px}
+  .dashboard-heading p{font-size:12px;max-width:34ch}
+  .dashboard-heading>.btn{min-height:38px}
+  .dashboard-kpis{grid-template-columns:1fr 1fr;border-radius:10px}
+  .dashboard-kpi{padding:15px 12px;border-right:0;border-bottom:1px solid var(--line)}
+  .dashboard-kpi:nth-child(odd){border-right:1px solid var(--line)}
+  .dashboard-kpi:last-child{grid-column:1/-1;border-bottom:0}
+  .kpi-icon{width:32px;height:32px;margin-bottom:8px}
+  .dashboard-kpi strong{font-size:27px}
+  .dashboard-insights .panel{padding:20px}
+  .next-panel{border-top-width:2px}
+  .package-list{padding:20px 16px}
+}
+@media(prefers-reduced-motion:reduce){
+  .btn,.dashboard-kpi{transition:none}
+  .btn.primary:hover,.btn.lime:hover{transform:none}
+}
+.flow-summary{gap:0;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:24px}
+.flow-summary span{flex:1;padding:18px 22px;border-right:1px solid var(--line)}
+.flow-summary span:last-child{border-right:0}
+.flow-summary strong{display:block;font-size:28px;line-height:1.1;margin:0 0 4px;font-variant-numeric:tabular-nums}
+.flow-summary span{font-size:11px;color:#606773}
+.flow-empty{padding:84px 36px;background:var(--surface-soft);border-style:dashed;border-color:var(--line-strong)}
+.flow-empty-icon{width:56px;height:56px;border-radius:16px;background:var(--brand-soft);display:grid;place-items:center;margin:0 auto 18px}
+.flow-empty h2{font-size:24px;margin-bottom:10px}
+.flow-empty p{max-width:58ch;line-height:1.8}
+.nav-item.active,.flow-inbox-item.selected,.ux-message.unread{border-left:0;box-shadow:inset 3px 0 var(--brand)}
+.flow-inbox-item{border-left:0}
+.notice{border-left:0;border-top:1px solid var(--line-strong)}
+.hero{border-left:1px solid var(--line)}
+@media(max-width:760px){
+  .flow-summary{border-radius:10px}
+  .flow-summary span{padding:14px 10px;font-size:9px}
+  .flow-summary strong{font-size:22px}
+  .flow-empty{padding:54px 20px}
+  .flow-empty h2{font-size:21px}
+}
+
+/* Typography scale: readability first, with compact sizing reserved for true metadata. */
+:root{
+  --text-body:16px;
+  --text-small:14px;
+  --text-meta:12px;
+  --text-label:13px;
+}
+body{font-size:var(--text-body);line-height:1.65}
+.sidebar{font-size:var(--text-small)}
+.brand{font-size:26px}
+.brand small{font-size:10px}
+.workspace{font-size:var(--text-meta)}
+.tag{font-size:var(--text-meta);letter-spacing:.08em}
+.nav-item{font-size:var(--text-small);line-height:1.4}
+.nav-item small{font-size:var(--text-meta)}
+.topbar{font-size:var(--text-small)}
+.header-right .pill{font-size:var(--text-meta)}
+h1{font-size:36px;line-height:1.15;letter-spacing:-.03em}
+h2{font-size:20px;line-height:1.35;letter-spacing:-.02em}
+h3{font-size:17px;line-height:1.4}
+p{line-height:1.65}
+.eyebrow{font-size:12px;letter-spacing:.12em}
+.page-heading p,.dashboard-heading p{font-size:var(--text-small);line-height:1.6}
+.page-heading h1{font-size:36px;line-height:1.15;letter-spacing:-.03em}
+.btn{font-size:var(--text-small);line-height:1.35;min-height:44px}
+.btn.small{font-size:var(--text-meta);min-height:36px}
+.pill{font-size:var(--text-meta);line-height:1.35;padding:5px 9px}
+.panel,.rule-card,.case-card{font-size:var(--text-small)}
+.panel-header p{font-size:var(--text-meta)}
+.stat .label,.stat small{font-size:var(--text-meta)}
+.stat .value{font-size:36px}
+table{font-size:var(--text-small)}
+th{font-size:var(--text-meta);letter-spacing:.08em}
+td,th{padding:14px 12px}
+.rule-id,.source-entry small,.field small,.review-count,.timeline-row .reason{font-size:var(--text-meta)}
+.rule-card p,.case-card p,.big-status p{font-size:var(--text-body);line-height:1.7}
+.field label{font-size:var(--text-label);margin-bottom:8px}
+.field input,.field select,.field textarea,select.control{font-size:var(--text-body);line-height:1.45;padding:12px 13px}
+.field textarea{font-size:var(--text-small)}
+.notice,.note,.dropzone{font-size:var(--text-small);line-height:1.65}
+.source-entry strong,.flow-inbox-item strong{font-size:var(--text-small)}
+.source-text,.flow-station>p,.flow-preview,.flow-report-section .readable-fields{font-size:var(--text-body);line-height:1.75}
+.quote{font-size:var(--text-small);line-height:1.7}
+.flow-inbox-item span,.flow-inbox-item small,.flow-object-header p,.flow-station-title>span{font-size:var(--text-meta)}
+.flow-inbox h2,.flow-station-title>small,.flow-rail li,.flow-report-link small{font-size:var(--text-meta)}
+.flow-rail li{line-height:1.4}
+.flow-summary span{font-size:var(--text-meta)}
+.flow-summary strong{font-size:30px}
+.assistant-panel{font-size:var(--text-small)}
+.assistant-header small,.assistant-panel .note,.ux-chat-context,.ux-chat-compose select{font-size:var(--text-meta)}
+.assistant-panel li,.assistant-prose,.ux-bubble{font-size:var(--text-small);line-height:1.7}
+.assistant-panel h3{font-size:17px}
+.ux-toolbar,.ux-sort select,.ux-select-all,.ux-selection-count{font-size:var(--text-small)}
+.ux-filter-form{font-size:var(--text-small)}
+.ux-message p,.ux-message summary{font-size:var(--text-small)}
+.ux-message small,.ux-count-form>small,.scope-caption{font-size:var(--text-meta)}
+footer{font-size:var(--text-meta);line-height:1.5}
+pre,td code,.num{font-size:var(--text-meta)}
+@media(max-width:760px){
+  .brand{font-size:24px}
+  .nav-item{font-size:var(--text-small)}
+  .topbar{font-size:var(--text-meta)}
+  .header-right .pill{font-size:11px}
+  h1{font-size:30px;line-height:1.18}
+  h2{font-size:19px}
+  .page-heading p,.dashboard-heading p{font-size:var(--text-small)}
+  .page-heading h1{font-size:30px}
+  .btn{font-size:var(--text-small);min-height:42px}
+  .btn.small{font-size:var(--text-meta)}
+  .panel,.rule-card,.case-card{font-size:var(--text-small)}
+  .flow-summary span{font-size:11px}
+  .flow-summary strong{font-size:24px}
+  .table-wrap{font-size:var(--text-meta)}
+  .assistant-panel{font-size:var(--text-small)}
+}
+
+/* Small second readability lift requested by the design owner. */
+:root{
+  --text-body:17px;
+  --text-small:15px;
+  --text-meta:13px;
+  --text-label:14px;
+}
+h1,.page-heading h1{font-size:38px}
+h2{font-size:21px}
+.dashboard-heading h1{font-size:38px}
+.btn{font-size:15px}
+.btn.small{font-size:13px}
+.pill{font-size:13px}
+.eyebrow{font-size:13px}
+.flow-inbox-item span,.flow-inbox-item small,.flow-object-header p,.flow-station-title>span{font-size:var(--text-meta)}
+@media(max-width:760px){
+  h1,.page-heading h1,.dashboard-heading h1{font-size:32px}
+  h2{font-size:20px}
+  .btn{font-size:15px}
+  .btn.small{font-size:13px}
+}
+
+/* AuditFlow presentation layer: an explanatory dashboard above the live work queue. */
+.auditflow-welcome{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(330px,1fr);gap:22px;margin:0 0 24px}
+.auditflow-welcome-hero{position:relative;isolation:isolate;min-height:365px;display:flex;align-items:flex-end;overflow:hidden;padding:42px;border-radius:16px;background:#9d3c56;color:#fff}
+.auditflow-hero-copy{position:relative;z-index:1;max-width:620px}
+.auditflow-wordmark{display:block;margin-bottom:24px;font-size:13px;line-height:1;font-weight:800;letter-spacing:.16em;color:#ffe4ea}
+.auditflow-welcome-hero h1{margin:0 0 18px;font-size:45px;line-height:1.02;letter-spacing:-.04em;text-wrap:balance}
+.auditflow-welcome-hero h1 strong{font-weight:800}
+.auditflow-welcome-hero p{max-width:57ch;margin:0 0 26px;color:#ffe7ec;font-size:16px;line-height:1.65}
+.auditflow-welcome-hero .btn.primary{background:#fff3f5;border-color:#fff3f5;color:#8f2945;box-shadow:none}
+.auditflow-welcome-hero .btn.primary:hover{background:#fff;color:#8f2945}
+.auditflow-orbit{position:absolute;right:-110px;bottom:-150px;width:430px;height:430px;z-index:-1;border:1px solid #fbd9e066;border-radius:50%}
+.auditflow-orbit span{position:absolute;inset:35px;border:1px solid #fbd9e055;border-radius:50%}
+.auditflow-orbit span:nth-child(2){inset:80px}
+.auditflow-orbit span:nth-child(3){inset:125px}
+.auditflow-welcome-panel{padding:32px;background:var(--surface);border:1px solid var(--line-strong);border-radius:16px;min-width:0}
+.auditflow-welcome-panel h2{max-width:12ch;margin:0 0 9px;font-size:27px;line-height:1.12;text-wrap:balance}
+.auditflow-kicker{display:block;color:var(--brand);font-size:12px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+.auditflow-welcome-panel>.auditflow-kicker{margin-bottom:18px;color:#6f7580;font-weight:650;text-transform:none;letter-spacing:.01em}
+.auditflow-welcome-panel p{margin:0 0 24px;color:#606773;font-size:15px;line-height:1.65}
+.auditflow-principles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;border-top:1px solid var(--line);padding-top:18px}
+.auditflow-principles div{min-width:0;padding:13px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface-soft)}
+.auditflow-principles strong{display:block;margin-bottom:9px;color:var(--brand);font-size:12px;font-variant-numeric:tabular-nums}
+.auditflow-principles b{display:block;margin-bottom:6px;font-size:13px;line-height:1.2}
+.auditflow-principles small{display:block;color:#69717c;font-size:12px;line-height:1.45}
+.auditflow-process{padding:28px 30px;margin-bottom:28px}
+.auditflow-process-header{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px}
+.auditflow-process-header h2{margin:0;font-size:25px;text-wrap:balance}
+.auditflow-process-header p{max-width:30ch;margin:0;color:#606773;font-size:14px;text-align:right}
+.auditflow-process-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.auditflow-process-step{position:relative;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;min-width:0;padding:17px 16px 16px;border:1px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink);text-decoration:none;transition:background 160ms ease-out,border-color 160ms ease-out,transform 160ms ease-out}
+.auditflow-process-step:hover{background:#fff7f9;border-color:#e6aeba;transform:translateY(-2px)}
+.auditflow-step-number{grid-column:1/-1;margin-bottom:12px;color:var(--brand);font-size:12px;font-weight:750;font-variant-numeric:tabular-nums}
+.auditflow-step-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--brand-soft);color:var(--brand)}
+.auditflow-process-step strong{font-size:15px;line-height:1.25}
+.auditflow-process-step small{grid-column:1/-1;min-height:52px;margin-top:12px;color:#606773;font-size:13px;line-height:1.5}
+.auditflow-step-link{grid-column:1/-1;margin-top:14px;color:var(--brand);font-size:13px;font-weight:650}
+.operation-heading{margin-top:4px;margin-bottom:15px}
+.operation-heading h2{margin:0 0 5px;font-size:25px}
+.operation-heading p{margin:0;color:#606773;font-size:15px}
+html[data-theme=dark] .auditflow-welcome-panel,html[data-theme=dark] .auditflow-process,html[data-theme=dark] .auditflow-process-step{background:var(--surface)}
+html[data-theme=dark] .auditflow-principles div{background:var(--surface-soft)}
+html[data-theme=dark] .auditflow-process-step:hover{background:#342a30;border-color:#855262}
+@media(max-width:1100px){
+  .auditflow-welcome{grid-template-columns:1fr}
+  .auditflow-welcome-panel{min-height:0}
+  .auditflow-welcome-panel h2{max-width:none}
+}
+@media(max-width:760px){
+  .auditflow-welcome{gap:14px;margin-bottom:16px}
+  .auditflow-welcome-hero{min-height:420px;padding:26px 22px;border-radius:13px}
+  .auditflow-wordmark{margin-bottom:20px;font-size:12px}
+  .auditflow-welcome-hero h1{font-size:36px;line-height:1.04}
+  .auditflow-welcome-hero p{font-size:15px;line-height:1.6}
+  .auditflow-orbit{right:-165px;bottom:-150px;width:380px;height:380px}
+  .auditflow-welcome-panel{padding:23px 20px;border-radius:13px}
+  .auditflow-welcome-panel h2{font-size:24px}
+  .auditflow-principles{grid-template-columns:1fr;gap:8px}
+  .auditflow-principles div{display:grid;grid-template-columns:34px 1fr;column-gap:8px;padding:11px}
+  .auditflow-principles strong{grid-row:span 2;margin:0}
+  .auditflow-principles b{margin:0;font-size:14px}
+  .auditflow-principles small{grid-column:2}
+  .auditflow-process{padding:22px 18px;margin-bottom:20px}
+  .auditflow-process-header{display:block;margin-bottom:16px}
+  .auditflow-process-header h2{font-size:23px}
+  .auditflow-process-header p{margin-top:7px;text-align:left;font-size:14px}
+  .auditflow-process-steps{grid-template-columns:1fr 1fr;gap:8px}
+  .auditflow-process-step{padding:14px 12px}
+  .auditflow-process-step small{min-height:76px;font-size:12px}
+  .operation-heading h2{font-size:22px}
+  .operation-heading p{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){.auditflow-process-step{transition:none}.auditflow-process-step:hover{transform:none}}
+
+/* Brand hierarchy: keep ITSG centered in the chrome and give AuditFlow a clear product voice. */
+.topbar{position:relative}
+.topbar-left{flex:1}
+.header-right{position:static}
+.itsg-label{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;display:grid;justify-items:center;line-height:1;pointer-events:none}
+.itsg-label strong{font-size:24px;font-weight:850;letter-spacing:-.06em}
+.itsg-dots{font-size:10px;letter-spacing:3px;line-height:.8}
+.auditflow-wordmark{margin-bottom:25px;font-size:31px;line-height:.9;font-weight:850;letter-spacing:-.075em;color:#fff; text-transform:none}
+@media(max-width:760px){
+  .itsg-label{display:grid}
+  .itsg-label strong{font-size:19px}
+  .itsg-dots{font-size:8px;letter-spacing:2px}
+  .header-right .pill{display:none}
+  .auditflow-wordmark{margin-bottom:20px;font-size:27px}
+}
+
+/* Purposeful motion: the dashboard opens as one calm sequence, then responds to intent. */
+@keyframes auditflow-welcome-in{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes auditflow-process-in{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes auditflow-orbit-drift{
+  0%,100%{transform:rotate(0deg) scale(1)}
+  50%{transform:rotate(4deg) scale(1.025)}
+}
+.auditflow-welcome{
+  animation:auditflow-welcome-in 520ms cubic-bezier(.16,1,.3,1) both;
+}
+.auditflow-welcome-hero .auditflow-orbit{
+  animation:auditflow-orbit-drift 12s ease-in-out infinite;
+  transform-origin:center;
+}
+.auditflow-welcome-panel,
+.auditflow-process{
+  animation:auditflow-welcome-in 520ms 90ms cubic-bezier(.16,1,.3,1) both;
+}
+.auditflow-principles div,
+.auditflow-process-step{
+  transition:transform 180ms cubic-bezier(.16,1,.3,1),background-color 180ms ease,border-color 180ms ease,box-shadow 180ms ease;
+}
+.auditflow-principles div:hover{
+  transform:translateX(4px);
+  border-color:#e6aeba;
+  box-shadow:0 8px 20px rgba(83,28,46,.08);
+}
+.auditflow-process-step:hover{
+  transform:translateY(-4px);
+  box-shadow:0 10px 24px rgba(83,28,46,.09);
+}
+.auditflow-process-step:focus-visible,
+.auditflow-principles div:focus-within{
+  transform:translateY(-2px);
+}
+@media(prefers-reduced-motion:reduce){
+  .auditflow-welcome,
+  .auditflow-welcome-panel,
+  .auditflow-process,
+  .auditflow-welcome-hero .auditflow-orbit{animation:none}
+  .auditflow-principles div,
+  .auditflow-process-step{transition:none}
+  .auditflow-principles div:hover,
+  .auditflow-process-step:hover,
+  .auditflow-process-step:focus-visible,
+  .auditflow-principles div:focus-within{transform:none}
+}
