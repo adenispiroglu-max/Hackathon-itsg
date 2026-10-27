@@ -15,6 +15,7 @@ const AUDITFLOW_ICONS={
  // Controls
  refresh:'<path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.68"/><path d="M20 4v4.68h-4.68"/>',
  close:'<path d="M6 6l12 12M18 6L6 18"/>',
+ upload:'<path d="M12 15V4"/><path d="M7.5 8.5L12 4l4.5 4.5"/><path d="M4 15v3.5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V15"/>',
  assistant:'<path d="M5 4.5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-4.5 3.5v-3.5H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z"/><path d="M12 7.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"/>',
  // Run status
  'status-pass':'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.75 2.75L16 9.5"/>',
@@ -35,3 +36,5 @@ function icon(name,opts){
 }
 function statusIcon(status,opts){return icon(AUDITFLOW_STATUS_ICONS[status]||'',opts);}
 
+
+AUDITFLOW_ICONS.search='<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>';

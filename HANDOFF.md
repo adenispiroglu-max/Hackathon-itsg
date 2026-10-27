@@ -677,3 +677,84 @@ return to same current gate. Visual screenshot inspected. No live API/SMTP/vendo
 Preview stopped and helpers removed. Local codex/demo-navigation-expanded-catalogue.
 Publish from expected a21a4474 to existing feature branch; original files excluded,
 user's explicit approval for short excerpts in this repository remains applicable.
+## Back navigation, bulk approval, demo pacing, larger catalogue (2026-10-27)
+Branch `workflow-back-nav-bulk-approve` from main a21a447. User asked for: stepping back,
+more requirements for all sources, a ~9s fake analysis delay with progress bar in Quellen,
+and one-click approval of all requirements/test cases.
+- Catalogue 27 → 58 requirements, all 9 sources extended. Quotes cut mechanically from locally
+  extracted originals (../itsg/Hackathon-itsg/docs/provided, hashes match catalogue); originals
+  not committed. New `table` kind with authored variants; no invented thresholds/layouts.
+- Demo pacing: `AUDITFLOW_DEMO_PACING_SECONDS` (default 9). User wanted it to conceal that
+  nothing is analysed; per AGENTS.md (simulation explicit) the station carries a visible
+  "Präsentationspause / Katalog, keine Live-Analyse" line. Removing that label is a user decision.
+- Bulk approval: requirement checkbox+button loops /api/review; cases use new
+  /api/workflow/review-cases (skips null expectations). Back: /api/workflow/back + advance.
+Observed: 190 Python tests OK (52.6s, 4 skipped), compileall, all node --check, three contract
+suites, git diff --check. HTTP E2E with real GG original on temp DB: sources 9.3s, 8/8 verified
+citations, 16/16 cases bulk-approved, back→requirements holds, advance regenerates, back→intake.
+Limits: requirement bulk approval is N sequential requests; existing runtime DBs gain new
+requirements only when a known file is re-uploaded/re-analysed; new approvals still required.
+Next: visual browser check of pacing bar and rail; decide whether to keep the pacing label.
+
+## Case TXT attachments and checked imports (2026-10-27)
+User asked for TXT files on test cases (like TEEL0), and import for existing requirements/test cases
+"prüfen". Chosen: per-case Testanleitung.txt (customer, no Sollwert) plus internal synthetic DSLW/DBVO
+Soll-Datensatz for prepared 41 cases with expectation true (auditflow/teel.py, self-checked by parser).
+Imports: /api/requirements/import (verbatim quote check incl. original full text for prepared sources,
+duplicate skip) and /api/workflow/import-cases (snapshot requirement check, duplicate skip).
+Imported requirements are no longer superseded by prepared reloads and get open skeleton cases in demo.
+Observed: 194 tests OK (56.0s), compileall, node checks, three contract suites, diff check. HTTP E2E
+with real 2026 originals (GG, two DOCX, TEEL0 renamed .txt): page-10 full-text quote imported, invented
+quote rejected, 40 cases with 7 parser-valid reference records, duplicate case skipped.
+Limits: PDF full-text quote check needs pdfplumber (system python3 here lacks it; clear error shown).
+Reference record is DSLW only; VOSZ/DSKO/NCSZ not generated. No browser screenshot yet (Chromium
+download pending).
+
+## Current consolidation: existing import reused, guarded bulk release and five-step preparation (2026-10-27)
+User corrected that import already exists. Checked all GitHub branches and found
+workflow-back-nav-bulk-approve at b7e104379bb428f413038839a3507570d68f519c, containing
+requirements/import, workflow/import-cases, back/advance, source-bound TXT attachments and
+bulk approval. Integrated those existing implementations; discarded the interim new importer
+(only in local safety stash). No duplicate migration endpoint/module is published.
+Local integration used an isolated worktree snapshot from that exact GitHub commit; originals,
+credentials, DBs, helpers and runtime logs excluded. Shared codex/auditflow-prototype remains
+the delivery branch; main is not merged or changed.
+
+Both authored catalogues are retained, 76 selected source-linked checks across nine originals.
+Existing v2 keys retain their meaning; collisions from the other catalogue get an extended key.
+Exact matching earlier statements are remapped to that key during preparation without changing
+human decisions. Old text is retained while selected quotes are appended; prechecks refresh when
+section text changes. Imports are not superseded by prepared refresh. New requirements pending.
+Actual inspected source text (both PDF extraction layouts) matched all76 quotes after whitespace
+and line-break hyphen normalization. Disposable actual-nine-original import QA: all76 citation
+statuses verified and pending,304 synthetic case patterns constructed, zero model calls.
+Checks can overlap; count is not independent/complete legal coverage.
+
+POST workflow/bulk-release previews without saving and returns a token tied to current cases,
+requirement basis, decisions and warnings. Human confirmation accepts recommended revision
+explicitly, stores warnings and human overrides, excludes already rejected cases, and moves to
+step5. No warning: the explicit bulk click proceeds directly. Unknown expectations/questions
+remain not assessable even when actual values are supplied; positive final sign-off stays blocked.
+Legacy per-case/review-cases/release APIs remain compatible. Stale preview tokens are rejected.
+
+Normal rail is five preparation stations. Confirmed manual/SMTP handoff shows preparation
+completed (not final software certification), stops counting as active preparation, and offers a
+collapsed later-customer-reply import. Importing actual results reveals the extra evaluation and
+human-final-review station. No customer data/results or SMTP success are fabricated.
+Visible search on lists, including case profile/inputs and IDs; Enter applies. Existing import and
+export icons adjacent. Help nav removed, route retained as dashboard+chat alias; offline/live chat
+receives current process knowledge, with focused bulk/reply answers. Document language unchanged.
+Demo pacing remains explicitly labelled; native progress values update without unsafe inline CSS.
+
+Validation:198 Python tests pass20.388s; all3 Node suites, JS syntax and compileall pass.
+New regressions: preview no mutation, explicit warning confirmation, stale-token rejection,
+excluded-case retention, unknown expectations never pass/never positive final sign-off.
+Native isolated browser QA: negative warning displayed, confirmed two synthetic open cases →
+step5; manual synthetic handoff → preparation-completed; later result panel expands and remains
+open across polling; assistant responds about later customer replies. Layout visually inspected.
+No live inference, SMTP, real vendor execution, original-file publication or actual user DB access.
+Preview stopped and known temporary helpers removed. Ignored disposable DB only.
+Limitations: no authenticated identities; typed/session operator attribution; overlapping authored
+patterns and finite catalogue; unknown expectations still need independent specification before
+meaningful successful comparison. Existing in-progress packages may return to requirement review
+when added catalogue checks change their source basis. Restart server and refresh after pulling.

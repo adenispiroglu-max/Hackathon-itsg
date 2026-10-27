@@ -66,9 +66,39 @@ assert.ok(caseHtml.includes('data-flow-panel="w|c" open'));assert.ok(caseHtml.in
 panel.open=false;ctx.flowRememberPanels();caseHtml=ctx.flowCases({...w,id:'w',phase:'case_review',cases:[sampleCase]});assert.ok(!caseHtml.includes('data-flow-panel="w|c" open'));
 sampleCase.expected.value=null;caseHtml=ctx.flowCases({...w,id:'w',phase:'case_review',cases:[sampleCase]});assert.ok(/flow-case-approve[^>]*disabled/.test(caseHtml));
 
-// Back navigation is a read-only view, and the staged progress is explicitly simulated.
-const pastHtml=ctx.flowPastStation({...w,phase:'case_review',document_ids:['d']},'intake');
-assert.ok(pastHtml.includes('Frühere Station ansehen'));assert.ok(!pastHtml.includes('flow-upload-form'));assert.ok(!pastHtml.includes('flow-detach'));
-assert.ok(ctx.flowObject({...w,phase:'case_review',document_ids:['d']}).includes('data-view="requirements"'));
-const progressHtml=ctx.flowDemoProgress({demo_source_started_ms:Date.now()-4500,demo_source_delay_ms:9000});
-assert.ok(progressHtml.includes('simulierter Ablauf'));assert.ok(progressHtml.includes('Keine Live-Analyse'));assert.ok(progressHtml.includes('data-demo-progress'));
+// Earlier stations are viewable; stepping back is offered only before customer handoff.
+ctx.flowViews=vm.runInContext('flowViews',ctx);
+sampleCase.expected.value=true;
+const later={...w,id:'w',mode:'demo',phase:'delivery',document_ids:['d'],cases:[sampleCase],excluded_cases:[],delivery:{status:'ready'},requirement_snapshot:[{id:'r'}]};
+let railHtml=ctx.flowObject(later);assert.ok(railHtml.includes('data-action="flow-view" data-id="w" data-step="0"'));assert.ok(railHtml.includes('data-action="flow-view-current" data-id="w" data-step="4"'));assert.ok(!railHtml.includes('data-step="5"'));
+ctx.flowViews.set('w',3);railHtml=ctx.flowObject(later);assert.ok(railHtml.includes('RÜCKBLICK'));assert.ok(railHtml.includes('data-target="case_review"'));
+ctx.flowViews.set('w',0);assert.ok(ctx.flowObject(later).includes('data-target="intake"'));
+assert.ok(!ctx.flowObject({...later,phase:'results',delivery:{status:'manual'}}).includes('data-action="flow-back"'));ctx.flowViews.delete('w');
+// One-click bulk approval needs an explicit checkbox; requirement holds expose an explicit continue.
+ctx.state.documents[0].sections=[];
+ctx.state.requirements=[{id:'r',source_id:'d',title:'Synthetic requirement',criterion:'Synthetic',status:'pending',ai_review:{recommendation:'clarify'}}];
+const reqHtml=ctx.flowStation({...later,phase:'requirements',hold:true});assert.ok(reqHtml.includes('id="flow-bulk-req-form"'));assert.ok(/name="confirmed" type="checkbox" required/.test(reqHtml));assert.ok(reqHtml.includes('flow-advance'));assert.ok(reqHtml.includes('Klärungshinweise'));
+const reviewHtml=ctx.flowStation({...later,phase:'case_review',cases:[{...sampleCase,review_status:'pending'}]});assert.ok(reviewHtml.includes('id="flow-bulk-case-form"'));
+// Demo pacing is labelled as a presentation pause and shows a bounded progress bar.
+const paced=ctx.flowAnalysis({...later,phase:'sources',demo_pacing:{started:Date.now()/1000-3,seconds:9}});
+assert.ok(paced.includes('Präsentationspause'));assert.ok(paced.includes('role="progressbar"'));assert.ok(paced.includes('Analyse läuft'));
+assert.ok(ctx.flowAnalysis({...later,phase:'sources',demo_pacing:{started:Date.now()/1000-20,seconds:9}}).includes('Analyse abgeschlossen'));
+console.log('Frontend contracts: station review, guarded back navigation, bulk approval and labelled demo pacing passed.');
+// Case attachments and checked imports.
+const fileHtml=ctx.flowCases({...later,phase:'case_review',cases:[{...sampleCase,attachments:['instruction','reference']}]});
+assert.ok(fileHtml.includes('data-kind="instruction"'));assert.ok(fileHtml.includes('data-kind="reference"'));assert.ok(fileHtml.includes('nicht für das Kundenpaket'));
+assert.ok(!ctx.flowCases({...later,phase:'case_review',cases:[{...sampleCase,attachments:['instruction']}]}).includes('data-kind="reference"'));
+assert.ok(ctx.flowStation({...later,phase:'requirements'}).includes('data-action="flow-import" data-kind="requirements" data-id="w"'));
+assert.ok(ctx.flowStation({...later,phase:'case_review',cases:[sampleCase]}).includes('data-action="flow-import" data-kind="cases" data-id="w"'));
+let dialog='';ctx.modal=html=>{dialog=html;};ctx.toast=()=>{};ctx.state.workflow.items=[{...later,phase:'case_review'}];
+ctx.flowImportDialog('requirements','w');assert.ok(dialog.includes('id="flow-req-import-form"'));assert.ok(dialog.includes('name="document_id"'));
+ctx.flowImportDialog('cases','w');assert.ok(dialog.includes('id="flow-case-import-form"'));assert.ok(dialog.includes('name="id" value="w"'));
+ctx.flowImportDialog('cases');assert.ok(dialog.includes('<select name="id">'));
+ctx.state.workflow.items=[{...later,phase:'case_review',cases:[sampleCase]}];assert.ok(ctx.workflowCasesPage().includes('data-action="flow-import" data-kind="cases"'));
+console.log('Frontend contracts: case TXT attachments and checked imports passed.');
+
+// Preparation ends at station five, with a later customer reply kept available.
+const handoff=ctx.flowStation({...later,phase:'results',delivery:{status:'manual'}});
+assert.ok(handoff.includes('Vorbereitung abgeschlossen'));assert.ok(handoff.includes('Kundenantwort später ergänzen'));assert.ok(handoff.includes('flow-results-form'));
+assert.ok(ctx.flowStation({...later,phase:'case_review',cases:[sampleCase]}).includes('Alle genehmigen & weiter zu Schritt 5'));
+assert.ok(fs.readFileSync('auditflow/static/workflow.js','utf8').includes('Sicher genehmigen? Überarbeitung empfohlen'));

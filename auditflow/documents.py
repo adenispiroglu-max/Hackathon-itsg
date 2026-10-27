@@ -221,7 +221,7 @@ class DocumentLibrary:
         req=self.store.get('requirement',req_id);doc=self.store.get('document',req['source_id'])
         sec=next(s for s in doc['sections'] if s['id']==req['section_id'])
         basis=review_basis(req,doc,sec)
-        if prepared_demo.by_hash(doc.get('sha256')) and not req.get('prepared_demo'):
+        if prepared_demo.by_hash(doc.get('sha256')) and not req.get('prepared_demo') and not req.get('imported'):
             raise InputError('Früherer Entwurf: Für diese Quelle gelten jetzt die vorbereiteten Demo-Anforderungen.')
         if req.get('prepared_demo'):
             result=prepared_demo.review_result(req);mode='demo'
@@ -275,6 +275,72 @@ class DocumentLibrary:
         self.store.put('requirement',item);self.store.event('requirement_revised',{'old_id':old['id'],'new_id':item['id']})
         self.queue(item['source_id'],body.get('mode','auto'))
         return item
+
+    def import_requirements(self,body):
+        """Imports pending requirement drafts. Every quote must occur verbatim in the chosen source;
+        entries matching a current requirement of that source are skipped as duplicates."""
+        from .service import normalize
+        items=body.get('items')
+        if not isinstance(items,list) or not 1<=len(items)<=500:raise InputError('Importdatei braucht 1 bis 500 Anforderungen unter "items".')
+        doc=self.store.get('document',body.get('document_id'));full,full_error=[],None
+        missing=any(isinstance(i,dict) and isinstance(i.get('quote'),str) and not any(normalize(i['quote']) in normalize(s['text']) for s in doc['sections']) for i in items)
+        if missing and doc['sections'] and all(s.get('prepared_excerpt') for s in doc['sections']):
+            # Prepared demo sources store only catalogue excerpts; quotes are checked against the original's full text.
+            try:full=self.full_text(doc)
+            except InputError as error:full_error=str(error)
+        with self.store.lock:
+            doc=self.store.get('document',body.get('document_id'));doc_changed=False
+            if doc.get('trashed_at') or doc.get('hidden'):raise InputError('Quelle ist ausgeblendet oder im Papierkorb.')
+            current=[r for r in self.store.filtered('requirement','source_id',doc['id']) if not r.get('trashed_at')]
+            superseded={v for r in current for v in [r.get('previous_requirement_id'),*r.get('previous_requirement_ids',[])] if v}
+            seen={(normalize(r['criterion']),normalize(r['source_excerpt'])) for r in current if r['id'] not in superseded}
+            created,duplicates,rejected,writes=[],[],[],[]
+            for index,item in enumerate(items,1):
+                try:
+                    if not isinstance(item,dict):raise InputError('Eintrag ist kein Objekt.')
+                    title,criterion,quote=[item.get(k) for k in ['title','criterion','quote']]
+                    for value,label,limit in [(title,'Titel',300),(criterion,'Anforderung',12000),(quote,'Zitat',12000)]:
+                        if not isinstance(value,str) or not value.strip() or len(value)>limit:raise InputError(label+' fehlt oder ist zu lang.')
+                    questions=item.get('questions',[])
+                    if not isinstance(questions,list) or len(questions)>20 or any(not isinstance(q,str) or not q.strip() or len(q)>2000 for q in questions):raise InputError('Offene Fragen ungültig.')
+                    sections=[s for s in doc['sections'] if not item.get('section_id') or s['id']==item['section_id']]
+                    section=next((s for s in sections if normalize(quote) in normalize(s['text'])),None)
+                    hit=None if section else next((s for s in full if (not item.get('section_id') or s['id']==item['section_id']) and normalize(quote) in normalize(s['text'])),None)
+                    if hit:
+                        sid=hit['id']+'~volltext' if any(x['id']==hit['id'] for x in doc['sections']) else hit['id']
+                        section=next((x for x in doc['sections'] if x['id']==sid),None)
+                        if not section:section={**hit,'id':sid,'fulltext_for_import':True};doc['sections'].append(section);doc_changed=True
+                    if not section:raise InputError('Zitat nicht wörtlich in der Quelle gefunden.'+(' Volltext nicht verfügbar: '+full_error if full_error else ''))
+                    key=(normalize(criterion),normalize(quote))
+                    if key in seen or any(k[0]==key[0] for k in seen):duplicates.append(title.strip());continue
+                    seen.add(key)
+                    req={'id':str(uuid4()),'created_at':now(),'source_id':doc['id'],'section_id':section['id'],'title':title.strip(),'criterion':criterion.strip(),
+                         'source_excerpt':quote.strip(),'conditions':[],'exceptions':[],'questions':[q.strip() for q in questions],'status':'pending','semantic_review':'pending',
+                         'mapping':None,'ruleset':'unmapped','citation_status':'verified','imported':True,'model_id':None,'prompt_version':'requirements-import-v1',
+                         'note':'Importierter Entwurf; Zitat in der Quelle gefunden. Fachliche Prüfung erforderlich.'}
+                    # Local precheck so the workflow gate sees a completed, honestly labelled review.
+                    req['ai_review']={'id':str(uuid4()),'status':'completed','mode':'offline','model_id':None,'prompt_version':'requirements-import-v1',
+                        'recommendation':'clarify','reason':'Importierter Entwurf: Zitat wörtlich in der Quelle gefunden. Keine KI-Bewertung; Inhalt fachlich prüfen.',
+                        'issues':[],'basis_hash':review_basis(req,doc,section),'created_at':now(),'document_id':doc['id'],'section_id':section['id']}
+                    writes.append(('requirement',req));created.append(req)
+                except InputError as error:rejected.append({'index':index,'title':item.get('title') if isinstance(item,dict) else None,'reason':str(error)})
+            if doc_changed:writes.insert(0,('document',doc))
+            if writes:self.store.put_many(writes)
+            self.store.event('requirements_imported',{'document_id':doc['id'],'created':[r['id'] for r in created],'duplicates':len(duplicates),'rejected':len(rejected)})
+        return {'created':len(created),'duplicates':duplicates,'rejected':rejected}
+
+    def full_text(self,doc):
+        cache=self.__dict__.setdefault('_full_text',{})
+        if doc['sha256'] not in cache:
+            from .service import extract_sections
+            entry=prepared_demo.by_hash(doc['sha256']);name=(entry or doc)['name'].lower()
+            raw=self.original(doc['id'])
+            if name.endswith('.pdf') or name.endswith('.docx'):
+                try:cache[doc['sha256']]=extract_sections(raw,name.rsplit('.',1)[-1])
+                except InputError:raise
+                except Exception:raise InputError('Volltext der Originaldatei konnte nicht gelesen werden.') from None
+            else:cache[doc['sha256']]=[{'id':'volltext','location':'Volltext','text':raw.decode('latin-1')}] # lossless byte view of technical samples
+        return cache[doc['sha256']]
 
     def pdf(self,doc_id):
         doc=self.store.get('document',doc_id)

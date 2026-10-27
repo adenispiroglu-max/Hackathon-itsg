@@ -100,6 +100,25 @@ POST `/api/workflow/{action}`:
 - `retry`: id; retry failed source/generation preparation, retaining committed progress.
 - `edit-case`: id, case_id, expected (typed scalar), rationale, optional structured inputs/profile. Only before package release.
 - `release`: id, reviewer, note, acknowledged=true. Requires all expectations known and questions resolved.
+- `review-cases`: id, optional reviewer. Bulk-approves every undecided case whose automatic precheck
+  recommends approval; open expectations/clarifications are skipped. Returns {workflow, approved, skipped}.
+- `back`: id, target=intake/requirements/case_review. Only before customer handoff (delivery status
+  ready/not_configured/failed). intake/requirements discard generated cases; requirements sets `hold`.
+  case_review restores excluded drafts and withdraws the package release. Reports stay in the file.
+- `advance`: id; clears `hold` so an approved requirement set continues to case generation.
+- `import-cases`: id, items=[{requirement_id or requirement_title, title, type, profile, inputs, steps,
+  expected:{field,value,rationale}, questions}]. Only in case_review and only for requirements of the
+  frozen snapshot. Duplicates (same requirement+inputs+expected, or same title) are skipped. Returns
+  {created, duplicates, rejected:[{index,title,reason}]}; imported cases stay pending.
+
+GET `/api/workflow/{id}/cases/{case_id}/instruction` returns a UTF-8 (LF) customer instruction without
+the expected value. `/reference` returns an internal synthetic DSLW/DBVO target record (latin-1, CRLF)
+in the prototype's sample layout, only for prepared Abgabegrund-41 cases whose expectation is `true`;
+it is checked with the prototype parser and never part of the customer package.
+POST `/api/requirements/import`: document_id, items=[{title, criterion, quote, section_id?, questions?}].
+Quotes must occur verbatim (whitespace-normalised) in the source; for prepared demo sources the
+original's full text is used (PDF needs pdfplumber). Duplicates of current requirements are skipped.
+Created drafts are pending with a local, labelled precheck; demo workflows give them open skeleton cases.
 - `deliver`: id; attempt configured SMTP delivery. Unknown delivery is never blindly retried.
 - `manual-delivery`: id, reviewer, note; records an actual manual handoff.
 - `import`: id, data={workflow_id,package_hash,records:[{case_id,value}]}.

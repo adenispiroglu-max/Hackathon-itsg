@@ -1,9 +1,23 @@
+## Current workflow update
+
+Existing requirement/case imports and TXT attachments from `workflow-back-nav-bulk-approve`
+are integrated. There is one import implementation. Visible search fields sit beside filters;
+requirements and cases expose import/export icons. Help is available through the corner chat.
+
+At step 4, **Alle genehmigen & weiter zu Schritt 5** previews a human bulk decision. Revision
+recommendations show an explicit confirmation warning; rejected cases stay excluded. A confirmed
+warning does not create missing expected values: those results remain not assessable and cannot
+receive a positive final sign-off. The preview is bound to the current package to reject stale approvals.
+
+Preparation ends after customer handoff at step 5. **Kundenantwort später ergänzen** accepts results
+later; evaluation and final sign-off remain additional work, with no invented customer response.
+
 # AuditFlow
 
 ## Prepared challenge demo
 
 New workflow and source-upload forms default to **Vorbereitete Challenge-Demo · ohne API**.
-The nine supplied original files are recognized by SHA-256 and immediately receive 45
+The nine supplied original files are recognized by SHA-256 and immediately receive 76
 selected, source-linked draft requirements and prepared recommendations. Human approval
 unlocks deterministic synthetic case templates without a model connection. Exact original
 bytes are required; filenames can change. Unknown demo files and mixed 2026/2027 workflow
@@ -90,7 +104,7 @@ server-side model configuration below and never silently falls back to a fake AI
 **Profile & Testfälle → Gezielte Testentwürfe** offers positive, negative, boundary and
 missing-data cases, preserving rule links and pending human review. **Quellen & KI →
 Dokument importieren** accepts an optional PDF page range with original page numbers.
-Hilfe & Ablauf explains the manufacturer handoff workflow. No Base44 login or Node build is
+The corner assistant explains the manufacturer handoff workflow. No Base44 login or Node build is
 required; cloud auth was not migrated. See [integration scope](docs/MERGE.md).
 
 ## Clear overview (0.3.2)

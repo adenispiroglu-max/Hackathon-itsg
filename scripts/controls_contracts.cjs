@@ -16,3 +16,7 @@ ctx.document={body:{},createTreeWalker(){let i=0;return {nextNode:()=>[systemNod
 vm.runInContext(fs.readFileSync('auditflow/static/locale.js','utf8'),ctx);ctx.uxTranslate();assert.equal(systemNode.nodeValue,'Requirements');assert.equal(documentNode.nodeValue,'Anforderungen');state.workspace.settings.language='de';ctx.uxTranslate();assert.equal(systemNode.nodeValue,'Anforderungen');
 const attrs={'aria-expanded':'true'},toggle={classList:{contains:n=>n==='sidebar-toggle'},getAttribute:n=>attrs[n],setAttribute:(n,v)=>attrs[n]=v};ctx.document.querySelectorAll=()=>[toggle];state.workspace.settings.language='en';ctx.uxTranslate();assert.equal(attrs['aria-label'],'Hide navigation');attrs['aria-expanded']='false';ctx.uxTranslate();assert.equal(attrs['aria-label'],'Show navigation');state.workspace.settings.language='de';ctx.uxTranslate();assert.equal(attrs['aria-label'],'Navigation einblenden');
 console.log('Controls contracts passed: status/new/visibility filters, sorting, edit-only checkboxes, unread dots and UI-only reversible translation.');
+Object.assign(ctx.uxView('cases'),{search:'needle',fresh:'all',visibility:'all',status:'all'});
+assert.equal(ctx.uxItems('cases',[{id:'c',profile:{group:'needle'},inputs:{days:30}}]).length,1);
+assert.ok(ctx.uxToolbar('requirements').includes('type="search"'));
+assert.ok(!fs.readFileSync('auditflow/static/app.js','utf8').includes("['help','ⓘ','Hilfe & Ablauf']"));

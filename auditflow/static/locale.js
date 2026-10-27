@@ -262,6 +262,42 @@ Zuordnen|Attach
 Noch keine Dateien zugeordnet.|No files attached yet.
 Entfernen|Remove
 Vorgang starten|Start workflow
+Anhänge|Attachments
+Anforderungen importieren|Import requirements
+Testfälle importieren|Import test cases
+IMPORT · MIT PRÜFUNG|IMPORT · CHECKED
+Bestehende Anforderungen importieren|Import existing requirements
+Bestehende Testfälle importieren|Import existing test cases
+Testanleitung.txt|Test instructions.txt
+Bestehende Anforderungen importieren (JSON)|Import existing requirements (JSON)
+Bestehende Testfälle importieren (JSON)|Import existing test cases (JSON)
+Importieren und prüfen|Import and check
+JSON-Datei|JSON file
+Importprüfung|Import check
+Übersprungen · bereits vorhanden|Skipped · already present
+Abgelehnt|Rejected
+RÜCKBLICK|LOOKING BACK
+Zur aktuellen Station|Back to current station
+Zum Eingang zurückkehren|Return to intake
+Anforderungsfreigabe erneut öffnen|Reopen requirement approval
+Paketfreigabe erneut öffnen|Reopen package approval
+Weiter zur Testfallerstellung|Continue to test case generation
+Sie sind zur Anforderungsfreigabe zurückgekehrt. Die Testfallerstellung startet erst, wenn Sie fortfahren.|You returned to requirement approval. Test case generation starts only when you continue.
+Eingangsmappe dieses Vorgangs.|Intake files of this workflow.
+Abgeglichene Quellen und ihr Analysestand.|Compared sources and their analysis state.
+Diese Station ist abgeschlossen.|This station is complete.
+Das Testpaket wurde bereits übergeben. Für Änderungen einen Folgevorgang anlegen.|The test package was already handed over. Create a follow-up workflow for changes.
+Quellen werden analysiert.|Analysing sources.
+Dokumente einlesen, Fundstellen erkennen, Versionen vergleichen und Anforderungen zuordnen.|Reading documents, locating passages, comparing versions and assigning requirements.
+Vorbereitete Demo: Die Ablaufanzeige ist eine Präsentationspause. Anforderungen und Fundstellen stammen aus dem hinterlegten Katalog, nicht aus einer Live-Analyse.|Prepared demo: the progress display is a presentation pause. Requirements and passages come from the stored catalogue, not from a live analysis.
+Analyse läuft|Analysis running
+Analyse abgeschlossen|Analysis complete
+Wartet auf Verarbeitung|Waiting
+Datei einlesen|Reading file
+Abschnitte und Fundstellen erkennen|Locating sections and passages
+Versionen vergleichen|Comparing versions
+Anforderungen zuordnen|Assigning requirements
+Alle offenen Testfälle geprüft. Fälle mit offenem Sollwert oder Klärungsbedarf werden übersprungen und bleiben offen.|All open test cases reviewed. Cases with an open expected value or clarification need are skipped and stay open.
 Erneut versuchen|Retry
 Quellen werden verarbeitet.|Processing sources.
 Vorhandene Dokumente erkennen, Versionen vergleichen und Anforderungsentwürfe vorbereiten.|Identify existing documents, compare versions and prepare requirement drafts.
@@ -578,7 +614,7 @@ function uxT(value){return state?.workspace?.settings?.language==='en'?(UX_EN[va
 function uxTranslate(){
  if(!state?.workspace)return;const english=state.workspace.settings.language==='en';
  const protectedSelector='[data-user-content],.source-text,.document-prose,.quote,.requirement-text,.assistant-prose,.readable-fields dd,.rule-card h2,.rule-card h3,.case-card h2,.document-card h2,.flow-object-header h2,.flow-inbox-item strong,.flow-inbox-item>span,.ux-trash-row [data-user-content],.recommendation p,.review-issue blockquote,.review-issue p';
- function translate(s){if(!english)return s;const trimmed=s.trim();let value=UX_EN[trimmed];if(!value){const rules=[[/^(\d+) Vorg(?:ang|änge)$/,'$1 workflows'],[/^Version (.+) · Gültig ab (.+)$/,'Version $1 · Effective from $2'],[/^Allgemein · (\d+) Version(?:en)?$/,'General · $1 version(s)'],[/^(\d+) Einträge ausgewählt\. Gespeicherte Inhalte und Freigaben bleiben erhalten\.$/,'$1 records selected. Stored content and approvals are retained.'],[/^(\d+) ausgewählt$/,'$1 selected'],[/^(\d+) aktive Vorgänge$/,'$1 active workflows'],[/^(\d+) warten auf Freigabe$/,'$1 awaiting approval'],[/^(\d+) beim Kunden$/,'$1 with customer'],[/^Vorgangsakte · (\d+) Berichte$/,'Workflow file · $1 reports'],[/^Eingangsmappe · (\d+) Dateien$/,'Intake · $1 files'],[/^Papierkorb \((\d+)\)$/,'Trash ($1)'],[/^Frühere Anforderungsstände \((\d+)\)$/,'Earlier requirement revisions ($1)'],[/^Zwischenbericht · Quellenabgleich$/,'Intermediate report · Source comparison'],[/^Zwischenbericht · Anforderungsfreigabe$/,'Intermediate report · Requirement approval'],[/^Zwischenbericht · Testfallpaket$/,'Intermediate report · Test package'],[/^Testpaket · Fachliche Freigabe$/,'Test package · Human approval'],[/^Endbericht · Fachliche Absegnung offen$/,'Final report · Human sign-off pending'],[/^Endbericht · Abgesegnet$/,'Final report · Accepted'],[/^Endbericht · Nacharbeit erforderlich$/,'Final report · Rework required']];for(const [pattern,replacement] of rules)if(pattern.test(trimmed)){value=trimmed.replace(pattern,replacement);break;}}
+ function translate(s){if(!english)return s;const trimmed=s.trim();let value=UX_EN[trimmed];if(!value){const rules=[[/^(\d+) Vorg(?:ang|änge)$/,'$1 workflows'],[/^Version (.+) · Gültig ab (.+)$/,'Version $1 · Effective from $2'],[/^Allgemein · (\d+) Version(?:en)?$/,'General · $1 version(s)'],[/^(\d+) Einträge ausgewählt\. Gespeicherte Inhalte und Freigaben bleiben erhalten\.$/,'$1 records selected. Stored content and approvals are retained.'],[/^(\d+) ausgewählt$/,'$1 selected'],[/^Alle (\d+) freigeben$/,'Approve all $1'],[/^Alle (\d+) offenen genehmigen$/,'Approve all $1 open'],[/^Aktuelle Station: (.+)$/,'Current station: $1'],[/^(\d+) aktive Vorgänge$/,'$1 active workflows'],[/^(\d+) warten auf Freigabe$/,'$1 awaiting approval'],[/^(\d+) beim Kunden$/,'$1 with customer'],[/^Vorgangsakte · (\d+) Berichte$/,'Workflow file · $1 reports'],[/^Eingangsmappe · (\d+) Dateien$/,'Intake · $1 files'],[/^Papierkorb \((\d+)\)$/,'Trash ($1)'],[/^Frühere Anforderungsstände \((\d+)\)$/,'Earlier requirement revisions ($1)'],[/^Zwischenbericht · Quellenabgleich$/,'Intermediate report · Source comparison'],[/^Zwischenbericht · Anforderungsfreigabe$/,'Intermediate report · Requirement approval'],[/^Zwischenbericht · Testfallpaket$/,'Intermediate report · Test package'],[/^Testpaket · Fachliche Freigabe$/,'Test package · Human approval'],[/^Endbericht · Fachliche Absegnung offen$/,'Final report · Human sign-off pending'],[/^Endbericht · Abgesegnet$/,'Final report · Accepted'],[/^Endbericht · Nacharbeit erforderlich$/,'Final report · Rework required']];for(const [pattern,replacement] of rules)if(pattern.test(trimmed)){value=trimmed.replace(pattern,replacement);break;}}
  return value?s.replace(trimmed,value):s;}
  const walk=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let node;while((node=walk.nextNode())){if(!node.parentElement||node.parentElement.closest('script,style,textarea,'+protectedSelector))continue;if(!uxTextOrigins.has(node))uxTextOrigins.set(node,node.nodeValue);node.nodeValue=translate(uxTextOrigins.get(node));}
  for(const el of document.querySelectorAll('[placeholder],[aria-label],[title]')){if(el.classList.contains('sidebar-toggle')){const label=el.getAttribute('aria-expanded')==='true'?'Navigation ausblenden':'Navigation einblenden';el.setAttribute('aria-label',english?(UX_EN[label]||label):label);el.setAttribute('title',english?(UX_EN[label]||label):label);continue;}if(el.closest(protectedSelector))continue;let originals=uxAttrOrigins.get(el);if(!originals){originals={};for(const a of ['placeholder','aria-label','title'])if(el.hasAttribute(a))originals[a]=el.getAttribute(a);uxAttrOrigins.set(el,originals);}for(const [a,s] of Object.entries(originals))el.setAttribute(a,translate(s));}
@@ -664,3 +700,5 @@ Object.assign(UX_EN,{'Demo: KI-Testentwürfe':'Demo: AI test drafts','Demo: Gezi
 Object.assign(UX_EN,{'Modellanbieter':'Model provider','Schlüsselvariable auf dem Server':'Server key variable'});
 
 Object.assign(UX_EN,{'Quellenanalyse angehalten.':'Source analysis stopped.','Fehlerursache unten prüfen und danach „Erneut versuchen“ wählen. Bereits fertige Abschnitte bleiben gespeichert.':'Check the cause below, then retry. Completed sections are retained.','Abschnitte vollständig verarbeitet':'sections fully processed','Analysefortschritt':'Analysis progress','Aktuell':'Current','KI-Vorprüfung':'AI precheck','Anforderungen entwerfen':'Drafting requirements','Fehlerursache:':'Cause:','Letzter Fortschritt':'Last progress','Analyse noch nicht vorgemerkt.':'Analysis is not queued yet.'});
+
+Object.assign(UX_EN,{'Suchen …':'Search …','Sichtbare Einträge exportieren':'Export visible entries','Alle genehmigen & weiter zu Schritt 5':'Approve all & continue to step 5','Sicher genehmigen? Überarbeitung empfohlen':'Approve anyway? Revision recommended','Testpaket gemeinsam genehmigen?':'Approve the test package?','Hinweise ansehen':'View warnings','Trotz Warnung genehmigen & weiter':'Approve despite warnings & continue','Genehmigen & weiter':'Approve & continue','Vorbereitung abgeschlossen':'Preparation completed','Vorbereitung abgeschlossen · Paket beim Kunden':'Preparation completed · Package with customer','Kundenantwort später ergänzen':'Add customer reply later','Ergebnisauswertung':'Result evaluation','Hilfe und Ablauf erklären':'Explain help and process','Wie importiere ich bestehende Testfälle?':'How do I import existing test cases?','Wie funktioniert die Sammelfreigabe?':'How does bulk approval work?','Wie ergänze ich später Kundenantworten?':'How do I add customer replies later?','Bereits einzeln genehmigte Auswahl übernehmen':'Adopt cases approved individually'});

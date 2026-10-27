@@ -24,6 +24,7 @@
 | `help` | nav `help` (Hilfe & Ablauf) | ⓘ |
 | `refresh` | `#refresh` button in the top bar | ↻ |
 | `close` | `#close-dialog` and `#assistant-close` | × |
+| `upload` | import buttons for requirements and test cases | ⤒ |
 | `assistant` | `#assistant-toggle` (Befund-Assistent) | (text only) |
 | `status-pass` | `.big-status .symbol` when the status is `pass` | ✓ |
 | `status-fail` | `.big-status .symbol` when the status is `fail` | ! |

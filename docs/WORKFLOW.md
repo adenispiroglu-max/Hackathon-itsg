@@ -23,6 +23,24 @@ Intermediate files are small accessible document-icon buttons at the completed s
 A collapsible **Vorgangsakte** retains every report, including superseded snapshots.
 Reports show the actual processing mode, never a fabricated live AI result.
 
+## Reviewing and stepping back
+
+Completed stations in the rail are clickable and open a read-only look back; the active station
+stays one click away. Before customer handoff the operator can return to Eingang (files editable,
+generated cases discarded), Anforderungen (cases discarded, generation waits for an explicit
+**Weiter zur Testfallerstellung**) or Testpaket (package release withdrawn, rejected drafts shown
+again). After handoff a follow-up workflow is required. Reports remain in the Vorgangsakte.
+
+## Test case attachments and imports
+
+Every case offers **Testanleitung.txt** (profile, inputs, steps, observed field; no expected value).
+Prepared Vorerkrankungs cases that expect a request 41 additionally offer an internal synthetic
+**Soll-Datensatz DSLW/DBVO.txt** (scenario AU periods, or periods derived from the case's month gap;
+example years 20XX shown as 2026). It contains only the DSLW record in the sample-specific layout;
+VOSZ/DSKO/NCSZ layouts are not modelled. Requirements and test cases can be imported as JSON;
+every entry is checked against the source text and against existing entries before it becomes a
+pending draft.
+
 ## Human and model boundaries
 
 A quote match establishes provenance, not legal correctness. A recommendation is not an
@@ -85,3 +103,22 @@ The existing authored C1/C2/C4 engine still supports up to 4,000 deterministic d
 and selected regression. The new free-text workflow and that bounded executable demo engine
 have distinct contracts and datasets. No complete payroll certification, SAP connection,
 actual customer API execution, independent benefit oracle or production authorization is claimed.
+
+## Five preparation steps and optional later results
+
+Intake → Sources → Requirements → Test package → Customer. After confirmed handoff the UI
+shows preparation completed and removes the workflow from active preparation counts. It does
+not certify the software or invent customer results. Expand **Kundenantwort später ergänzen**
+to import a later response; the additional result/final-review station then becomes available.
+
+**Alle genehmigen & weiter zu Schritt 5** calls `POST /api/workflow/bulk-release` first as a
+preview (`id`). It returns a package-bound `token`, warnings and counts, without saving decisions.
+Confirmation sends `id`, `token`, `confirmed:true`, and `accept_warnings:true` when warnings exist.
+The server revalidates phase, requirement basis, case contents, decisions and recommendations.
+Rejected cases are excluded; a warning override is stored with the human decision. Missing
+expected values or unresolved questions always compare as not assessable, even when observations
+are supplied. They prevent positive final sign-off. The earlier individual approval API remains.
+
+The existing requirement/case import endpoints are reused. Search is visible above lists and
+accepts Enter. Help/process instructions are in the read-only corner assistant, including offline
+help. There is no separate help navigation item.

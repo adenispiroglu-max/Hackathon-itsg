@@ -213,6 +213,37 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(self.f.tick(w['id'])['phase'],'requirements')
 
 
+    def test_bulk_release_warning_confirmation_and_unknown_results(self):
+        w=self.ready_cases();before=copy.deepcopy(self.s.store.get('workflow',w['id']))
+        preview=self.f.bulk_release({'id':w['id']})
+        self.assertEqual(self.s.store.get('workflow',w['id']),before)
+        self.assertTrue(preview['warnings'])
+        with self.assertRaisesRegex(InputError,'ausdrücklich'):
+            self.f.bulk_release({'id':w['id'],'token':preview['token'],'confirmed':True})
+        w=self.f.bulk_release({'id':w['id'],'token':preview['token'],'confirmed':True,'accept_warnings':True})
+        self.assertEqual(w['phase'],'delivery');self.assertTrue(w['case_review']['warnings'])
+        self.assertTrue(all(c['human_decision']['recommendation_override'] for c in w['cases']))
+        self.assertTrue(all(c['expected']['value'] is None for c in w['cases']))
+        self.f.manual_delivery({'id':w['id'],'reviewer':'Operator','note':'Actual synthetic handoff'})
+        w=self.f.import_results(self.import_data(w))
+        self.assertEqual(w['result']['counts']['pass'],0)
+        self.assertEqual(w['result']['counts']['not_assessable'],len(w['cases']))
+        with self.assertRaisesRegex(InputError,'keine positive'):
+            self.f.close_workflow({'id':w['id'],'decision':'accepted'})
+
+    def test_bulk_release_rejects_stale_confirmation_and_preserves_rejections(self):
+        w=self.ready_cases();preview=self.f.bulk_release({'id':w['id']})
+        c=w['cases'][0]
+        self.f.edit_case({'id':w['id'],'case_id':c['id'],'expected':True,'rationale':'Confirmed synthetic expected result'})
+        with self.assertRaisesRegex(InputError,'erneut prüfen'):
+            self.f.bulk_release({'id':w['id'],'token':preview['token'],'confirmed':True,'accept_warnings':True})
+        self.f.review_case({'id':w['id'],'case_id':w['cases'][1]['id'],'decision':'rejected'})
+        preview=self.f.bulk_release({'id':w['id']})
+        w=self.f.bulk_release({'id':w['id'],'token':preview['token'],'confirmed':True,'accept_warnings':True})
+        self.assertEqual(len(w['cases']),1);self.assertEqual(len(w['excluded_cases']),1)
+        self.assertEqual(self.f.package(w['id'])['cases'][0]['id'],c['id'])
+
+
 class WorkflowHTTPTests(unittest.TestCase):
     def test_customer_workflow_routes_auth_downloads_and_validation(self):
         import threading

@@ -12,7 +12,7 @@ import ssl
 import threading
 import time
 from email.message import EmailMessage
-from uuid import uuid4
+from uuid import uuid4, uuid5, NAMESPACE_URL
 from .documents import digest,review_basis
 from .domain import InputError
 from .model import Model, ModelError
@@ -38,6 +38,12 @@ def semantic(r):
     return {k:r.get(k) for k in ['id','source_id','section_id','title','criterion','source_excerpt','conditions','exceptions','questions','status','semantic_review','reviewer','review_note','reviewed_at']}
 
 
+def demo_pacing_seconds():
+    # Presentation pause for prepared demo sources only; the UI labels it as such. 0 disables it.
+    try:return min(60.0,max(0.0,float(os.environ.get('AUDITFLOW_DEMO_PACING_SECONDS','9'))))
+    except ValueError:return 9.0
+
+
 def reqs_for(store,doc_ids):
     items=[r for r in store.list('requirement') if r['source_id'] in doc_ids and not r.get('trashed_at')]
     superseded={v for r in items for v in [r.get('previous_requirement_id'),*r.get('previous_requirement_ids',[])] if v}
@@ -56,6 +62,7 @@ class Workflow:
                     if c.get('precheck',{}).get('basis_hash')!=self.case_basis(c):
                         req=next(r for r in w['requirement_snapshot'] if r['id']==c['requirement_id'])
                         c['precheck']=self.check_case(req,c,w['mode'])
+            for c in w['cases']:c['attachments']=['instruction']+(['reference'] if self.reference(w,c) else [])
         return {'items':items,'mail_configured':self.mail_configured(),
                 'reports':[{k:r[k] for k in ['id','workflow_id','kind','title','created_at']} for r in self.store.list('workflow_report')]}
 
@@ -70,10 +77,10 @@ class Workflow:
             body={**body,**linked['customer']}
         email=text(body.get('email',''),'E-Mail',254)
         if not re.fullmatch(r'[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+',email):raise InputError('Gültige Kunden-E-Mail erforderlich.')
-        mode=body.get('mode','auto')
-        if mode not in ['auto','live','offline','demo']:raise InputError('Unbekannter KI-Modus.')
         presentation=body.get('demo_presentation',False)
         if type(presentation) is not bool:raise InputError('Demo-Präsentationsmodus muss wahr oder falsch sein.')
+        mode=body.get('mode','auto')
+        if mode not in ['auto','live','offline','demo']:raise InputError('Unbekannter KI-Modus.')
         requested=body.get('requested_cases')
         if requested is not None and (type(requested) is not int or not 1<=requested<=4000):raise InputError('1 bis 4.000 Testfälle wählen.')
         auto_send=body.get('auto_send',False)
@@ -129,9 +136,12 @@ class Workflow:
                 if d.get('trashed_at') or d.get('hidden'):raise InputError('Dokument liegt im Papierkorb.')
                 if d.get('is_historical'):raise InputError('Historische Quelle ist kein aktueller Eingang.')
                 self.service.documents.queue(id,w['mode'],resume=True)
-            if w['mode']=='demo' and w.get('demo_presentation'):
-                w.update(demo_source_started_ms=int(time.time()*1000),demo_source_delay_ms=9000)
-            w['phase']='sources';self.save(w)
+            w['phase']='sources'
+            if w['mode']=='demo':
+                w['demo_pacing']={'started':time.time(),'seconds':demo_pacing_seconds()}
+                if w.get('demo_presentation'):w.update(demo_source_started_ms=int(time.time()*1000),demo_source_delay_ms=9000)
+            else:w.pop('demo_pacing',None)
+            self.save(w)
         self.start();return w
 
     def demo_mode(self,w):
@@ -171,7 +181,9 @@ class Workflow:
                     w['error']='Quellenanalyse fehlgeschlagen: '+doc['name']+(' · '+failed['location'] if failed.get('location') else '')+'. '+(failed.get('error') or 'Fehlerursache nicht verfügbar.')+' Nach Beheben der Ursache „Erneut versuchen“ wählen.'
                     return self.save(w)
                 if not all(j['status']=='completed' for j in jobs):return w
-                if w['mode']=='demo' and w.get('demo_source_started_ms') is not None and int(time.time()*1000)-w['demo_source_started_ms']<w.get('demo_source_delay_ms',9000):return w
+                if w.get('demo_source_started_ms') and time.time()*1000<w['demo_source_started_ms']+w.get('demo_source_delay_ms',9000):return w
+                pacing=w.get('demo_pacing')
+                if pacing and time.time()<pacing['started']+pacing['seconds']:return w
                 docs=[self.store.get('document',id) for id in w['document_ids']]
                 w['phase']='requirements';w['error']=None
                 self.report(w,'sources','Zwischenbericht · Quellenabgleich',[
@@ -180,6 +192,7 @@ class Workflow:
                     {'heading':'Verarbeitung','text':prepared_demo.NOTE if w['mode']=='demo' else 'KI-Auswertung' if w['mode']=='live' else 'Lokale wörtliche Vorbereitung ohne KI. Fachliche Untersuchung erforderlich.'}])
                 return self.save(w)
             if w['phase']=='requirements':
+                if w.get('hold'):return w # Returned here by the operator; continues only on explicit request.
                 reqs=reqs_for(self.store,w['document_ids'])
                 if not reqs or any(r['status']!='approved' or r.get('semantic_review')!='approved' or r.get('citation_status')!='verified' for r in reqs):return w
                 for r in reqs:
@@ -217,6 +230,7 @@ class Workflow:
             w['cases'].extend(cases);w['case_cursor']+=1;return self.save(w)
 
     def generate(self,req,mode,wid,epoch,index,count=2,offset=0):
+        if mode=='demo' and req.get('imported'):mode='offline' # Imported drafts get open local skeletons; no prepared expectation exists.
         if req.get('prepared_demo'):
             mode='demo';cases=prepared_demo.cases(req,count,offset)
         elif mode=='demo':raise InputError('Keine vorbereitete Demo-Testvorlage für diese Anforderung.')
@@ -325,6 +339,127 @@ class Workflow:
             c.setdefault('decision_history',[]).append(event);w['case_review_policy']='individual'
             self.store.event('workflow_case_decision',{'workflow_id':w['id'],'case_id':c['id'],**event});return self.save(w)
 
+    def review_cases(self,body):
+        # Bulk approval applies the same per-case precheck; open expectations are skipped, never approved.
+        with self.store.lock:
+            w=self.active(body['id'])
+            if w['phase']!='case_review':raise InputError('Testfälle stehen nicht zur Entscheidung.')
+            if self.current_basis(w)!=w['basis_hash']:self._invalidate(w);raise InputError('Anforderungsstand geändert; erneut freigeben.')
+            actor=text(body.get('reviewer') or 'Bediener (nicht authentifiziert)','Prüfer',100)
+            pending=[c['id'] for c in w['cases'] if not (c['review_status'] in ['approved','rejected'] and c.get('human_decision',{}).get('basis_hash')==self.case_basis(c))]
+            if w['mode']!='live':
+                approved=[]
+                for c in w['cases']:
+                    if c['id'] not in pending:continue
+                    req=next(r for r in w['requirement_snapshot'] if r['id']==c['requirement_id'])
+                    check=self.check_case(req,c,w['mode']);c['precheck']=check
+                    if check['recommendation']!='recommend_approval':continue
+                    event={'decision':'approved','reviewer':actor,'at':now(),'basis_hash':self.case_basis(c),'note':'Sammelfreigabe nach automatischer Vorprüfung.'}
+                    c.update(review_status='approved',human_decision=event);c.setdefault('decision_history',[]).append(event);approved.append(c['id'])
+                if approved:w['case_review_policy']='individual'
+                self.store.event('workflow_case_bulk_decision',{'workflow_id':w['id'],'case_ids':approved,'reviewer':actor,'decision':'approved'})
+                self.save(w)
+                return {'workflow':w,'approved':len(approved),'skipped':len(pending)-len(approved)}
+        approved=0
+        for case_id in pending:
+            try:self.review_case({'id':body['id'],'case_id':case_id,'decision':'approved','reviewer':actor});approved+=1
+            except (InputError,ModelError):pass
+        return {'workflow':self.store.get('workflow',body['id']),'approved':approved,'skipped':len(pending)-approved}
+
+    def back(self,body):
+        # Steps back to an earlier station before customer handoff. Reports and approvals remain history.
+        target=body.get('target')
+        allowed={'intake':['sources','requirements','generation','case_review','delivery'],'requirements':['generation','case_review','delivery'],'case_review':['delivery']}
+        if target not in allowed:raise InputError('Unbekannte Zielstation.')
+        with self.store.lock:
+            w=self.active(body['id']);origin=w['phase']
+            if origin not in allowed[target]:raise InputError('Zurück ist von dieser Station nicht möglich. Nach der Kundenübergabe einen Folgevorgang anlegen.')
+            if origin=='delivery' and w['delivery']['status'] not in ['ready','not_configured','failed']:raise InputError('Versand läuft oder ist erfolgt; Paket kann nicht mehr zurückgenommen werden.')
+            if target=='case_review':
+                w['cases']=w['cases']+w.pop('excluded_cases',[]);w.pop('case_review',None)
+                w.update(phase='case_review',delivery={'status':'not_prepared'},package_hash=digest({'basis':w['basis_hash'],'cases':w['cases']}))
+            else:
+                if origin!='sources':self._invalidate(w)
+                w.update(phase=target,error=None);w.pop('demo_pacing',None)
+                if target=='requirements':w['hold']=True
+                else:w.pop('hold',None)
+            self.store.event('workflow_back',{'workflow_id':w['id'],'from':origin,'to':target});return self.save(w)
+
+    def advance(self,body):
+        with self.store.lock:
+            w=self.active(body['id'])
+            if w['phase']!='requirements':raise InputError('Vorgang steht nicht an der Anforderungsfreigabe.')
+            w.pop('hold',None);self.save(w)
+        self.start();return w
+
+    def reference(self,w,c):
+        req=next((r for r in w.get('requirement_snapshot',[]) if r['id']==c['requirement_id']),None)
+        return prepared_demo.reference_scenario(req,c) if req and req.get('prepared_demo') else None
+
+    def attachment(self,id,case_id,kind):
+        # Instruction: customer-facing, no expected value. Reference: internal synthetic target record.
+        w=self.active(id);c=next((c for c in w['cases']+w.get('excluded_cases',[]) if c['id']==case_id),None)
+        if not c:raise InputError('Testfall nicht gefunden.')
+        if kind=='reference':
+            scenario=self.reference(w,c)
+            if not scenario:raise InputError('Für diesen Testfall ist kein Soll-Datensatz ableitbar.')
+            from .teel import build_dslw
+            return build_dslw(scenario[0],scenario[1],str(uuid5(NAMESPACE_URL,'auditflow-case:'+c['id']))),'text/plain; charset=latin-1','AuditFlow-Soll-'+c['id']+'.txt'
+        if kind!='instruction':raise InputError('Unbekannter Anhang.')
+        lines=['AuditFlow · Testanleitung','Vorgang: '+w['name']+' ('+w['id']+')','Kunde: '+w['customer']['company']+' · '+w['customer']['software']+' '+w['customer']['software_version'],
+               '','Testfall-ID: '+c['id'],'Titel: '+c['title'],'Art: '+str(c.get('type','')),'','Synthetisches Profil:']
+        lines+=['  '+k+': '+json.dumps(v,ensure_ascii=False).strip('"') for k,v in c['profile'].items()]+['','Eingaben:']
+        lines+=['  '+k+': '+json.dumps(v,ensure_ascii=False).strip('"') for k,v in c['inputs'].items()]+['','Prüfschritte:']
+        lines+=[f'  {n}. {step}' for n,step in enumerate(c['steps'],1)]
+        lines+=['','Zu beobachtendes Ausgabefeld: '+c['expected']['field'],
+                'Rückmeldung: tatsächlichen Wert mit dieser Testfall-ID in der Ergebnisdatei (records: case_id, value) zurückgeben.',
+                '','Synthetische Testdaten. Der interne Sollwert ist nicht Bestandteil dieser Anleitung.'+(' '+prepared_demo.NOTE if w['mode']=='demo' else '')]
+        return ('\n'.join(lines)+'\n').encode('utf-8'),'text/plain; charset=utf-8','AuditFlow-Testanleitung-'+c['id']+'.txt'
+
+    def import_cases(self,body):
+        # Imported drafts join the open package review; duplicates of existing cases are skipped.
+        items=body.get('items')
+        if not isinstance(items,list) or not 1<=len(items)<=500:raise InputError('Importdatei braucht 1 bis 500 Testfälle unter "items".')
+        with self.store.lock:
+            w=self.active(body['id'])
+            if w['phase']!='case_review':raise InputError('Testfälle nur während der Paketfreigabe importieren.')
+            if self.current_basis(w)!=w['basis_hash']:self._invalidate(w);raise InputError('Anforderungsstand geändert; erneut freigeben.')
+            identity=lambda c:digest({'requirement_id':c['requirement_id'],'inputs':c['inputs'],'field':c['expected']['field'],'value':c['expected']['value']})
+            seen={identity(c) for c in w['cases']}|{(c['requirement_id'],c['title'].strip().lower()) for c in w['cases']}
+            created,duplicates,rejected=[],[],[]
+            for index,item in enumerate(items,1):
+                try:
+                    if not isinstance(item,dict):raise InputError('Eintrag ist kein Objekt.')
+                    req=next((r for r in w['requirement_snapshot'] if r['id']==item.get('requirement_id') or (not item.get('requirement_id') and r['title']==item.get('requirement_title'))),None)
+                    if not req:raise InputError('Anforderung nicht in der freigegebenen Grundlage dieses Vorgangs.')
+                    title=text(item.get('title',''),'Testtitel',300)
+                    kind=item.get('type','positive')
+                    if kind not in ['positive','negative','boundary','missing_data']:raise InputError('Testart ungültig.')
+                    for key in ['profile','inputs']:
+                        value=item.get(key)
+                        if not isinstance(value,dict) or not value or len(value)>30 or any(not isinstance(k,str) or not k.strip() or len(k)>100 or (v is not None and not scalar(v)) for k,v in value.items()):raise InputError('Profil oder Eingaben ungültig.')
+                    steps,questions=item.get('steps'),item.get('questions',[])
+                    for value,minimum in [(steps,1),(questions,0)]:
+                        if not isinstance(value,list) or not minimum<=len(value)<=20 or any(not isinstance(x,str) or not x.strip() or len(x)>2000 for x in value):raise InputError('Prüfschritte oder Fragen ungültig.')
+                    ex=item.get('expected')
+                    if not isinstance(ex,dict):raise InputError('Erwartung fehlt.')
+                    field=text(ex.get('field',''),'Ausgabefeld',100);rationale=text(ex.get('rationale',''),'Herleitung',4000)
+                    value=ex.get('value')
+                    if value is not None and not scalar(value):raise InputError('Erwarteter Wert muss Text, Zahl, wahr/falsch oder null sein.')
+                    if value is None and not questions:questions=['Erwarteten Wert fachlich festlegen.']
+                    c={'title':title,'type':kind,'profile':item['profile'],'inputs':item['inputs'],'steps':[x.strip() for x in steps],
+                       'expected':{'field':field,'value':value,'rationale':rationale},'questions':[q.strip() for q in questions],
+                       'id':f"{w['id'][:8]}-imp-{uuid4().hex[:10]}",'requirement_id':req['id'],'source_id':req['source_id'],'section_id':req['section_id'],
+                       'created_at':now(),'generation_mode':'import','model_id':None,'prompt_version':'cases-import-v1','review_status':'pending'}
+                    if identity(c) in seen or (req['id'],title.lower()) in seen:duplicates.append(title);continue
+                    seen|={identity(c),(req['id'],title.lower())};created.append(c)
+                except InputError as error:rejected.append({'index':index,'title':item.get('title') if isinstance(item,dict) else None,'reason':str(error)})
+            if created:
+                w['cases'].extend(created);w['package_hash']=digest({'basis':w['basis_hash'],'cases':w['cases']})
+                self.save(w)
+            self.store.event('workflow_cases_imported',{'workflow_id':w['id'],'created':[c['id'] for c in created],'duplicates':len(duplicates),'rejected':len(rejected)})
+            return {'created':len(created),'duplicates':duplicates,'rejected':rejected}
+
     def edit_case(self,body):
         with self.store.lock:
             w=self.active(body['id'])
@@ -342,6 +477,46 @@ class Workflow:
             c['expected'].update(value=expected,rationale=reason);c['questions']=[];c['review_status']='pending'
             c.pop('human_decision',None);c.pop('precheck',None)
             w['package_hash']=digest({'basis':w['basis_hash'],'cases':w['cases']});return self.save(w)
+
+    def bulk_release(self,body):
+        """Explicit human waiver of recommendations, never an invented expected result."""
+        with self.store.lock:
+            w=self.active(body['id'])
+            if w['phase']!='case_review':raise InputError('Testpaket steht nicht zur Freigabe.')
+            if self.current_basis(w)!=w['basis_hash']:self._invalidate(w);raise InputError('Anforderungsstand verändert.')
+            if not w['cases']:raise InputError('Keine Testfälle vorhanden.')
+            selected=[c for c in w['cases'] if c['review_status']!='rejected']
+            if any(not any(c['requirement_id']==r['id'] for c in selected) for r in w['requirement_snapshot']):raise InputError('Mindestens ein nicht abgelehnter Testfall je Anforderung ist erforderlich.')
+            warnings=[];checks={}
+            for c in selected:
+                req=next(r for r in w['requirement_snapshot'] if r['id']==c['requirement_id'])
+                check=c.get('precheck')
+                if not check or check.get('basis_hash')!=self.case_basis(c):check=self.check_case(req,c,w['mode'])
+                checks[c['id']]=check
+                if check['recommendation']!='recommend_approval' or c['expected']['value'] is None or c['questions']:
+                    warnings.append({'case_id':c['id'],'title':c['title'],'reason':check['reason'],'issues':check['issues']})
+            token=digest({'basis':w['basis_hash'],'cases':w['cases'],'warnings':warnings})
+            if body.get('confirmed') is not True:return {'token':token,'warnings':warnings,'count':len(selected),'excluded':len(w['cases'])-len(selected)}
+            if body.get('token')!=token:raise InputError('Paket oder Empfehlung geändert; Warnung erneut prüfen.')
+            if warnings and body.get('accept_warnings') is not True:raise InputError('Überarbeitung empfohlen: Hinweise ausdrücklich bestätigen.')
+            reviewer=text(body.get('reviewer') or 'Bediener (nicht authentifiziert)','Prüfer',100)
+            for c in selected:
+                event={'decision':'approved','reviewer':reviewer,'at':now(),'basis_hash':self.case_basis(c),
+                       'note':'Sammelfreigabe; Überarbeitungshinweise ausdrücklich bestätigt.' if warnings else 'Sammelfreigabe nach automatischer Vorprüfung.',
+                       'recommendation_override':checks[c['id']]['recommendation']!='recommend_approval'}
+                c.update(precheck=checks[c['id']],review_status='approved',human_decision=event)
+                c.setdefault('decision_history',[]).append(event)
+            w['excluded_cases']=copy.deepcopy([c for c in w['cases'] if c['review_status']=='rejected'])
+            w['cases']=selected;w['package_hash']=digest({'basis':w['basis_hash'],'cases':selected})
+            w.update(phase='delivery',case_review={'reviewer':reviewer,'note':'Explizite Sammelfreigabe',
+                     'warnings':warnings,'at':now(),'unknown_expectations_remain_open':True},delivery={'status':'ready'})
+            self.report(w,'release','Testpaket · Sammelfreigabe',[
+                {'heading':'Menschliche Entscheidung','data':w['case_review']},
+                {'heading':'Freigegebene Testfälle','data':selected},
+                {'heading':'Abgelehnte Entwürfe','data':w['excluded_cases']}])
+            self.store.event('workflow_bulk_release',{'id':w['id'],'reviewer':reviewer,'warning_count':len(warnings)})
+            self.save(w)
+        self.start();return w
 
     def release(self,body):
         with self.store.lock:
@@ -444,7 +619,7 @@ class Workflow:
                 # JSON int and float represent the same number; booleans remain a separate type.
                 if type(actual) in [int,float] and type(expected) in [int,float]:match=actual==expected
                 rows.append({'case_id':c['id'],'title':c['title'],'requirement_id':c['requirement_id'],'expected':expected,'actual':actual,
-                             'status':'not_assessable' if actual is None else 'pass' if match else 'fail'})
+                             'status':'not_assessable' if actual is None or expected is None or c.get('questions') else 'pass' if match else 'fail'})
             counts={s:sum(r['status']==s for r in rows) for s in ['pass','fail','not_assessable']}
             w.update(phase='final_review',result={'rows':rows,'counts':counts,'imported_at':now(),'hash':digest(data)},final_review=None)
             self.report(w,'final','Endbericht · Fachliche Absegnung offen',[
