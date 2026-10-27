@@ -267,3 +267,20 @@ CI now installs existing optional requirements. Both local environments pass: 11
 with extras (13.092 s) and no-site-packages runtime (12.351 s, four optional tests skipped).
 Initial remote run 40436352597 failed only those two assumptions, including Windows. Await
 corrective commit CI; never claim the failed run succeeded.
+
+Corrective remote head: 84c23feebd7f94db7928f7fe79d210486e9621ba. CI push run 40436631573 and PR run 40436636009 in progress. Local worktree was clean after 345cec9 before this note.
+
+## 0.5 verified remote handoff
+
+Code head **84c23feebd7f94db7928f7fe79d210486e9621ba** passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40436631573:
+Python 3.11/3.12/3.13/3.14 on Linux (3.13 includes optional document extras), frontend
+syntax/contracts and Windows/Python 3.14. Initial failed PDF-test assumptions were fixed;
+no application feature was disabled to make CI pass. Later commits only record these notes.
+
+Update the user's existing clone: stop old server, `git pull origin codex/auditflow-prototype`,
+then `python -m auditflow`, open http://127.0.0.1:8080/#dashboard and hard-refresh. Install
+requirements.txt if PDF/DOCX support is missing. Choose Vorgänge → Neuer Vorgang. For live
+preparation configure a working server-side HAI_API_KEY/model endpoint; for real delivery
+configure SMTP as docs/WORKFLOW.md, then opt in per workflow. No key, originals, customer
+runtime data or screenshot was uploaded. The preview was disposable and is stopped.

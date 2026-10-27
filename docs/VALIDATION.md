@@ -143,3 +143,11 @@ PDF/DOCX capabilities; other versions/Windows retain standard-library-only cover
 Observed after correction: 117 tests pass with extras (13.092 s); `python -S` also passes all
 117 discovered tests without extras (12.351 s, four pre-existing optional tests skipped).
 Frontend contracts pass. New remote CI result still to be recorded.
+
+### Observed corrected GitHub CI
+
+Code commit `84c23feebd7f94db7928f7fe79d210486e9621ba` passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40436631573:
+Linux Python 3.11, 3.12, 3.13 (with optional PDF/DOCX extras), 3.14; frontend syntax/contracts;
+and Windows/Python 3.14. Subsequent documentation-only commits record this exact verified
+code result. Real model/SMTP connections and full browser regression remain unverified.
