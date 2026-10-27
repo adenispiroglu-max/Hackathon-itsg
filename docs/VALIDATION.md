@@ -189,3 +189,22 @@ Linux Python 3.11–3.14, optional document extras on 3.13, frontend syntax with
 contract suites, and Windows/Python 3.14. Subsequent documentation-only commits record
 this exact verified code. No real model/SMTP connectivity or full older Playwright rerun
 is implied by this result.
+
+
+## 0.7 Customers integration
+
+- 150 Python tests passed with document extras (17.016s). Without site packages: 150
+  discovered, OK with four optional skips (17.743s). New tests exercise actual conveyor
+  creation → source/reviews → manufacturer import → final sign-off → version decision;
+  old-pass/new-process isolation, changed-basis checks, contact snapshots, registry
+  dedup/migration, submission bytes/decisions, dated reminders, lifecycle/shared sources,
+  parent restore ordering, authenticated HTTP and Unicode download headers.
+- All JS/script syntax, compileall, diff check, and three Node contract suites pass. The
+  customer suite covers naming, list/detail/forms escaping, filters, version-only bulk
+  selection, prefill and workflow selector, English labels.
+- Native browser on synthetic disposable data verified Kunden nav/layout, edit/select-all
+  and three-version export dialog, version detail, prefilled contact/software selection,
+  creation of the linked workflow and updated customer list. Preview stopped. No new full
+  browser regression/mobile/dark rerun and no real SMTP/model calls were performed.
+- No official certification, authenticated reviewer identities, independent payroll oracle
+  or cross-checkout runtime database transfer is claimed.

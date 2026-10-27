@@ -3,6 +3,7 @@
 // Colour comes only from currentColor; size and stroke width are set per call.
 // Usage: icon('dashboard') or icon('dashboard',{size:18,stroke:2,title:'Übersicht'}). Unknown names return ''.
 const AUDITFLOW_ICONS={
+ customers:'<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 4v2"/>',
  // Navigation
  dashboard:'<rect x="3.5" y="3.5" width="7" height="9" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="5" rx="1.5"/><rect x="13.5" y="11.5" width="7" height="9" rx="1.5"/><rect x="3.5" y="15.5" width="7" height="5" rx="1.5"/>',
  sources:'<path d="M15 2.5H9a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8.5a2 2 0 0 0 2-2V7z"/><path d="M15 2.5V7h4.5"/><path d="M10.5 11h5.5M10.5 14.5h4"/><path d="M4 7v12.5a2 2 0 0 0 2 2h9"/>',

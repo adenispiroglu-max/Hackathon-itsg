@@ -353,3 +353,45 @@ creation/intake or requirement gate. API/SMTP secrets remain server-side, never 
 No live inference/mail or actual user-data purge was performed. Preview is stopped, helpers
 removed and runtime databases remain ignored. Read docs/WORKSPACE.md for lifecycle/erasure
 semantics and scope before future changes. Do not merge main automatically.
+
+
+## 0.7 Kunden integration (2026-10-27)
+
+User explicitly approved selectively adopting the customer/software features from
+feat/dokumente-versionen-8094 under navigation name **Kunden**. Local branch
+codex/customers-integration; remote expected parent 08f23f46d232b6548112d4f4b3051670bc3dc7bb.
+No whole-branch merge and no main merge. No subagents. Customers/manufacturers, software
+versions, contact edits with frozen workflow snapshots, submissions/decision history,
+confirmed reminders, filters/sorting/edit/export and existing hide/trash are implemented.
+
+Customers.py adapts the branch concepts to current workflows, not old auto_job approval.
+A selected software version is resolved server-side. Free entry registers master data.
+Startup links existing workflows/auto_projects without approvals or fictitious customers.
+Approval gate requires the newest started visible conveyor's complete passing import,
+positive human final sign-off, current basis and approved visible submissions. No waiver
+of unknown observations. New evidence changes and effective confirmed reminders mark a
+stored approval for recheck, preserving history. Typed names remain self-declared.
+
+Lifecycle closure includes customer/version/submission/workflow/project dependants. Shared
+source documents are preserved. Version-only bulk selection never selects parent customers;
+whole-customer trash is a separate explicit UI action. Shared reminders retain historical
+opaque IDs while other target versions remain. Original submission bytes stay in SQLite;
+metadata/export omit payload. Safe Unicode download filenames use RFC5987 header encoding.
+No runtime database from the other checkout was imported or committed.
+
+Observed: first full pass 149 Python tests OK (20.049s); all static JS/script syntax,
+compileall and three Node render/control suites passed. Added a further lifecycle regression
+and Unicode HTTP download checks; final full runs below supersede this count. Native browser
+on disposable var/customer-preview.sqlite3 verified Kunden navigation/layout, three-version
+bulk export dialog, version detail gates, contact prefill, linked workflow creation and return
+to the customer list showing the stored workflow. Synthetic data only; no email/model call.
+Managed preview stopped and temporary package.json/preview_dev.py removed. Test DB ignored.
+Full old browser suites and mobile/dark-mode manual reruns were not repeated for 0.7.
+See docs/CUSTOMERS.md for exact contracts and scope. Final GitHub publication/CI next.
+
+0.7 final local verification: **150 Python tests passed** with optional extras (17.016s);
+`python3 -S` discovered 150 and passed with four optional skips (17.743s). All JavaScript
+syntax, three Node contract suites, compileall and git diff --check pass. Native QA also
+confirmed version-only select-all (3 versions, no parents), export dialog and successful
+customer-linked workflow creation. Preview stopped and helpers removed. Publish only source,
+tests and docs to codex/auditflow-prototype using expected head 08f23f46. No live model/mail.

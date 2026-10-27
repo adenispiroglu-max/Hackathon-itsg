@@ -4,6 +4,7 @@ import base64
 import io
 import json
 import os
+import re
 import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -73,7 +74,10 @@ def handler_for(service):
             self.send_response(status);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)))
             self.send_header('X-Content-Type-Options','nosniff');self.send_header('Cache-Control','no-store')
             self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'")
-            if filename:self.send_header('Content-Disposition',f'attachment; filename="{filename}"')
+            if filename:
+                from urllib.parse import quote
+                safe=re.sub(r'[^A-Za-z0-9._-]','_',filename)[:200] or 'download'
+                self.send_header('Content-Disposition',f'attachment; filename="{safe}"; filename*=UTF-8\'\'{quote(filename,safe="")}')
             self.end_headers();self.wfile.write(data)
 
         def authorized(self):
@@ -93,9 +97,12 @@ def handler_for(service):
                         data={'version':__version__,'documents':docs,'requirements':reqs,'cases':[c for c in service.store.list('case') if not c.get('trashed_at')],
                               'runs':list(reversed(runs)),'automation':service.automation.state(),
                               'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),
-                              'coverage':service.coverage(),'document_jobs':service.store.list('document_job'),'workflow':service.workflow.state(),'workspace':service.workspace.state()}
+                              'coverage':service.coverage(),'document_jobs':service.store.list('document_job'),'workflow':service.workflow.state(),'workspace':service.workspace.state(),'customers':service.customers.state()}
                     return self.send(data)
                 if path=='/api/workspace/state':return self.send(service.workspace.state())
+                if path=='/api/customers':return self.send(service.customers.state())
+                if path.startswith('/api/customers/submissions/'):
+                    data,mime,name=service.customers.download(path.rsplit('/',1)[-1]);return self.send(data,mime=mime,filename=name)
                 if path=='/api/workspace/chat':return self.send([m for m in service.store.list('chat_message') if not m.get('trashed_at')][-50:])
                 if path=='/api/health':return self.send({'status':'ok','version':__version__,'mode':'local-demo'})
                 if path=='/api/events':return self.send(service.store.events())
@@ -146,7 +153,7 @@ def handler_for(service):
                     parts=path.split('/');run=service.store.get('run',parts[3])
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
-                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/workflow.js':('workflow.js','text/javascript; charset=utf-8'),'/icons.js':('icons.js','text/javascript; charset=utf-8'),'/controls.js':('controls.js','text/javascript; charset=utf-8'),'/locale.js':('locale.js','text/javascript; charset=utf-8')}
+                files={'/customers.js':('customers.js','text/javascript; charset=utf-8'),'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/workflow.js':('workflow.js','text/javascript; charset=utf-8'),'/icons.js':('icons.js','text/javascript; charset=utf-8'),'/controls.js':('controls.js','text/javascript; charset=utf-8'),'/locale.js':('locale.js','text/javascript; charset=utf-8')}
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
@@ -165,6 +172,12 @@ def handler_for(service):
                 body=json.loads(self.rfile.read(length))
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
                 path=urlparse(self.path).path
+                if path.startswith('/api/customers/'):
+                    actions={'create':service.customers.create,'update':service.customers.update,'transition':service.customers.transition,
+                             'submit':service.customers.submit,'review-submission':service.customers.review_submission,'reminder':service.customers.reminder}
+                    action=actions.get(path.rsplit('/',1)[-1])
+                    if not action:raise InputError('Unbekannte Kundenaktion.')
+                    return self.send(action(body))
                 if path.startswith('/api/workspace/'):
                     if path=='/api/workspace/export':
                         data,mime,filename=service.workspace.export(body);return self.send(data,mime=mime,filename=filename)

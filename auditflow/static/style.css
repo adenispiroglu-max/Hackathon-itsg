@@ -65,3 +65,9 @@ dialog{max-height:calc(100dvh - 40px);overflow:auto;overscroll-behavior:contain}
 .ux-hidden{opacity:.65}.ux-hidden:hover{opacity:.85}html[data-theme=dark] .ux-hidden{opacity:.65}html[data-theme=dark] .nav-item{color:#c7cfdb}html[data-theme=dark] .nav-item.active{color:#fff}html[data-theme=dark] .workspace{color:#b8c1cf}html[data-theme=dark] .page-heading p{color:var(--muted)}
 html[data-theme=dark] .document-card p,html[data-theme=dark] .document-status,html[data-theme=dark] .source-entry small{color:var(--muted)}
 tr[data-ux-id] td:first-child{position:relative;padding-right:38px}tr[data-ux-id] .ux-entry-tools{top:10px;right:9px}section[data-ux-kind="workflow"]>.panel-header{padding-right:30px}
+
+/* Customer master data shares workspace themes and responsive controls. */
+.cust-card{position:relative}.cust-version,.cust-submission{position:relative;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;padding:18px 12px;border-top:1px solid var(--line)}
+.cust-version>div:first-of-type,.cust-submission>div:first-of-type{flex:1;min-width:180px}.cust-version small,.cust-submission small{display:block;margin-top:5px;color:var(--muted)}
+.cust-version a{color:inherit;text-decoration:none}.cust-version a:hover{text-decoration:underline}.cust-submission details{width:100%}.cust-workflows{display:grid;gap:10px;margin:18px 0}.cust-gate{list-style:none;padding:0}.cust-gate li{display:flex;gap:10px;align-items:center;margin:12px 0}.cust-history,.cust-reminder{padding:14px 0;border-top:1px solid var(--line)}.cust-history p,.cust-reminder p{overflow-wrap:anywhere}.cust-card h2{overflow-wrap:anywhere}
+@media(max-width:760px){.cust-version,.cust-submission{align-items:flex-start}.cust-version .actions,.cust-submission .actions{width:100%;flex-wrap:wrap}}

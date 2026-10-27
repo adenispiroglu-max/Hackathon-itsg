@@ -140,3 +140,8 @@ Source cascade trash pauses processing and retains original phases for restore. 
 purge redacts linked event payloads and rebuilds the explicitly local hash chain.
 POST `/api/workflow/count`: id, count integer 1–4,000 before generation.
 Workflow create additionally accepts requested_cases. Missing total retains legacy 2/requirement.
+# Customers (0.7)
+
+See [customer API and evidence/lifecycle contracts](CUSTOMERS.md). `/api/state` now includes
+`customers`. Workflow creation accepts an optional `software_version_id` and resolves the
+stored company/software/version on the server; old free-entry clients remain supported.

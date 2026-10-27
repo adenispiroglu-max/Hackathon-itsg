@@ -1,5 +1,24 @@
 # AuditFlow
 
+## Customers (0.7)
+
+The navigation entry is **Kunden** (Customers). It stores customer/manufacturer contact details,
+software and distinct versions. New workflows can select a stored version with contact prefill;
+free-entry workflows register their customer/version automatically. Existing workflow customer
+snapshots are never rewritten when a contact changes. Existing workflows/demo projects receive
+additive master-data links on startup, without invented approvals or fictional customer seeds.
+
+Each version shows its workflows, human decision history, manufacturer document submissions
+and confirmed rule-change reminders. Approval requires complete passing manufacturer results
+and positive human final sign-off in the newest started visible conveyor workflow, a current
+requirement basis and approved submissions. Unknown results cannot be waived into a pass.
+There is no automatic official certification or account/login management.
+
+Lists reuse workspace filters, sorting, export, visibility and recoverable trash. Bulk selection
+selects software versions; deleting a whole customer is a separate explicit action in edit mode.
+Customer deletion cascades to its versions/submissions/workflows, preserving shared source files.
+See [customer contracts](docs/CUSTOMERS.md).
+
 **AuditFlow 0.6: customer input → versioned sources → AI recommendations → human requirement approval → test specifications → reviewed customer delivery → manufacturer results → human final sign-off.**
 
 ## Workspace controls (0.6)

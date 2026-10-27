@@ -56,6 +56,9 @@ class Workflow:
         return bool(cfg['host'] and cfg['sender'])
 
     def create(self,body):
+        if body.get('software_version_id'):
+            linked=self.service.customers.workflow_customer(body)
+            body={**body,**linked['customer']}
         email=text(body.get('email',''),'E-Mail',254)
         if not re.fullmatch(r'[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+',email):raise InputError('Gültige Kunden-E-Mail erforderlich.')
         mode=body.get('mode','auto')
@@ -71,7 +74,9 @@ class Workflow:
               'mode':('live' if Model().key else 'offline') if mode=='auto' else mode,'auto_send':auto_send,
               'requested_cases':requested,'phase':'intake','document_ids':[],'created_at':now(),'updated_at':now(),'error':None,
               'case_cursor':0,'cases':[],'reports':[],'generation_epoch':0,'delivery':{'status':'not_prepared'},'final_review':None}
-        self.store.put('workflow',item);self.store.event('workflow_created',{'id':item['id']});return item
+        with self.store.lock:
+            item.update(self.service.customers.workflow_customer(body))
+            self.store.put('workflow',item);self.store.event('workflow_created',{'id':item['id']});return item
 
     def active(self,id):
         w=self.store.get('workflow',id)

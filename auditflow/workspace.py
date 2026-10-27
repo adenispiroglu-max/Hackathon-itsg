@@ -16,7 +16,7 @@ from .store import now
 from .documents import digest
 from .workflow import report_html,report_pdf,text
 
-KINDS={'document','requirement','case','workflow','run','auto_job','workflow_case'}
+KINDS={'document','requirement','case','workflow','run','auto_job','workflow_case','manufacturer','software_version','submission','customer_reminder'}
 
 
 def mail_settings(store):
@@ -117,7 +117,8 @@ class Workspace:
     def affected(self,entries):
         """Explicit downstream references; source card operations cover the complete family."""
         kinds=['document','requirement','case','run','workflow','workflow_report','document_job','requirement_review',
-               'auto_case','auto_suite','auto_job','auto_result','auto_observed','message','chat_message']
+               'auto_case','auto_suite','auto_job','auto_result','auto_observed','message','chat_message',
+               'manufacturer','software_version','submission','customer_reminder','auto_project']
         rows={k:self.store.list(k) for k in kinds};selected={k:set() for k in kinds}
         for v in entries:
             if v['kind'] not in selected:raise InputError('Auswahl unterstützt keine Dokumentverknüpfung.')
@@ -132,23 +133,29 @@ class Workspace:
         changed=True
         while changed:
             size=sum(map(len,selected.values()));D,R,C,W,A,S,J=[selected[k] for k in ['document','requirement','case','workflow','auto_case','auto_suite','auto_job']]
+            M,V,P=[selected[k] for k in ['manufacturer','software_version','auto_project']]
+            V.update(v['id'] for v in rows['software_version'] if v['manufacturer_id'] in M)
+            P.update(p['id'] for p in rows['auto_project'] if p.get('software_version_id') in V)
+            selected['submission'].update(s['id'] for s in rows['submission'] if s['version_id'] in V)
+            selected['customer_reminder'].update(r['id'] for r in rows['customer_reminder'] if set(r['version_ids'])<=V)
+            S.update(s['id'] for s in rows['auto_suite'] if s.get('project_id') in P)
             for r in rows['requirement']:
                 if r['source_id'] in D:selected['requirement'].add(r['id'])
             for c in rows['case']:
                 if intersects(c.get('requirement_ids'),R):C.add(c['id'])
             req_sources={r['source_id'] for r in rows['requirement'] if r['id'] in R}
             for w in rows['workflow']:
-                if intersects(w['document_ids'],D|req_sources) or mentions(w.get('requirement_snapshot',[]),R):W.add(w['id'])
+                if w.get('software_version_id') in V or intersects(w['document_ids'],D|req_sources) or mentions(w.get('requirement_snapshot',[]),R):W.add(w['id'])
             for r in rows['run']:
                 if r.get('case_id') in C or mentions(r.get('requirements_snapshot',[]),D|R):selected['run'].add(r['id'])
             for c in rows['auto_case']:
                 if intersects(c.get('requirement_ids'),R) or c['suite_id'] in S:A.add(c['id']);S.add(c['suite_id'])
             for j in rows['auto_job']:
-                if j['suite_id'] in S or intersects(list(j.get('package',{}).get('rules',{})),R):S.add(j['suite_id']);J.add(j['id'])
+                if j.get('project',{}).get('id') in P or j['suite_id'] in S or intersects(list(j.get('package',{}).get('rules',{})),R):S.add(j['suite_id']);J.add(j['id'])
             for kind,field,ids in [('document_job','document_id',D),('requirement_review','requirement_id',R),('workflow_report','workflow_id',W),('auto_result','job_id',J)]:
                 selected[kind].update(x['id'] for x in rows[kind] if x.get(field) in ids)
             selected['auto_observed'].update(x['id'] for x in rows['auto_observed'] if any(x['id'].startswith(j+':') for j in J))
-            ids=D|R|C|W|A|J
+            ids=D|R|C|W|A|J|M|V|P
             for kind in ['message','chat_message']:
                 selected[kind].update(x['id'] for x in rows[kind] if mentions(x,ids))
             changed=size!=sum(map(len,selected.values()))
@@ -177,7 +184,7 @@ class Workspace:
             updates={}
             for entry in body['entries']:
                 root=self.resolve(entry['kind'],entry['id']);key=entry['kind']+':'+(root.get('family_id',root['id']) if entry['kind']=='document' else root['id'])
-                targets=self.affected([entry]) if hidden else [(k,x) for k in ['document','requirement','case','run','workflow','workflow_report','document_job','requirement_review','auto_case','auto_suite','auto_job','auto_result','auto_observed','message','chat_message'] for x in self.store.list(k) if key in x.get('hidden_sources',[])]
+                targets=self.affected([entry]) if hidden else [(k,x) for k in ['document','requirement','case','run','workflow','workflow_report','document_job','requirement_review','auto_case','auto_suite','auto_job','auto_result','auto_observed','message','chat_message','manufacturer','software_version','submission','customer_reminder','auto_project'] for x in self.store.list(k) if key in x.get('hidden_sources',[])]
                 for kind,item in targets:
                     item=updates.get((kind,item['id']),item);sources=set(item.get('hidden_sources',[]))
                     if hidden:sources.add(key)
@@ -197,6 +204,8 @@ class Workspace:
                     try:item=self.store.get(ref['kind'],ref['id'])
                     except KeyError:continue
                     if item.get('trash_batch_id')!=batch['id']:continue
+                    parent=('manufacturer',item.get('manufacturer_id')) if ref['kind']=='software_version' else ('software_version',item.get('version_id') or item.get('software_version_id')) if ref['kind'] in ['submission','workflow','auto_project'] else None
+                    if parent and parent[1] and self.store.get(*parent).get('trashed_at') and parent not in restoring:raise InputError('Zuerst den zugehörigen Kunden oder die Softwareversion wiederherstellen.')
                     source_ids=[item['source_id']] if ref['kind']=='requirement' else item.get('document_ids',[]) if ref['kind']=='workflow' else []
                     if any(self.store.get('document',sid).get('trashed_at') and ('document',sid) not in restoring for sid in source_ids):raise InputError('Zuerst die zugehörige Quelldatei wiederherstellen.')
                     item.pop('trashed_at',None);item.pop('trash_batch_id',None);updates.append((ref['kind'],item))
@@ -286,9 +295,10 @@ class Workspace:
 
     def export_report(self,body):
         selected=self.selection(body)
+        selected=[(k,self.service.customers.view(v) if k=='software_version' else v) for k,v in selected]
         return {'title':'AuditFlow · Auswahl exportieren','created_at':now(),'customer':{},
-                'sections':[{'heading':{'document':'Dokument','requirement':'Anforderung','case':'Testfall','workflow_case':'Testfall','workflow':'Vorgang','run':'Prüfbericht','auto_job':'Testpaket'}[k],
-                             'data':copy.deepcopy(v)} for k,v in selected],
+                'sections':[{'heading':{'document':'Dokument','requirement':'Anforderung','case':'Testfall','workflow_case':'Testfall','workflow':'Vorgang','run':'Prüfbericht','auto_job':'Testpaket','manufacturer':'Kunde','software_version':'Softwareversion','submission':'Einreichung','customer_reminder':'Erinnerung'}[k],
+                             'data':copy.deepcopy({a:b for a,b in v.items() if a!='data_base64'})} for k,v in selected],
                 'scope':'Auswahl mit gespeichertem Status und Quellenbezug. Export erteilt keine neue Freigabe.'}
 
     def export(self,body):

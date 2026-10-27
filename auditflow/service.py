@@ -24,6 +24,8 @@ class Service:
         self.documents=DocumentLibrary(self)
         from .workflow import Workflow
         self.workflow=Workflow(self)
+        from .customers import Customers
+        self.customers=Customers(self)
         from .workspace import Workspace
         self.workspace=Workspace(self)
 

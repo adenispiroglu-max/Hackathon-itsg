@@ -38,6 +38,8 @@ jobs:
       - run: node --check auditflow/static/controls.js
       - run: node --check auditflow/static/locale.js
       - run: node scripts/controls_contracts.cjs
+      - run: node --check auditflow/static/customers.js
+      - run: node scripts/customers_contracts.cjs
       - run: node --check scripts/document_review_smoke.cjs
       - run: node --check scripts/workspace_smoke.cjs
   windows-runtime:
