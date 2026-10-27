@@ -41,6 +41,13 @@ class LibraryTests(unittest.TestCase):
         self.assertEqual(self.lib.text(doc['id'])['paragraphs'][0]['location'],'Absatz 1')
         actions=[e['action'] for e in self.store.events()];self.assertIn('library_upload',actions);self.assertIn('library_confirm',actions)
 
+    def test_large_document_has_no_size_limit(self):
+        text='\n\n'.join(f'Fiktiver Absatz {i}: '+'Synthetischer Inhalt ohne Rechtsgrundlage. '*40 for i in range(3500))
+        self.assertGreater(len(text.encode()),5_000_000)
+        a,r=self.upload(text,name='Grosses Dokument.txt')
+        self.assertEqual(a['paragraphs'],3500);self.assertTrue(r['document']['file_stored'])
+        self.assertEqual(r['steps'][0]['detail'],'Keine identische Datei vorhanden.')
+
     def test_duplicate_rejected_even_with_other_label(self):
         _,r=self.upload(V1);before=len(self.store.list('upload'))
         a=self.lib.analyse({'name':'anders.txt','base64':B64(V1),'version_label':'2099-x','valid_from':'2027-01-01'})

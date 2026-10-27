@@ -299,3 +299,39 @@ assistant ref yet). Automation packages keep their own approval (out of scope).
 Next actions: install the optional packages and test PDF/DOCX upload + viewer; run one live
 model pre-review; decide the withdrawn-version rule; add upload cleanup; add a requirement
 assistant ref; update `scripts/*_smoke.cjs` for the new routes.
+
+### Follow-up 27.10.2026 (user feedback)
+- Übersicht: "+ Hersteller / Software" button removed (still on Kunden & Software).
+- Kunden & Software version page: test package areas ("Testpakete", "Testpaket vorbereiten",
+  rule/template packages, "Regeländerung übernehmen") hidden; `custPackages` kept, new placement
+  pending discussion. Note: the approval gate still needs a completed import job, which can now
+  only be started from elsewhere.
+- Quellen & KI: flat document list (title, short description, current version, version and
+  requirement counts, status, "Detaillierte Informationen"). Detail page lists all versions and
+  all requirements extracted from any version. Optional `description` on `library_doc` (upload
+  field "Kurzbeschreibung"); fallback: legacy note, else a text excerpt. Doc type stays a field.
+- PDF paragraphs: line-block fallback now applies from 2 lines (was 4), so short pages split.
+- Optional packages installed in `.venv` (git-ignored). Observed with `.venv/bin/python -m unittest
+  discover -s tests -q`: 137 tests OK, 0 skipped. PDF upload verified in the browser dialog.
+- Quellen & KI uploads: no size limit (5 MB) and no 500-page PDF limit any more; the request cap
+  is lifted only for `/api/library/analyse` (other endpoints keep 7.5 MB). The DOCX zip-bomb guard
+  remains (> max(1 GB, 200× file size) unpacked). Whole file is held in memory as base64 JSON, so
+  very large files need matching RAM. Submissions (Einreichungen) keep their 5 MB limit.
+  Fingerprint no longer shown in upload steps or version fields (still used for duplicate
+  detection, visible under "Technische Details"). Drag-and-drop box in the upload dialog and on
+  the Quellen page (drop or click opens the dialog with the file). Observed: 138 tests OK,
+  12.2 MB TXT upload via HTTP accepted, drop on page box opens dialog with file (headless Chrome).
+- Quellen & KI: "Zurückziehen" replaced by "Dokument löschen" (user decision, overrides spec
+  "no delete"). `POST /api/library/delete {library_id, by, reason?}` removes the library_doc, all
+  its versions, stored files, comparisons, derived "gültig ab" reminders and every requirement whose
+  current or first version cites one of the versions (with requirement_version history). The audit
+  log keeps a `library_delete` event (who, what). Test cases and historical runs stay; a run marks
+  C1–C4 results "not_assessable" when the requirement was deleted. Store now seeds only once per
+  database (empty `meta`), so deleting every document does not restore the demo data on restart.
+  The withdraw API still exists but the UI no longer offers it. Observed: 140 tests OK; UI delete
+  of a PDF document with 3 drafted requirements in headless Chrome.
+- Profile & Testfälle: profile view restructured (`scenarioView`): key facts (Meldedatum,
+  Beschäftigungsende, Versicherung) as labelled boxes above the AU table; columns Von/Bis/Tage
+  (inclusive days)/Bescheinigt; German dates; certified `null` now shows "unbekannt" (was wrongly
+  "Nein"); sum line of certified prior days (+ current AU). Field lists now render plain ISO dates
+  as dd.mm.yyyy and map `synthetic-demo` to "Synthetische Demo-Kasse (fiktiv)". Tests: 140 OK.

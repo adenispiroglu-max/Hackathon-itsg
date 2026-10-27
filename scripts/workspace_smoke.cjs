@@ -58,7 +58,7 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  if(!(await page.locator('#assistant-answer').textContent()).includes('Lokale Erklärung'))throw Error('Offline mode not labelled');
  // Render model output as text even if it contains markup. No live inference is claimed.
  await page.route('**/api/assistant/explain',r=>r.fulfill({json:{answer:'<img src=x onerror=alert(1)> synthetic answer',mode:'live',model_id:'synthetic-mock',prompt_version:'test',next_steps:['Inspect evidence'],evidence:{status:'pass'},note:'Mock transport only'}}));
- await page.locator('#assistant-mode').selectOption('live');await page.locator('#ws-assistant-form button').click();
+ await page.locator('#ws-assistant-form button').click();
  await page.waitForFunction(()=>document.querySelector('.assistant-prose')?.textContent.includes('<img'));
  if(await page.locator('#assistant-answer img').count())throw Error('Model HTML executed');
  await page.unroute('**/api/assistant/explain');
@@ -87,7 +87,7 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  for(let i=0;i<100;i++){const j=await (await page.request.get(base+'/api/automation/jobs/'+job.id)).json();if(j.status==='completed')break;await page.waitForTimeout(100);}
  await page.goto(base+'/#dashboard');await page.reload();await page.locator(`[data-action="auto-open"][data-id="${job.id}"]`).click();
  await page.waitForSelector('.auto-detail');await page.locator('.auto-detail [data-action="ws-explain"]').first().click();
- await page.locator('#assistant-mode').selectOption('offline');await page.locator('#ws-assistant-form button').click();await page.waitForSelector('#assistant-answer .assistant-prose');
+ await page.locator('#ws-assistant-form button').click();await page.waitForSelector('#assistant-answer .assistant-prose');
  if(!(await page.locator('#assistant-answer').textContent()).includes('package_hash'))throw Error('Automation evidence missing');
  await page.locator('#assistant-close').click();
  await page.getByRole('button',{name:'Bericht schließen',exact:true}).click();

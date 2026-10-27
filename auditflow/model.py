@@ -1,14 +1,27 @@
 """Optional OpenAI-compatible adapter documented in the organizer handout.
-No SDK dependency; secret is read only from process environment.
+No SDK dependency; secret comes from the process environment or a git-ignored .env.
 """
 import json
 import os
 import re
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 PROMPT_VERSION='source-rules-v1'
 REVIEW_PROMPT_VERSION='requirement-review-v1'
+
+
+def local_env():
+    # Optional git-ignored .env next to the package root (KEY=value lines); the process environment wins.
+    values={}
+    try:
+        for line in (Path(__file__).resolve().parents[1]/'.env').read_text(encoding='utf-8').splitlines():
+            line=line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                k,v=line.split('=',1);values[k.strip()]=v.strip().strip('"\'')
+    except OSError:pass
+    return values
 
 
 class ModelError(RuntimeError):
@@ -18,8 +31,8 @@ class ModelError(RuntimeError):
 class Model:
     def __init__(self, transport=None):
         self.url=os.environ.get('AUDITFLOW_MODEL_URL','https://hip-gw.hessian.ai/v1/chat/completions')
-        self.model=os.environ.get('AUDITFLOW_MODEL','vllm/GLM-Flash-Latest')
-        self.key=os.environ.get('HAI_API_KEY','')
+        self.model=os.environ.get('AUDITFLOW_MODEL','vllm/GLM-Flash:Latest')
+        self.key=os.environ['HAI_API_KEY'] if 'HAI_API_KEY' in os.environ else local_env().get('HAI_API_KEY','')
         self.transport=transport or urllib.request.urlopen
 
     def status(self):

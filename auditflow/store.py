@@ -20,7 +20,8 @@ class Store:
             db.execute('CREATE TABLE IF NOT EXISTS items(kind TEXT,id TEXT,data TEXT,PRIMARY KEY(kind,id))')
             db.execute('CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY AUTOINCREMENT,at TEXT,action TEXT,data TEXT,prev TEXT,hash TEXT)')
         with self.lock:
-            if not self.list('document'):
+            # Seed once per database; deleting every document must not bring the demo data back.
+            if not self.list('document') and not self.list('meta'):
                 for kind,key in [('document','documents'),('requirement','requirements'),('case','cases')]:
                     for item in seed[key]:self.put(kind,item)
                 self.put('meta',{'id':'chain','steps':seed['chain']})
@@ -62,6 +63,11 @@ class Store:
     def events(self):
         with self.connect() as db:
             return [dict(seq=r[0],at=r[1],action=r[2],data=json.loads(r[3]),prev=r[4],hash=r[5]) for r in db.execute('SELECT * FROM events ORDER BY seq')]
+
+    def delete_many(self,items):
+        """Atomically remove (kind,id) pairs."""
+        with self.lock,self.connect() as db:
+            db.executemany('DELETE FROM items WHERE kind=? AND id=?',list(items))
 
     def put_many(self,items):
         """Atomically persist a bounded worker chunk and its cursor."""

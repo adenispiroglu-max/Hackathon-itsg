@@ -61,5 +61,31 @@ class DocumentFlowTests(unittest.TestCase):
         v=self.service.requirement_versions('C4')
         self.assertEqual([x['version_no'] for x in v['versions']],[1,2]);self.assertEqual(v['approved_version_no'],1)
 
+    def test_delete_document_removes_versions_requirements_and_files(self):
+        for id in ['C1','C2','C3','C4']:self.approve('requirement',id)
+        self.approve('case','CASE-001')
+        new=self.upload_v2(valid_from='2099-01-01')['document']
+        lib=new['library_id'];files=Path(self.temp.name)/'documents'
+        self.assertEqual(len(list(files.iterdir())),1)
+        with self.assertRaises(Exception):self.service.library.delete({'library_id':lib})  # name required
+        r=self.service.library.delete({'library_id':lib,'by':'Test','reason':'Demo'})
+        self.assertEqual((r['versions'],sorted(r['requirements'])),(2,['C1','C2','C3','C4']))
+        store=self.service.store
+        for kind,id in [('library_doc',lib),('document','DOC-CRITERIA'),('document',new['id']),('requirement','C1')]:
+            with self.assertRaises(KeyError):store.get(kind,id)
+        self.assertFalse([v for v in store.list('requirement_version') if v['requirement_id']=='C1'])
+        self.assertFalse(store.filtered('document_diff','library_id',lib));self.assertEqual(list(files.iterdir()),[])
+        self.assertIn('library_delete',[e['action'] for e in store.events()])
+        self.assertTrue(store.get('case','CASE-001'))  # test cases stay
+        run=self.service.run({'case_id':'CASE-001','mode':'scenario'})
+        self.assertTrue(all(x['status']=='not_assessable' for x in run['results'] if x['requirement_id'] in ['C1','C2','C3','C4']))
+        self.assertNotEqual(run['overall_status'],'pass')
+
+    def test_deleting_every_document_does_not_reseed(self):
+        for lib in self.service.store.list('library_doc'):self.service.library.delete({'library_id':lib['id'],'by':'Test'})
+        self.assertEqual(self.service.store.list('document'),[])
+        again=create_service(Path(self.temp.name)/'db.sqlite3')
+        self.assertEqual(again.store.list('document'),[]);self.assertEqual(again.store.list('requirement'),[])
+
 
 if __name__=='__main__':unittest.main()

@@ -41,7 +41,7 @@ def as_date(today):
 def blocks(text):
     """Absätze an Leerzeilen; ohne Leerzeilen Zeilenblöcke bis zum Satzende."""
     parts=[p for p in re.split(r'\n\s*\n',text or '') if p.strip()]
-    if len(parts)==1 and parts[0].count('\n')>=3:
+    if len(parts)==1 and parts[0].count('\n')>=1:
         out,cur=[],[]
         for line in parts[0].splitlines():
             if not line.strip():continue
@@ -71,7 +71,6 @@ def build_paragraphs(sections):
 
 def parse_file(name,raw):
     """Textextraktion wie Service.import_document, ohne Seitenauswahl."""
-    if len(raw)>5_000_000:raise InputError('Maximal 5 MB je Dokument.')
     suffix=name.lower().rsplit('.',1)[-1] if '.' in name else ''
     if suffix in ['txt','md']:
         try:text=raw.decode('utf-8-sig')
@@ -81,7 +80,6 @@ def parse_file(name,raw):
         try:
             import pdfplumber
             with pdfplumber.open(io.BytesIO(raw)) as pdf:
-                if len(pdf.pages)>500:raise InputError('Maximal 500 PDF-Seiten.')
                 sections=[{'id':f'page-{i+1}','page':i+1,'location':f'PDF-Seite {i+1}','text':p.extract_text() or ''} for i,p in enumerate(pdf.pages)]
         except ImportError:raise InputError('PDF-Import benötigt die optionalen Pakete aus requirements.txt.') from None
         except InputError:raise
@@ -91,7 +89,7 @@ def parse_file(name,raw):
             from zipfile import ZipFile,BadZipFile
             try:
                 with ZipFile(io.BytesIO(raw)) as z:
-                    if sum(x.file_size for x in z.infolist())>30_000_000:raise InputError('Entpacktes DOCX ist zu groß.')
+                    if sum(x.file_size for x in z.infolist())>max(1_000_000_000,200*len(raw)):raise InputError('DOCX entpackt sich auf eine unplausible Größe (mögliche ZIP-Bombe).')
             except BadZipFile:raise InputError('DOCX konnte nicht gelesen werden.') from None
             from docx import Document
             doc=Document(io.BytesIO(raw))
@@ -254,7 +252,6 @@ class Library:
         if valid_from and valid_until and valid_until<valid_from:raise InputError('„Gültig bis“ liegt vor „Gültig ab“.')
         try:raw=base64.b64decode(body['base64'],validate=True)
         except (KeyError,ValueError,TypeError):raise InputError('Ungültiger Datei-Upload.') from None
-        if len(raw)>5_000_000:raise InputError('Maximal 5 MB je Dokument.')
         sha=hashlib.sha256(raw).hexdigest()
         dup=next((d for d in self.store.list('document') if d.get('sha256')==sha),None)
         if dup:
@@ -274,7 +271,7 @@ class Library:
             'date_suggestions':dates,'version_label':label,'doc_type':doc_type,'valid_from':valid_from,'valid_until':valid_until,
             'suggestion':suggestion,'created_at':now(),'confirmed':None}
         self.store.put('upload',up);self.store.event('library_upload',{'upload_id':up['id'],'name':name,'hash':sha})
-        steps=[{'label':'Datei geprüft','status':'ok','detail':'Fingerabdruck berechnet; keine identische Datei vorhanden.'},
+        steps=[{'label':'Datei geprüft','status':'ok','detail':'Keine identische Datei vorhanden.'},
                {'label':'Text gelesen','status':'ok','detail':f'{len(paragraphs)} Absätze erkannt.'},
                {'label':'Dokument erkannt','status':'ok','detail':(f"Sieht aus wie eine neue Version von „{suggestion['title']}“ (aktuell Version {suggestion['current_version_no']}). Bitte bestätigen." if suggestion else 'Kein ähnliches Dokument gefunden; neues Dokument vorgeschlagen.')}]
         return {'upload_id':up['id'],'duplicate':None,'suggestion':suggestion,'paragraphs':len(paragraphs),'date_suggestions':dates,
@@ -312,10 +309,12 @@ class Library:
             except KeyError:raise InputError('Dokument nicht gefunden.') from None
             if doc_type:lib['doc_type']=doc_type
             if (body.get('title') or '').strip():lib['title']=body['title'].strip()[:200]
+            if (body.get('description') or '').strip():lib['description']=body['description'].strip()[:300]
             prev=next((d for d in reversed(self._docs(lib)) if not d.get('withdrawn')),None);recognized=f"Neue Version von „{lib['title']}“."
         else:
             title=((body.get('title') or '').strip() or re.sub(r'\.[^.]+$','',up['name']))[:200]
-            lib={'id':'LIB-'+uuid4().hex[:8],'title':title,'doc_type':doc_type or up.get('doc_type') or 'sonstige','created_at':at,'version_ids':[]}
+            lib={'id':'LIB-'+uuid4().hex[:8],'title':title,'doc_type':doc_type or up.get('doc_type') or 'sonstige','created_at':at,'version_ids':[],
+                 'description':(body.get('description') or '').strip()[:300] or None}
             prev=None;recognized='Neues Dokument angelegt.'
         no=len(lib['version_ids'])+1
         doc={'id':str(uuid4()),'name':up['name'],'version':label,'valid_from':valid_from,'kind':up['file_ext'],'sha256':up['sha256'],
@@ -335,7 +334,7 @@ class Library:
         up['confirmed']=doc['id'];up['base64']=None
         self.store.put_many([('document',doc),('library_doc',lib),('upload',up)]+([('document_diff',diff)] if diff else []))
         self.store.event('library_confirm',{'document_id':doc['id'],'library_id':lib['id'],'version_no':no,'hash':doc['sha256'],'diff_id':doc['diff_id']})
-        steps=[{'label':'Datei geprüft','status':'ok','detail':'Fingerabdruck berechnet; keine identische Datei vorhanden.'},
+        steps=[{'label':'Datei geprüft','status':'ok','detail':'Keine identische Datei vorhanden.'},
                {'label':'Text gelesen','status':'ok','detail':f"{len(doc['paragraphs'])} Absätze erkannt."},
                {'label':'Dokument erkannt','status':'ok','detail':recognized},
                {'label':'Gespeichert','status':'ok','detail':f'Version {no} gespeichert'+(f'; Version {prev["version_no"]} bleibt erhalten.' if prev else '.')}]
@@ -367,7 +366,7 @@ class Library:
         reqs=self.store.list('requirement');folders={k:[] for k in DOC_TYPES}
         for lib in self.store.list('library_doc'):
             docs=self._docs(lib);ids={d['id'] for d in docs};cur=self._current(lib,today)
-            folders.setdefault(lib['doc_type'],[]).append({'library_id':lib['id'],'title':lib['title'],'doc_type':lib['doc_type'],
+            folders.setdefault(lib['doc_type'],[]).append({'library_id':lib['id'],'title':lib['title'],'doc_type':lib['doc_type'],'description':lib.get('description'),
                 'current':self.summary(cur,today) if cur else None,'versions':[self.summary(d,today) for d in reversed(docs)],
                 'pending_requirements':sum(1 for r in reqs if r.get('source_id') in ids and r.get('status')=='pending')})
         return {'folders':[{'doc_type':k,'label':DOC_TYPES.get(k,k),'documents':v} for k,v in folders.items()]}
@@ -414,6 +413,32 @@ class Library:
         doc['withdrawn']={'reason':reason,'by':by,'at':now()}
         self.store.put('document',doc);self.store.event('library_withdraw',{'document_id':doc['id'],'reason':reason,'by':by})
         return doc
+
+    def created_requirements(self,ids):
+        """Requirements whose current or first version cites one of the given document versions."""
+        first={v['requirement_id']:v.get('source_id') for v in self.store.list('requirement_version') if v.get('version_no')==1}
+        return [r for r in self.store.list('requirement') if r.get('source_id') in ids or first.get(r['id']) in ids]
+
+    def delete(self,body):
+        """Removes a document with all versions, stored files and comparisons, and the requirements created from it."""
+        by=(body.get('by') or '').strip()
+        if not by:raise InputError('Name ist für das Löschen erforderlich.')
+        lib=self.store.get('library_doc',body.get('library_id') or '')
+        docs=self._docs(lib);ids={d['id'] for d in docs}
+        reqs=[r['id'] for r in self.created_requirements(ids)]
+        versions=[v['id'] for v in self.store.list('requirement_version') if v.get('requirement_id') in reqs]
+        diffs=[d['id'] for d in self.store.filtered('document_diff','library_id',lib['id'])]
+        reminders=[r['id'] for r in self.store.list('reminder') if (r.get('source') or {}).get('document_id') in ids]
+        self.store.delete_many([('library_doc',lib['id'])]+[('document',i) for i in ids]+[('requirement',i) for i in reqs]
+                               +[('requirement_version',i) for i in versions]+[('document_diff',i) for i in diffs]+[('reminder',i) for i in reminders])
+        for d in docs:
+            if not d.get('file_stored'):continue
+            try:self._path(d).unlink(missing_ok=True)
+            except (InputError,OSError):pass
+        # The audit log keeps what was removed and by whom.
+        self.store.event('library_delete',{'library_id':lib['id'],'title':lib['title'],'document_ids':sorted(ids),'requirement_ids':reqs,
+                                           'by':by,'reason':(body.get('reason') or '').strip()})
+        return {'library_id':lib['id'],'title':lib['title'],'versions':len(ids),'requirements':reqs}
 
     # --- Migration ---
     def migrate(self):

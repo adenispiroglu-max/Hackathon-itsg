@@ -156,7 +156,9 @@ def handler_for(service):
                 return self.send({'error':'Fremde Herkunft nicht erlaubt.'},403)
             try:
                 length=int(self.headers.get('Content-Length','0'))
-                if length<1 or length>7_500_000:return self.send({'error':'Ungültige Anfragegröße.'},413)
+                # Document uploads have no size limit; every other request stays small.
+                limit=None if urlparse(self.path).path=='/api/library/analyse' else 7_500_000
+                if length<1 or (limit and length>limit):return self.send({'error':'Ungültige Anfragegröße.'},413)
                 if self.headers.get_content_type()!='application/json':return self.send({'error':'JSON erwartet.'},415)
                 body=json.loads(self.rfile.read(length))
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
@@ -187,6 +189,7 @@ def handler_for(service):
                     elif path=='/api/library/analyse':result=service.library.analyse(body)
                     elif path=='/api/library/confirm':result=service.library.confirm(body)
                     elif path=='/api/library/withdraw':result=service.library.withdraw(body)
+                    elif path=='/api/library/delete':result=service.library.delete(body)
                     elif path=='/api/requirements/edit':result=service.review.edit(body)
                     elif path=='/api/requirements/prereview':result=service.review.schedule_prereview(body['id'])
                     elif path=='/api/requirements/accept-suggestion':result=service.review.accept_suggestion(body)

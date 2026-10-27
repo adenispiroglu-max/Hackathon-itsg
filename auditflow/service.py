@@ -279,6 +279,9 @@ class Service:
                     # The fixture checker implements the synthetic v1 rules only; never apply it to a newer source version.
                     result['status']='not_assessable'
                     result['note']+=f" Freigegebene Version {rule.get('version_no')} beruht auf einem neueren Quellstand; der Fixture-Prüfer implementiert nur {FIXTURE_SOURCE}."
+            elif result['requirement_id'] in ['C1','C2','C3','C4']:
+                # The requirement was deleted together with its source document: never count it as passed.
+                result['computed_status']=result['status'];result['status']='not_assessable';result['note']+=' Anforderung wurde mit ihrem Quelldokument gelöscht.'
             elif result['requirement_id'] in ['FORMAT','GROUND_STATE']:
                 result['source']={'document_id':'fixture','section_id':'inferred-layout','excerpt':'Sample-specific structural check; normative technical schema not verified.'}
             if parsed and result['requirement_id']=='C3':

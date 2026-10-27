@@ -1,6 +1,6 @@
 'use strict';
 /* "Quellen & KI": document library (folders by document type), upload dialog with live steps,
-   version detail, stored version comparison, text view, original file view/download, withdraw,
+   version detail, stored version comparison, text view, original file view/download, document delete,
    and the requirement detail with AI pre-review and human approval.
    Contract: .plans/dokumente-versionen-impl-contract.md (sections 2, 4, 5). Missing API fields
    render as empty states. Nothing here approves automatically; a quote match is no approval. */
@@ -41,8 +41,6 @@ function libStatus(v){
 }
 function libValidity(v){const from=v?.valid_from?dayDe(v.valid_from):null,until=v?.valid_until?dayDe(v.valid_until):null;if(!from&&!until)return 'Ab Upload · Gültigkeit nicht bestätigt';return (from?'ab '+from:'ab Upload')+(until?' bis '+until:'')+(v.validity_confirmed===false?' · nicht bestätigt':'');}
 const libVerName=v=>'Version '+(v?.version_label||v?.version_no||'—');
-const libShort=h=>{const s=String(h||'');return s.length>20?s.slice(0,12)+'…'+s.slice(-6):s;};
-const libHash=h=>h?`<span class="hash-field"><code title="${e(h)}">${e(libShort(h))}</code><button type="button" class="btn small" data-action="lib-copy" data-value="${e(h)}" aria-label="Fingerabdruck vollständig kopieren">Kopieren</button></span>`:'<span class="muted">—</span>';
 const libField=(label,value,tip='')=>`<div><dt>${e(label)}${tip?' '+tip:''}</dt><dd>${value}</dd></div>`;
 
 /* Highlight excerpts in text (whitespace- and case-tolerant, like the backend normalize). */
@@ -72,41 +70,51 @@ function libSideBySide(before,after,words,labels=['Vorher','Nachher']){
 }
 
 /* Page */
+function libDescription(d){
+ if(d.description)return d.description;
+ const first=state.documents.find(x=>x.id===libList(d.versions).slice(-1)[0]?.id)||{};
+ if(first.migrated&&first.note)return first.note;
+ const cur=state.documents.find(x=>x.id===d.current?.id)||first;const text=libList(cur.sections).map(x=>x.text).join(' ').replace(/\s+/g,' ').trim();
+ return text?(text.length>140?text.slice(0,140)+' …':text):'Keine Beschreibung.';
+}
 function librarySources(){
- const lst=libListing(),params=hashParams(),all=libAllDocs(lst);
+ const lst=libListing(),params=hashParams(),all=libAllDocs(lst).sort((a,b)=>String(a.title).localeCompare(String(b.title),'de'));
  const diffId=params.get('diff');const dd=diffId?libDiffGet(diffId):null;
- let doc=all.find(d=>d.library_id===params.get('doc'));
  const wantVersion=params.get('version')||(dd?.data?.new_version_id)||null;
+ let doc=all.find(d=>d.library_id===params.get('doc'));
  if(!doc&&wantVersion)doc=all.find(d=>d.versions.some(v=>v.id===wantVersion));
  if(!doc&&dd?.data?.library_id)doc=all.find(d=>d.library_id===dd.data.library_id);
- if(!doc)doc=all[0];
- const folders=libList(lst.folders).map(f=>{const docs=libList(f.documents);return `<details class="lib-folder" ${docs.length?'open':''}><summary><span class="lib-folder-name">${e(f.label||LIB_TYPES[f.doc_type]||f.doc_type)}</span><span class="subtle-chip">${docs.length}</span></summary>${docs.length?docs.map(d=>{const v=d.current||libList(d.versions)[0];const n=Number(d.pending_requirements)||0;return `<a class="lib-doc-row ${doc&&d.library_id===doc.library_id?'selected':''}" href="#sources?doc=${libEnc(d.library_id)}"><span class="doc-row-icon">${uiIcon('document')}</span><span class="cert-row-main"><strong>${e(d.title)}</strong><small>${e(libVerName(v))} · ${e(libValidity(v))}</small></span><span class="cert-row-side">${v?libStatus(v):''}${n?`<span class="pill pending">${n===1?'1 Anforderung wartet':n+' Anforderungen warten'} auf Freigabe</span>`:''}</span></a>`;}).join(''):'<p class="muted lib-folder-empty">Keine Dokumente.</p>'}</details>`;}).join('');
- const notices=(lst.derived?`<div class="notice">${lst.loading?'Dokumentenablage wird geladen …':'Die Dokumentenablage ist vom Backend noch nicht verfügbar'+(lst.error?' ('+e(lst.error)+')':'')+'. Angezeigt werden die vorhandenen Dokumente als Version 1, ohne Originaldatei.'}</div>`:'');
- return heading('Backend 1 · Quellen & Extraktion','Jede Regel beginnt mit einer Quelle.','Dokumente mit allen Versionen. Ein Upload erkennt Duplikate und neue Versionen und vergleicht automatisch mit dem bisherigen Stand.',btn('+ Dokument hochladen','lib-upload','','primary'))+notices+
- `<div class="lib-layout"><section class="panel lib-tree" aria-label="Dokumentenablage"><div class="panel-header"><h2>Dokumentenablage</h2><span class="subtle-chip">${all.length===1?'1 Dokument':all.length+' Dokumente'}</span></div>${all.length?folders:`<div class="cert-empty"><strong>Noch keine Dokumente.</strong><p>Die erste Quelle über „+ Dokument hochladen“ hinzufügen.</p></div>`}</section><div class="lib-main">${dd&&!doc?libDiffPanel(diffId):''}${doc?libDocDetail(doc,params,diffId):''}</div></div>`;
+ const notices=(lst.derived?`<div class="notice">${lst.loading?'Dokumente werden geladen …':'Die Dokumentenablage ist vom Backend noch nicht verfügbar'+(lst.error?' ('+e(lst.error)+')':'')+'. Angezeigt werden die vorhandenen Dokumente als Version 1, ohne Originaldatei.'}</div>`:'');
+ // Detail view: one document with all versions and all requirements extracted from it.
+ if(doc||dd)return `<div class="actions cust-back"><a class="btn small" href="#sources">← Alle Dokumente</a></div>`+notices+(dd&&!doc?libDiffPanel(diffId):'')+(doc?libDocDetail(doc,params,diffId):'');
+ const rows=all.map(d=>{const v=d.current||libList(d.versions)[0];const n=Number(d.pending_requirements)||0;const count=libList(d.versions).length;const reqs=state.requirements.filter(r=>d.versions.some(x=>x.id===r.source_id)).length;
+  return `<div class="lib-doc-row lib-list-row"><span class="doc-row-icon">${uiIcon('document')}</span><span class="cert-row-main"><strong>${e(d.title)}</strong><small class="lib-desc">${e(libDescription(d))}</small><small>${e(libVerName(v))} · ${count===1?'1 Version':count+' Versionen'} · ${reqs===1?'1 Anforderung':reqs+' Anforderungen'}</small></span><span class="cert-row-side">${v?libStatus(v):''}${n?`<span class="pill pending">${n} wartet auf Freigabe</span>`:''}<a class="btn small" href="#sources?doc=${libEnc(d.library_id)}">Detaillierte Informationen</a></span></div>`;}).join('');
+ return heading('Backend 1 · Quellen & Extraktion','Jede Regel beginnt mit einer Quelle.','Alle Dokumente mit Version und Kurzbeschreibung. Ein Upload erkennt Duplikate und neue Versionen und vergleicht automatisch mit dem bisherigen Stand.',btn('+ Dokument hochladen','lib-upload','','primary'))+notices+
+ `<label class="drop-box drop-page" for="lib-page-file" data-drop="page"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><strong>Dokument hochladen</strong><span>Datei hierher ziehen oder klicken · TXT, MD, PDF oder DOCX</span><input id="lib-page-file" class="drop-input" type="file" accept=".txt,.md,.pdf,.docx"></label>`+
+ `<section class="panel" aria-label="Dokumente"><div class="panel-header"><h2>Dokumente</h2><span class="subtle-chip">${all.length===1?'1 Dokument':all.length+' Dokumente'}</span></div>${all.length?rows:`<div class="cert-empty"><strong>Noch keine Dokumente.</strong><p>Die erste Quelle über „+ Dokument hochladen“ hinzufügen.</p></div>`}</section>`;
 }
 function libDocDetail(doc,params,diffId){
  const versions=doc.versions;const cur=doc.current||versions[0];
  const v=versions.find(x=>x.id===params.get('version'))||(diffId&&libDiffs[diffId]?.data?versions.find(x=>x.id===libDiffs[diffId].data.new_version_id):null)||cur||versions[0];
  if(!v)return `<section class="panel"><h2>${e(doc.title)}</h2><p class="muted">Keine Versionen.</p></section>`;
  const full=state.documents.find(d=>d.id===v.id)||{};
- const reqs=state.requirements.filter(r=>r.source_id===v.id||r.source_version_id===v.id);
  const allReqs=state.requirements.filter(r=>versions.some(x=>x.id===r.source_id));
  const pending=allReqs.filter(r=>r.status==='pending').length;
  const base='#sources?doc='+libEnc(doc.library_id)+'&version=';
  const table=`<div class="table-wrap"><table><thead><tr><th>Version</th><th>Hochgeladen</th><th>Gültigkeit</th><th>Status</th><th></th></tr></thead><tbody>${versions.map(x=>`<tr class="${x.id===v.id?'lib-selected-row':''}"><td><strong>${e(x.version_label||'—')}</strong><br><small class="muted">Nr. ${e(x.version_no||'—')}${cur&&x.id===cur.id?' · aktueller Stand':''}</small></td><td>${x.uploaded_at?e(custFmt(x.uploaded_at)):'<span class="muted">Altbestand</span>'}</td><td>${e(libValidity(x))}</td><td><div class="lib-pills">${libStatus(x)}</div></td><td>${x.id===v.id?'<span class="subtle-chip">ausgewählt</span>':`<a class="btn small" href="${base+libEnc(x.id)}">Ansehen</a>`}</td></tr>`).join('')}</tbody></table></div>`;
  const ext=v.file_ext||full.file_ext||full.kind;const stored=!!v.file_stored;
- const actions=`${btn(ext==='pdf'&&stored?'PDF öffnen ↗':'Text ansehen','lib-open',`data-id="${e(v.id)}" data-pdf="${ext==='pdf'&&stored?1:0}"`,'small')}${stored?btn('Herunterladen','lib-download',`data-id="${e(v.id)}" data-name="${e(v.file_name||full.name||'dokument')}"`,'small'):''}${v.withdrawn||doc.library_id.startsWith('legacy:')?'':btn('Zurückziehen','lib-withdraw',`data-id="${e(v.id)}"`,'small danger')}`;
+ const actions=`${btn(ext==='pdf'&&stored?'PDF öffnen ↗':'Text ansehen','lib-open',`data-id="${e(v.id)}" data-pdf="${ext==='pdf'&&stored?1:0}"`,'small')}${stored?btn('Herunterladen','lib-download',`data-id="${e(v.id)}" data-name="${e(v.file_name||full.name||'dokument')}"`,'small'):''}`;
  const pr=full.page_range||v.page_range;
- const info=`<dl class="field-list lib-fields">${libField('Datei',e(v.file_name||full.name||'—')+(stored?'':' <span class="pill">Originaldatei nicht gespeichert</span>'))}${libField('Dokumenttyp',e(LIB_TYPES[doc.doc_type]||doc.doc_type||'Sonstige'))}${libField('Gültig ab',v.valid_from?e(dayDe(v.valid_from)):'ab Upload')}${libField('Gültig bis',v.valid_until?e(dayDe(v.valid_until)):'läuft nicht ab')}${libField('Gültigkeit',v.validity_confirmed?'bestätigt':'Gültigkeit nicht bestätigt')}${libField('Status',`<span class="lib-pills">${libStatus(v)}</span>`)}${libField('Hochgeladen',v.uploaded_at?e(custFmt(v.uploaded_at)):'Altbestand (vor der Dokumentenablage importiert)')}${libField('Absätze',e(v.paragraphs??libList(full.paragraphs).length??'—'))}${libField('Fingerabdruck (SHA-256)',libHash(v.sha256||full.sha256),term('fingerabdruck'))}${libField('Importumfang',pr?e(`Seiten ${pr.from}–${pr.to} (Altbestand, nur lesbar)`):'vollständiges Dokument')}</dl>`;
+ const info=`<dl class="field-list lib-fields">${libField('Datei',e(v.file_name||full.name||'—')+(stored?'':' <span class="pill">Originaldatei nicht gespeichert</span>'))}${libField('Dokumenttyp',e(LIB_TYPES[doc.doc_type]||doc.doc_type||'Sonstige'))}${libField('Gültig ab',v.valid_from?e(dayDe(v.valid_from)):'ab Upload')}${libField('Gültig bis',v.valid_until?e(dayDe(v.valid_until)):'läuft nicht ab')}${libField('Gültigkeit',v.validity_confirmed?'bestätigt':'Gültigkeit nicht bestätigt')}${libField('Status',`<span class="lib-pills">${libStatus(v)}</span>`)}${libField('Hochgeladen',v.uploaded_at?e(custFmt(v.uploaded_at)):'Altbestand (vor der Dokumentenablage importiert)')}${libField('Absätze',e(v.paragraphs??libList(full.paragraphs).length??'—'))}${libField('Importumfang',pr?e(`Seiten ${pr.from}–${pr.to} (Altbestand, nur lesbar)`):'vollständiges Dokument')}</dl>`;
  const withdrawn=v.withdrawn?`<div class="note"><strong>Zurückgezogen</strong> von ${e(v.withdrawn.by)} am ${e(custFmt(v.withdrawn.at))}: ${e(v.withdrawn.reason)}. Die Version bleibt sichtbar, zählt aber nicht mehr als aktueller Stand.</div>`:'';
- const reqList=`<section class="panel"><div class="panel-header"><div><h2>Verknüpfte Anforderungen</h2><p class="muted">Aus dieser Version${pending?` · ${pending} im Dokument warten auf Freigabe`:''}</p></div>${pending?`<a class="btn small" href="#requirements?doc=${libEnc(v.id)}">Zur Freigabe</a>`:''}</div>${reqs.length?reqs.map(r=>`<a class="doc-row" href="#requirements?id=${libEnc(r.id)}"><div class="cert-row-main"><strong>${e(r.id)} <span>· ${e(r.title)}</span></strong><small>${r.version_no?'Version '+e(r.version_no)+' · ':''}${e(r.section_id||'')}</small></div><div class="cert-row-side lib-pills">${reqAiBadge(r)}${reqApprovalBadge(r)}</div></a>`).join(''):'<p class="muted">Noch keine Anforderungen aus dieser Version. Unten aus einem Quellabschnitt Vorschläge erstellen.</p>'}</section>`;
+ const verOf=id=>versions.find(x=>x.id===id);
+ const reqList=`<section class="panel"><div class="panel-header"><div><h2>Extrahierte Anforderungen</h2><p class="muted">Aus allen Versionen dieses Dokuments${pending?` · ${pending} warten auf Freigabe`:''}</p></div>${pending?`<a class="btn small" href="#requirements?doc=${libEnc(v.id)}">Zur Freigabe</a>`:''}</div>${allReqs.length?allReqs.map(r=>`<a class="doc-row" href="#requirements?id=${libEnc(r.id)}"><div class="cert-row-main"><strong>${e(r.id)} <span>· ${e(r.title)}</span></strong><small>${r.version_no?'Anforderung v'+e(r.version_no)+' · ':''}zitiert ${e(libVerName(verOf(r.source_id)))}</small></div><div class="cert-row-side lib-pills">${reqAiBadge(r)}${reqApprovalBadge(r)}</div></a>`).join(''):'<p class="muted">Noch keine Anforderungen aus diesem Dokument. Unten aus einem Quellabschnitt Vorschläge erstellen.</p>'}</section>`;
  const sections=libList(full.sections);
  if(sections.length){if(activeDoc!==v.id){activeDoc=v.id;activeSection=null;}if(!sections.some(s=>s.id===activeSection))activeSection=sections[0].id;}
  const sec=sections.find(s=>s.id===activeSection);
  const drafting=sections.length?`<section class="panel"><h2>Anforderungen aus einem Abschnitt entwerfen</h2><div class="field"><label for="source-section">Quellabschnitt</label><select id="source-section">${sections.map(s=>`<option value="${e(s.id)}" ${s.id===sec?.id?'selected':''}>${e(s.location||s.id)}</option>`).join('')}</select></div><div class="source-text">${e(sec?.text||'Kein Text')}</div><div class="actions">${btn('Wörtliche Vorschläge','draft','data-mode="offline"','small')}${btn('Mit KI extrahieren','draft','data-mode="live"','small primary')}${btn('KI-Verbindung testen','model-test','','small')}</div><p class="muted">Offline: wörtliche Textkandidaten. KI: Modellaufruf, Ausgabeprüfung und Quellenabgleich. Alle Vorschläge bleiben offen.</p></section>`:'';
  const diff=v.diff_id?libDiffPanel(v.diff_id):(versions.length>1&&v.version_no>1?'<section class="panel"><h2>Vergleich zur Vorversion</h2><p class="muted">Kein gespeicherter Vergleich: keine inhaltlichen Änderungen gefunden oder Vergleich nicht verfügbar.</p></section>':'');
- return `<section class="panel"><div class="panel-header"><div><div class="lib-type">${e(LIB_TYPES[doc.doc_type]||'Sonstige')}</div><h2>${e(doc.title)}</h2><p class="muted">${versions.length===1?'1 Version':versions.length+' Versionen'}${cur?' · aktueller Stand '+e(libVerName(cur)):''} ${term('dokumentversion')}</p></div>${btn('+ Neue Version hochladen','lib-upload',`data-type="${e(doc.doc_type)}"`,'small')}</div>${table}</section>`+
+ return `<section class="panel"><div class="panel-header"><div><div class="lib-type">${e(LIB_TYPES[doc.doc_type]||'Sonstige')}</div><h2>${e(doc.title)}</h2><p class="muted">${versions.length===1?'1 Version':versions.length+' Versionen'}${cur?' · aktueller Stand '+e(libVerName(cur)):''} ${term('dokumentversion')}</p></div>${btn('+ Neue Version hochladen','lib-upload',`data-type="${e(doc.doc_type)}"`,'small')}${doc.library_id.startsWith('legacy:')?'':btn('Dokument löschen','lib-delete',`data-id="${e(doc.library_id)}"`,'small danger')}</div>${table}</section>`+
  `<section class="panel" id="lib-version"><div class="panel-header"><h2>${e(libVerName(v))}</h2><div class="actions">${actions}</div></div>${withdrawn}${info}${full.note?`<p class="muted">${e(full.note)}</p>`:''}</section>`+diff+reqList+drafting+
  `<section class="panel">${techDetails({'Dokument-ID (Version)':v.id,'Ablage-ID':doc.library_id.startsWith('legacy:')?'—':doc.library_id,'Fingerabdruck (SHA-256)':v.sha256||full.sha256,'Dateiformat':ext,'Vergleich-ID':v.diff_id})}</section>`;
 }
@@ -142,14 +150,18 @@ async function libTextView(id,needles=[]){
 async function libFileBlob(id,download){const r=await fetch('/api/library/version/'+libEnc(id)+'/file'+(download?'?download=1':''),{headers:token()?{Authorization:'Bearer '+token()}:{}});if(!r.ok){let m='Datei nicht verfügbar.';try{m=(await r.json()).error||m;}catch{}throw Error(m);}return r.blob();}
 async function libOpenPdf(id){const w=window.open('','_blank');try{const blob=await libFileBlob(id,false);const url=URL.createObjectURL(new Blob([blob],{type:'application/pdf'}));if(w)w.location.href=url;else window.location.assign(url);setTimeout(()=>URL.revokeObjectURL(url),120000);}catch(err){if(w)w.close();throw err;}}
 async function libDownload(id,name){const blob=await libFileBlob(id,true);const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name||'dokument';a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);}
-function libWithdrawDialog(id){const d=state.documents.find(x=>x.id===id);modal(`<div class="eyebrow">VERSION ZURÜCKZIEHEN</div><h2>${e(d?.name||id)}</h2><p class="muted">Versionen werden nie gelöscht. Eine zurückgezogene Version bleibt sichtbar, zählt aber nicht mehr als aktueller Stand. Darauf beruhende Freigaben werden derzeit nicht automatisch ungültig (offener Punkt).</p><form id="lib-withdraw-form" class="cust-form"><input type="hidden" name="document_id" value="${e(id)}"><div class="field"><label for="lib-wd-by">Dein Name</label><input id="lib-wd-by" name="by" required maxlength="100" autocomplete="name" value="${e(custReviewer())}"></div><div class="field"><label for="lib-wd-reason">Begründung</label><textarea id="lib-wd-reason" name="reason" required maxlength="2000" rows="4"></textarea></div><button class="btn danger">Zurückziehen</button></form>`);}
-async function libCopy(value){try{await navigator.clipboard.writeText(value);}catch{const t=document.createElement('textarea');t.value=value;document.body.append(t);t.select();document.execCommand('copy');t.remove();}toast('Fingerabdruck kopiert.');}
+function libDeleteDialog(id){
+ const doc=libAllDocs(libListing()).find(d=>d.library_id===id);if(!doc)throw Error('Dokument nicht gefunden.');
+ const ids=new Set(doc.versions.map(v=>v.id));const reqs=state.requirements.filter(r=>ids.has(r.source_id));const reqIds=new Set(reqs.map(r=>r.id));
+ const cases=state.cases.filter(c=>(c.requirement_ids||[]).some(x=>reqIds.has(x)));
+ modal(`<div class="eyebrow">DOKUMENT LÖSCHEN</div><h2>${e(doc.title)}</h2><div class="note">Das Löschen kann nicht rückgängig gemacht werden. Im Prüfprotokoll bleibt vermerkt, wer was gelöscht hat.</div><p><strong>Gelöscht werden:</strong></p><ul class="lib-delete-list"><li>${doc.versions.length===1?'1 Version':doc.versions.length+' Versionen'} mit Originaldateien und gespeicherten Vergleichen</li><li>${reqs.length===1?'1 Anforderung':reqs.length+' Anforderungen'} aus diesem Dokument, mit Versionen und Freigaben${reqs.length?`<ul>${reqs.slice(0,8).map(r=>`<li>${e(String(r.title||r.id).slice(0,90))}</li>`).join('')}${reqs.length>8?`<li>und ${reqs.length-8} weitere</li>`:''}</ul>`:''}</li></ul>${cases.length?`<p class="muted">${cases.length===1?'1 Testfall prüft':cases.length+' Testfälle prüfen'} diese Anforderungen. Die Testfälle bleiben erhalten; für gelöschte Anforderungen liefern sie nur noch „nicht beurteilbar“.</p>`:''}<form id="lib-delete-form" class="cust-form"><input type="hidden" name="library_id" value="${e(id)}"><div class="field"><label for="lib-del-by">Dein Name</label><input id="lib-del-by" name="by" required maxlength="100" autocomplete="name" value="${e(custReviewer())}"></div><div class="field"><label for="lib-del-reason">Grund (optional)</label><input id="lib-del-reason" name="reason" maxlength="500"></div><button class="btn danger">Endgültig löschen</button></form>`);
+}
 
 /* Upload dialog with live steps */
 function libUploadDialog(type){
  libUpload={phase:'form',steps:LIB_STEPS.map(()=>({status:'wait',detail:''})),analyse:null,result:null};
  const opts=Object.entries(LIB_TYPES).map(([k,v])=>`<option value="${k}" ${k===type?'selected':''}>${e(v)}</option>`).join('');
- modal(`<div class="eyebrow">QUELLEN & KI</div><h2>Dokument hochladen</h2><p class="muted">TXT, MD, PDF oder DOCX · maximal 5 MB · immer vollständiger Import · keine automatische Freigabe.</p><form id="lib-upload-form" class="cust-form"><div class="dropzone"><label for="lib-file" class="sr-only">Datei</label><input id="lib-file" name="file" type="file" accept=".txt,.md,.pdf,.docx" required></div><div class="form-row"><div class="field"><label for="lib-label">Versionsbezeichnung (Pflicht)</label><input id="lib-label" name="version_label" required maxlength="100" placeholder="z. B. 2027-01"><small>Die Anwendung errät die Version nie.</small></div><div class="field"><label for="lib-type">Dokumenttyp</label><select id="lib-type" name="doc_type"><option value="">Vorschlag nach Erkennung</option>${opts}</select></div></div><div class="form-row"><div class="field"><label for="lib-from">Gültig ab (optional)</label><input id="lib-from" name="valid_from" type="date"></div><div class="field"><label for="lib-until">Gültig bis (optional)</label><input id="lib-until" name="valid_until" type="date"></div></div><small class="muted">Ohne Datum gilt die Version ab dem Upload, läuft nicht ab und erhält den Hinweis „Gültigkeit nicht bestätigt“.</small><div id="lib-dates"></div><div class="actions lib-upload-actions"><button class="btn primary" id="lib-analyse">Prüfen und weiter</button></div></form><ol class="lib-steps" id="lib-steps" aria-live="polite"></ol><div id="lib-choice"></div>`);
+ modal(`<div class="eyebrow">QUELLEN & KI</div><h2>Dokument hochladen</h2><p class="muted">TXT, MD, PDF oder DOCX · immer vollständiger Import · keine automatische Freigabe.</p><form id="lib-upload-form" class="cust-form"><label class="drop-box" for="lib-file" data-drop="dialog"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg><strong>Datei hierher ziehen</strong><span>oder klicken, um eine Datei auszuwählen</span><span class="drop-name" id="lib-file-name">Keine Datei ausgewählt</span><input id="lib-file" class="drop-input" name="file" type="file" accept=".txt,.md,.pdf,.docx" required></label><div class="form-row"><div class="field"><label for="lib-label">Versionsbezeichnung (Pflicht)</label><input id="lib-label" name="version_label" required maxlength="100" placeholder="z. B. 2027-01"><small>Die Anwendung errät die Version nie.</small></div><div class="field"><label for="lib-type">Dokumenttyp</label><select id="lib-type" name="doc_type"><option value="">Vorschlag nach Erkennung</option>${opts}</select></div></div><div class="form-row"><div class="field"><label for="lib-from">Gültig ab (optional)</label><input id="lib-from" name="valid_from" type="date"></div><div class="field"><label for="lib-until">Gültig bis (optional)</label><input id="lib-until" name="valid_until" type="date"></div></div><small class="muted">Ohne Datum gilt die Version ab dem Upload, läuft nicht ab und erhält den Hinweis „Gültigkeit nicht bestätigt“.</small><div class="field"><label for="lib-desc">Kurzbeschreibung (optional)</label><input id="lib-desc" name="description" maxlength="300" placeholder="Worum geht es in diesem Dokument?"><small>Erscheint in der Dokumentenliste. Leer lassen, um eine bestehende Beschreibung zu behalten.</small></div><div id="lib-dates"></div><div class="actions lib-upload-actions"><button class="btn primary" id="lib-analyse">Prüfen und weiter</button></div></form><ol class="lib-steps" id="lib-steps" aria-live="polite"></ol><div id="lib-choice"></div>`);
  libStepsRender();
 }
 function libStepsRender(){
@@ -176,13 +188,13 @@ async function libAnalyse(form){
  if(!libUpload||!['form','duplicate'].includes(libUpload.phase))return;
  const file=form.querySelector('#lib-file').files[0];const data=Object.fromEntries(new FormData(form));
  if(!file)throw Error('Bitte Datei auswählen.');if(!String(data.version_label||'').trim())throw Error('Versionsbezeichnung fehlt.');
- libUpload.steps=LIB_STEPS.map(()=>({status:'wait',detail:''}));libSetStep(0,'run','Fingerabdruck wird berechnet …');libSetStep(1,'run','Text wird gelesen …');
+ libUpload.steps=LIB_STEPS.map(()=>({status:'wait',detail:''}));libSetStep(0,'run','Datei wird geprüft …');libSetStep(1,'run','Text wird gelesen …');
  let a;
- try{a=await api('library/analyse',{name:file.name,base64:await file64(file),version_label:String(data.version_label).trim(),doc_type:data.doc_type||undefined,valid_from:data.valid_from||undefined,valid_until:data.valid_until||undefined});}
+ try{a=await api('library/analyse',{name:file.name,base64:await file64(file,Infinity),version_label:String(data.version_label).trim(),doc_type:data.doc_type||undefined,valid_from:data.valid_from||undefined,valid_until:data.valid_until||undefined});}
  catch(err){const textErr=/OCR|Text|lesen|PDF|DOCX/i.test(err.message);if(textErr){libSetStep(0,'ok','Datei angenommen.');libSetStep(1,'fail',e(err.message));}else{libSetStep(0,'fail',e(err.message));libSetStep(1,'wait');}throw err;}
  libUpload.analyse=a;
  if(a.duplicate){const d=a.duplicate;const href='#sources?'+(d.library_id?'doc='+libEnc(d.library_id)+'&':'')+'version='+libEnc(d.document_id);libSetStep(0,'fail',`${e(d.message||`Diese Datei ist bereits als „${d.title}“ Version ${d.version_label} vorhanden.`)} <a href="${href}">Zum vorhandenen Eintrag</a>. Es wurde nichts gespeichert; Metadaten dort korrigieren.`);for(let i=1;i<LIB_STEPS.length;i++)libSetStep(i,'skip');libUpload.phase='duplicate';return;}
- libSetStep(0,'ok','Fingerabdruck '+`<code>${e(libShort(a.sha256))}</code>`+'; keine identische Datei vorhanden.');
+ libSetStep(0,'ok','Keine identische Datei vorhanden.');
  libSetStep(1,'ok',e((Number(a.paragraphs)||0)+' Absätze erkannt.'));
  libSetStep(2,'run',a.suggestion?'Treffer gefunden · Bestätigung nötig':'Kein Treffer · neues Dokument oder Zuordnung wählen');
  form.querySelector('#lib-file').disabled=true;form.querySelector('#lib-label').disabled=true;form.querySelector('#lib-analyse').hidden=true;
@@ -202,7 +214,7 @@ async function libConfirm(target){
  document.querySelectorAll('#lib-choice button').forEach(b=>b.disabled=true);
  for(const i of [3,4,5])libSetStep(i,'run');
  let res;
- try{res=await api('library/confirm',{upload_id:a.upload_id,library_id,title,doc_type:data.doc_type||undefined,valid_from:data.valid_from||null,valid_until:data.valid_until||null});}
+ try{res=await api('library/confirm',{upload_id:a.upload_id,library_id,title,doc_type:data.doc_type||undefined,valid_from:data.valid_from||null,valid_until:data.valid_until||null,description:data.description||undefined});}
  catch(err){libSetStep(3,'fail',e(err.message));libSetStep(4,'wait');libSetStep(5,'wait');document.querySelectorAll('#lib-choice button').forEach(b=>b.disabled=false);throw err;}
  libUpload.result=res;
  const steps=libList(res.steps);
@@ -277,10 +289,9 @@ document.addEventListener('click',async event=>{
  const action=b.dataset.action;if(b.tagName==='BUTTON')b.disabled=true;
  try{
   if(action==='lib-upload')libUploadDialog(b.dataset.type);
-  else if(action==='lib-copy')await libCopy(b.dataset.value);
   else if(action==='lib-open'){if(b.dataset.pdf==='1')await libOpenPdf(b.dataset.id);else await libTextView(b.dataset.id);}
   else if(action==='lib-download')await libDownload(b.dataset.id,b.dataset.name);
-  else if(action==='lib-withdraw')libWithdrawDialog(b.dataset.id);
+  else if(action==='lib-delete')libDeleteDialog(b.dataset.id);
   else if(action==='lib-text'){const r=state.requirements.find(x=>x.id===b.dataset.req);const marks=libList(r?.ai_review?.marks?.source).map(m=>({text:m.excerpt,cls:'ai-mark'}));await libTextView(b.dataset.id,[...marks,...(r?.source_excerpt?[{text:r.source_excerpt,cls:'cite-mark'}]:[])]);}
   else if(action==='lib-reclassify'){const reason=prompt('Warum ist diese Änderung fachlich? (optional)');if(reason===null)return;await api('requirements/reclassify',{diff_id:b.dataset.diff,change_id:b.dataset.change,classification:'fachlich',reason});delete libDiffs[b.dataset.diff];await libReload();toast('Änderung als fachlich markiert. Betroffene Anforderungen brauchen eine neue Freigabe.');}
   else if(action==='lib-date'){const el=document.getElementById(b.dataset.field==='valid_until'?'lib-until':'lib-from');if(el){el.value=b.dataset.value;el.focus();}}
@@ -301,7 +312,7 @@ document.addEventListener('submit',async event=>{
  try{
   if(data.reviewer!==undefined)custRemember(String(data.reviewer).trim());
   if(id==='lib-upload-form')await libAnalyse(form);
-  else if(id==='lib-withdraw-form'){custRemember(String(data.by).trim());await api('library/withdraw',{document_id:data.document_id,reason:data.reason,by:data.by});close();await libReload();toast('Version zurückgezogen. Sie bleibt sichtbar.');}
+  else if(id==='lib-delete-form'){custRemember(String(data.by).trim());const r=await api('library/delete',{library_id:data.library_id,by:data.by,reason:data.reason});close();location.hash='#sources';await libReload();toast(`„${r.title}“ gelöscht · ${r.requirements.length===1?'1 Anforderung':r.requirements.length+' Anforderungen'} entfernt.`);}
   else if(id==='lib-editorial-form'){const ids=[...document.querySelectorAll('input[name="change_ids"][form="lib-editorial-form"]:checked')].map(x=>x.value);if(!ids.length)throw Error('Keine redaktionelle Änderung ausgewählt.');await api('requirements/editorial-accept',{diff_id:data.diff_id,reviewer:data.reviewer,note:data.note,change_ids:ids});await libReload();toast(ids.length===1?'1 redaktionelle Änderung übernommen.':ids.length+' redaktionelle Änderungen übernommen.');}
   else if(id==='lib-approve-form'){const approve=button?.value==='approve';if(approve&&form.dataset.against==='1'&&String(data.note||'').trim().length<20)throw Error('Begründung zur KI-Empfehlung erforderlich (offene Frage beantworten).');await api('review',{kind:'requirement',id:data.id,reviewer:data.reviewer,note:data.note,approve});await libReload();toast('Prüfentscheidung dokumentiert.');}
   else if(id==='lib-edit-form'){const lines=v=>String(v||'').split('\n').map(x=>x.trim()).filter(Boolean);await api('requirements/edit',{id:data.id,title:data.title,criterion:data.criterion,conditions:lines(data.conditions),exceptions:lines(data.exceptions),source_excerpt:data.source_excerpt,reason:data.reason});await libReload();toast('Neue Version gespeichert. KI-Vorprüfung und Freigabe sind erneut nötig.');}
@@ -314,3 +325,18 @@ setInterval(async()=>{
  libPollBusy=true;try{const fresh=await api('state');const nr=fresh.requirements.find(x=>x.id===id);if(JSON.stringify(nr?.ai_review)!==JSON.stringify(r.ai_review)){state=fresh;delete libReqVersions[id];libRerender(['requirements']);}}catch{}finally{libPollBusy=false;}
 },2500);
 if(state&&['sources','requirements'].includes(route()))render();
+
+/* Drag and drop: the dialog box fills its file input; the page box opens the dialog with the file. */
+function libSetFile(input,file){const dt=new DataTransfer();dt.items.add(file);input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));}
+function libPageFile(file){if(!file)return;libUploadDialog();const input=document.getElementById('lib-file');if(input)libSetFile(input,file);document.getElementById('lib-label')?.focus();}
+document.addEventListener('change',event=>{
+ if(event.target.id==='lib-file'){const n=document.getElementById('lib-file-name'),f=event.target.files[0];if(n)n.textContent=f?f.name:'Keine Datei ausgewählt';event.target.closest('.drop-box')?.classList.toggle('has-file',!!f);}
+ else if(event.target.id==='lib-page-file'){libPageFile(event.target.files[0]);event.target.value='';}
+});
+document.addEventListener('dragover',event=>{const box=event.target.closest?.('.drop-box');if(!box||box.querySelector('input:disabled'))return;event.preventDefault();box.classList.add('dragging');});
+document.addEventListener('dragleave',event=>{const box=event.target.closest?.('.drop-box');if(box&&!box.contains(event.relatedTarget))box.classList.remove('dragging');});
+document.addEventListener('drop',event=>{
+ const box=event.target.closest?.('.drop-box');if(!box)return;event.preventDefault();box.classList.remove('dragging');
+ const file=event.dataTransfer?.files?.[0];if(!file||box.querySelector('input:disabled'))return;
+ if(box.dataset.drop==='page')libPageFile(file);else libSetFile(box.querySelector('input'),file);
+});

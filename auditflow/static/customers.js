@@ -112,7 +112,8 @@ function custVersionPage(id){
  (v.recheck?`<div class="note">Freigegeben · betroffen von Erinnerung „${e(v.recheck.title)}“ ab ${e(dayDe(v.recheck.effective_date))}. Die frühere Freigabe bleibt in der Historie. Prüfung erneut starten.</div>`:'')+
  '<div class="notice">Testergebnisse sind Nachweise, keine Entscheidung. Nichts wird automatisch freigegeben.</div>'+
  `<div class="grid-even"><section class="panel"><div class="panel-header"><h2>Freigabe-Voraussetzungen</h2>${v.gate?`<span class="pill ${v.gate.ok?'pass':'fail'}">${v.gate.ok?'Erfüllt':'Blockiert'}</span>`:''}</div>${custGate(v)}</section><section class="panel"><h2>Historie</h2>${custHistory(v)}</section></div>`+
- custEvidence(v,d)+custSubmissions(v)+custPackages(v);
+ // Test package areas are hidden until their new placement is decided; custPackages stays for that.
+ custEvidence(v,d)+custSubmissions(v);
 }
 
 /* Dialogs */
