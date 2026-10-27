@@ -17,7 +17,7 @@ class ModelError(RuntimeError):
 class Model:
     def __init__(self, transport=None):
         self.url=os.environ.get('AUDITFLOW_MODEL_URL','https://hip-gw.hessian.ai/v1/chat/completions')
-        self.model=os.environ.get('AUDITFLOW_MODEL','vllm/GLM-Flash-Latest')
+        self.model=os.environ.get('AUDITFLOW_MODEL','vllm/GLM-Flash:Latest')
         self.key=os.environ.get('HAI_API_KEY','')
         self.transport=transport or urllib.request.urlopen
 

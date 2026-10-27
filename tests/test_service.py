@@ -110,6 +110,17 @@ class ServiceTests(unittest.TestCase):
         for a,b in zip(events,events[1:]):self.assertEqual(b['prev'],a['hash'])
 
 class ModelTests(unittest.TestCase):
+    def test_hessian_curl_contract_and_explicit_override(self):
+        def transport(request,timeout):
+            self.assertEqual(request.full_url,'https://hip-gw.hessian.ai/v1/chat/completions')
+            self.assertEqual(request.get_method(),'POST');self.assertEqual(timeout,45)
+            self.assertEqual(request.get_header('Authorization'),'Bearer synthetic-contract-token')
+            self.assertEqual(json.loads(request.data)['model'],'vllm/GLM-Flash:Latest')
+            return io.BytesIO(b'{"choices":[{"message":{"content":"Synthetic reply"}}]}')
+        with patch.dict(os.environ,{'HAI_API_KEY':'synthetic-contract-token'},clear=True):
+            m=Model(transport=transport);self.assertEqual(m.call('Synthetic system','Synthetic question'),'Synthetic reply')
+            self.assertNotIn('synthetic-contract-token',json.dumps(m.status()))
+            with patch.dict(os.environ,{'AUDITFLOW_MODEL':'explicit-organizer-model'}):self.assertEqual(Model().model,'explicit-organizer-model')
     def test_no_secret_offline_error(self):
         with patch.dict(os.environ,{'HAI_API_KEY':''}):
             with self.assertRaises(ModelError):Model().call('test','test')

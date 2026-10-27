@@ -395,3 +395,26 @@ syntax, three Node contract suites, compileall and git diff --check pass. Native
 confirmed version-only select-all (3 versions, no parents), export dialog and successful
 customer-linked workflow creation. Preview stopped and helpers removed. Publish only source,
 tests and docs to codex/auditflow-prototype using expected head 08f23f46. No live model/mail.
+
+0.7 code published as 9201959aa8e357dd5efcba47568e4025dcad5f12 on
+codex/auditflow-prototype / PR #1 using the expected-head lease. Push CI run
+40448487394: Linux Python 3.11–3.14 and frontend contracts already green; Windows job
+still running at this checkpoint. Main was not merged and the source branch is untouched.
+Update: stop Python server, git pull origin codex/auditflow-prototype, python -m auditflow,
+then Ctrl+F5. Kunden is the second navigation entry. Choose a software version then
+Neuer Vorgang to prefill contacts, or select it in the ordinary new-workflow form.
+
+0.7 GitHub code 9201959 passed all six jobs in run 40448487394, including Windows/Python
+3.14. PR #1 metadata updated. During completion the user supplied the exact Hessian cURL
+contract and asked whether an API is connected. Inspected runtime: HAI_API_KEY is absent
+in THIS environment, so no successful live connection can be claimed; the user's machine
+is not inspectable from here. Existing adapter URL and Bearer format match. Corrected
+default model spelling from vllm/GLM-Flash-Latest to user-supplied vllm/GLM-Flash:Latest in
+model.py, .env.example and README. Added masked Windows PowerShell setup and a mocked
+request/override contract test. Existing environment overrides must also be corrected
+locally. No key was supplied in the cURL text: $HAI_API_KEY is only a variable reference.
+No unauthenticated/live external call was made. Final adapter test run/publication next.
+
+Adapter correction final local validation: 151 Python tests pass (15.407s), compileall
+and diff check pass. Model request is mocked, not a live Hessian response. Customer code
+already has six green remote jobs; the adapter follow-up requires its own remote CI.

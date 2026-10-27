@@ -183,18 +183,19 @@ mode: the manufacturer executes the tests and returns observations.
 
 ## Optional model connection
 
-The organizer handout specifies an OpenAI-compatible chat route and two model IDs. The adapter defaults to the shown GLM option. Credentials must be supplied locally:
+The user-supplied Hessian.AI cURL example specifies the chat route below and the exact model ID `vllm/GLM-Flash:Latest`. The adapter uses these defaults. Credentials must be supplied locally:
 
 ```powershell
-$env:HAI_API_KEY = Read-Host "Team API key"
-$env:AUDITFLOW_MODEL = "vllm/GLM-Flash-Latest"
+$haiSecret = Read-Host "Team API key" -AsSecureString
+$env:HAI_API_KEY = [System.Net.NetworkCredential]::new("", $haiSecret).Password
+Remove-Variable haiSecret
+$env:AUDITFLOW_MODEL = "vllm/GLM-Flash:Latest"
 python -m auditflow
 ```
 
-For hidden input in PowerShell, use a secure environment-secret mechanism; `Read-Host` above displays characters but does not put the value into command history. Never commit the real value. `.env.example` lists names; the app reads process environment and does not automatically load `.env`.
+The PowerShell prompt masks input; the key is available to Python in this terminal's process environment. Never commit the real value or paste it in chat. `.env.example` lists names; the app reads process environment and does not automatically load `.env`. An existing `AUDITFLOW_MODEL` environment override takes precedence: update it to the exact ID above if it still contains the older spelling.
 
 Endpoint default: `https://hip-gw.hessian.ai/v1/chat/completions`.
-Alternative model shown in the handout: `vllm/Kolibri-1`.
 Override `AUDITFLOW_MODEL_URL` only with a trusted HTTPS endpoint. The API key is sent to the configured endpoint.
 
 Use **Quellen & KI → KI-Verbindung testen**. The development-environment connectivity attempt received **HTTP 403**; successful live extraction is therefore not claimed. Offline literal drafting is distinct and labelled.
