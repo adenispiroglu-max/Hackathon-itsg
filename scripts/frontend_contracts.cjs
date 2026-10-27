@@ -88,6 +88,11 @@ console.log('Frontend contracts: station review, guarded back navigation, bulk a
 const fileHtml=ctx.flowCases({...later,phase:'case_review',cases:[{...sampleCase,attachments:['instruction','reference']}]});
 assert.ok(fileHtml.includes('data-kind="instruction"'));assert.ok(fileHtml.includes('data-kind="reference"'));assert.ok(fileHtml.includes('nicht für das Kundenpaket'));
 assert.ok(!ctx.flowCases({...later,phase:'case_review',cases:[{...sampleCase,attachments:['instruction']}]}).includes('data-kind="reference"'));
-assert.ok(ctx.flowStation({...later,phase:'requirements'}).includes('id="flow-req-import-form"'));
-assert.ok(ctx.flowStation({...later,phase:'case_review',cases:[sampleCase]}).includes('id="flow-case-import-form"'));
+assert.ok(ctx.flowStation({...later,phase:'requirements'}).includes('data-action="flow-import" data-kind="requirements" data-id="w"'));
+assert.ok(ctx.flowStation({...later,phase:'case_review',cases:[sampleCase]}).includes('data-action="flow-import" data-kind="cases" data-id="w"'));
+let dialog='';ctx.modal=html=>{dialog=html;};ctx.toast=()=>{};ctx.state.workflow.items=[{...later,phase:'case_review'}];
+ctx.flowImportDialog('requirements','w');assert.ok(dialog.includes('id="flow-req-import-form"'));assert.ok(dialog.includes('name="document_id"'));
+ctx.flowImportDialog('cases','w');assert.ok(dialog.includes('id="flow-case-import-form"'));assert.ok(dialog.includes('name="id" value="w"'));
+ctx.flowImportDialog('cases');assert.ok(dialog.includes('<select name="id">'));
+ctx.state.workflow.items=[{...later,phase:'case_review',cases:[sampleCase]}];assert.ok(ctx.workflowCasesPage().includes('data-action="flow-import" data-kind="cases"'));
 console.log('Frontend contracts: case TXT attachments and checked imports passed.');

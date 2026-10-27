@@ -263,6 +263,11 @@ Noch keine Dateien zugeordnet.|No files attached yet.
 Entfernen|Remove
 Vorgang starten|Start workflow
 Anhänge|Attachments
+Anforderungen importieren|Import requirements
+Testfälle importieren|Import test cases
+IMPORT · MIT PRÜFUNG|IMPORT · CHECKED
+Bestehende Anforderungen importieren|Import existing requirements
+Bestehende Testfälle importieren|Import existing test cases
 Testanleitung.txt|Test instructions.txt
 Bestehende Anforderungen importieren (JSON)|Import existing requirements (JSON)
 Bestehende Testfälle importieren (JSON)|Import existing test cases (JSON)
