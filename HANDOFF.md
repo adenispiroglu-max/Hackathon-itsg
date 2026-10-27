@@ -1,0 +1,760 @@
+# Continuation checkpoint — AuditFlow
+
+## User goal
+Build the complete ITSG hackathon solution in `adenispiroglu-max/Hackathon-itsg`.
+User authorized coding, GitHub work and autonomous routine implementation. Roughly 15 hours were available when starting.
+Hessian.AI is optional if unavailable. Only supplied data exists; no payroll-software connection.
+User requested checkpoints so another AI can continue if context runs out.
+
+## Repository baseline
+- Private repository, originally README only.
+- Base commit: `556a5491d3d87f51fc9edc791fc364935d9a6a86`.
+- Work branch: `codex/auditflow-prototype`.
+- No Base44 app existed in the repository. A portable local Python/web application was implemented instead.
+
+## Implemented
+- Durable SQLite store, all original approvals pending, provenance and local hash-linked events.
+- Fully authored synthetic demo documents and profiles. Original documents were inspected locally but are NOT in the repository.
+- Four mapped fixture rules C1–C4; independent source matching and substantive review gates.
+- TXT/PDF/DOCX import; literal offline draft mode; optional real model extraction with validation.
+- Optional model adapter using the endpoint/model IDs on the supplied handout; no key committed.
+- Eight synthetic/historical fixture cases, 29/30/31-day thresholds and explicitly unresolved boundaries.
+- Scenario simulation, always-send bug simulator, synthetic sample import and five controlled mutations.
+- Sample-specific byte-position parser, checks, explicit incomplete/technical states and snapshots.
+- German responsive UI: dashboard, sources, rules, cases, checks, reports, coverage, changes, reference timeline.
+- JSON/PDF downloads, local server access token option and no external frontend dependencies.
+
+## Verified so far
+- `python -m unittest discover -s tests -v`: 38 tests passed at first backend checkpoint.
+- `node --check auditflow/static/app.js`: passed.
+- `python -m compileall -q auditflow`: passed.
+- Live model attempt: HTTP 403 from execution environment. Do not report successful inference.
+- See docs/VALIDATION.md for subsequent verification updates.
+
+## Critical limitations
+- Parser layout inferred from one fixture, not confirmed technical annex; only 41 fully supported.
+- The timeline documents the full source scenario; it does not execute all message types.
+- Only four illustrative fixture criteria are executable; generated arbitrary rules remain unmapped.
+- Simulator and checker share logic; an independent vendor/reference implementation is absent.
+- Exact date boundaries and typo in March fixture require ITSG confirmation.
+- No monetary-benefit calculation/certification, no real insurer/target software, no production hardening.
+- Credential exists only outside repo in current execution scratch/process environment. Never reproduce it.
+
+## Run
+`python -m auditflow` from repo root. Open http://127.0.0.1:8080.
+Optional imports/exports: `python -m pip install -r requirements.txt`.
+Tests: `python -m unittest discover -s tests -v`.
+Use a temporary AUDITFLOW_DB for demos/tests rather than changing shipped seed defaults.
+
+## Next actions
+1. Finish browser end-to-end checks and inspect desktop/mobile layouts.
+2. Add/verify backend-2 generated boundary drafts and optional model-backed test drafting if time permits.
+3. Record all observed verification results, capture demo evidence and improve UX defects found.
+4. Finish docs/API, architecture, pitch script and demo fallback.
+5. Commit tested source and updated notes to GitHub; open a reviewable PR without merging main automatically.
+6. If continuing beyond prototype, obtain authoritative technical annexes and actual payroll exports first.
+
+## Automatic upload review
+The original raw fixture and later original source excerpts/scenario identifiers were rejected for GitHub upload by automatic review. Do not retry uploading them indirectly. The repository data was replaced with entirely authored demo statements, new synthetic dates and generic IDs. A separate local-only source copy may exist in the originating scratch workspace; do not export it without resolving authorization.
+
+## Latest completed checkpoint
+- Added deterministic boundary generation and optional model test drafting; all outputs pending.
+- Fixed browser form submission (`name="id"` shadowing form.id) using getAttribute('id').
+- Fixed mobile grid overflow and verified all nine views at desktop/mobile widths.
+- **44 tests passed**; E2E passed reviews, golden synthetic file, mutation failure, downloads,
+  boundary drafts, document import and literal extraction with zero page errors.
+- Added scripts/browser_smoke.cjs and GitHub Actions configuration.
+- Added docs/API.md, docs/ARCHITECTURE.md, docs/PITCH.md and updated validation notes.
+- First GitHub checkpoint commit: `4aee193d4cad7d2dfb90fd72559da1ed571f4e85`.
+
+## Remaining external dependencies
+Only real inference access (403 here), normative technical annexes, expert confirmation of
+boundary rules and a vendor sandbox remain unverified. Do not describe the prototype as
+full EEL certification, independent benefit calculation or a live payroll audit.
+
+## Final handoff priorities
+The implementation and documented demo are ready for local use. Run the README start commands and import authorised originals locally. The next substantive improvement is authoritative source-to-executable-rule mapping plus independent software/reference validation, not additional cosmetic code. UI regression script and backend tests should be rerun after changes.
+
+## GitHub CI observed
+Workflow run https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40390304421 completed all four jobs successfully: backend on Python 3.11, 3.12 and 3.13; frontend JavaScript syntax. Tested code commit: `69d7a0e5f180ba85bfe7fb3397afe1798b32b7fa`. Pull request: https://github.com/adenispiroglu-max/Hackathon-itsg/pull/1.
+
+# Active update: 0.2 bulk automation and ITSG-inspired UI
+
+User requested end-to-end automation, then added an ITSG-style frontend requirement.
+Local working branch: codex/automation-update. Publish tested files back to the existing
+remote codex/auditflow-prototype branch / PR #1 so the user's existing clone can git pull.
+Remote starting head: eec21eb1eff3bd7277bea6ace4492c7c77f7bf79.
+
+Implemented: persistent software projects, versioned reviewed synthetic packages, 1–4,000
+profiles/cases, analytical template expectations separate from target simulator, background
+execution, paginated results, missing-safe software JSON import, JSON/CSV bulk reports,
+change-impact selection, optional automatic dispatch on package approval, full suite reruns,
+stop/resume and restart recovery. Existing 0.1 data/screens are preserved.
+
+Frontend adds Automatisierung, automatically refreshed progress and ITSG-inspired red
+#D50032 / white / charcoal styling. The reference color was observed in the public ITSG
+site HTML. No official asset or source document was uploaded. See docs/DESIGN.md.
+
+Important boundaries: these are authored synthetic DBVO templates, not arbitrary law-to-code
+compilation; only three structured types are in bulk automation. Income/hours are metadata.
+Model access remains unverified. No external payroll product or independent legal oracle is
+connected. Recurring full checks are explicit actions, not a configured calendar scheduler.
+
+Verification complete: 69 tests passed, including a 4,000-case run,
+restart after a committed partial chunk, auto change dispatch and missing import results.
+Legacy and automation Playwright scripts exercise desktop/mobile UI and downloads.
+Update docs/VALIDATION.md with final observed results before publishing.
+
+0.2 final local checks: all 69 unittests passed. Both browser scripts passed with no page errors; automation additionally verified result import with eight missing observations. Structured package review automatically triggers enabled project reruns; full reruns reuse profiles. Original sources and credentials remain outside the repository.
+
+
+## 0.2 GitHub verification observed
+
+Code commit `2299a3b459ad9dc44144a781936d3c516daaaee7` passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40400880383:
+frontend syntax, backend Python 3.11/3.12/3.13/3.14, and Windows/Python 3.14.
+The user's existing clone can update via `git pull origin codex/auditflow-prototype`.
+Stop the old server first, restart `python -m auditflow`, and open `/#automation`.
+
+# 0.3 completed local checkpoint — selective ZIP integration
+
+User approved integrating useful parts of `itsg-ai-payroll-audit (1).zip`. Inspected its
+React/Base44 source and isolated problematic evaluator paths; see docs/MERGE.md.
+Implemented selected UI/workflow patterns in the existing native frontend, preserving
+Python startup, SQLite data and all bulk automation. This is NOT a wholesale React port,
+Base44 deploy or merge of a second git history. No cloud auth/account was migrated.
+
+New: unified dashboard/live job refresh, four workflow cards, source-specific PDF page
+ranges, typed linked test drafts with rule snapshots/provenance, glossary/help and a
+read-only evidence assistant for legacy reports and bulk results. Explicit offline mode
+uses stored facts; explicit live mode uses Model. Request references are resolved by the
+server; model markup is escaped and failures never become a fabricated AI success.
+No store-wide lock is held over assistant inference. No new runtime dependencies.
+Version 0.3.0; existing database entities remain compatible, no destructive migration.
+
+Local branch codex/merge-audit-ui. Starting remote head observed
+54b2e5dbb321d2c150200620c56f2621f30e273e on codex/auditflow-prototype / PR #1.
+Publish verified changed files to that existing remote branch with expected-head lease,
+so the user's existing Windows clone can pull normally. Do not merge main automatically.
+
+Verification: 80 Python tests pass. Three browser suites pass at desktop/mobile with zero
+page errors. New suite covers typed drafts, real local PDF range import, single/bulk
+assistant evidence, escaped mocked AI output and explicit failure. Existing suite verifies
+36-case fictional change regression (17 selected/19 skipped/eight detected mismatches).
+Desktop/mobile screenshots inspected. Real inference, real vendor connection, normative
+legal mapping, monetary calculation and multi-user identity remain outside verified scope.
+
+Next: publish, observe CI and record exact code commit/run. Run `python -m auditflow`,
+then open /#dashboard. Reports/bulk rows -> Erklären; Fälle -> Gezielte Testentwürfe;
+Quellen import -> optional PDF pages; Hilfe & Ablauf -> short demo instructions.
+
+## 0.3 GitHub verification observed
+
+Published code commit `d7e68783117ab136e52fecd4822c1e1ea7012d2f` to the existing
+`codex/auditflow-prototype` branch / PR #1. All six GitHub jobs passed in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40407389909:
+backend Python 3.11/3.12/3.13/3.14, JavaScript syntax and Windows/Python 3.14.
+No merge into main was performed. The user can stop the server, run
+`git pull origin codex/auditflow-prototype`, then `python -m auditflow` and open
+http://127.0.0.1:8080/#dashboard. Real inference remains unverified.
+
+# 0.3.1 navigation simplification — current UI contract
+
+User asked to remove separate Automatisierung, Prüfung starten, Änderungen,
+Nachrichtenfolge and Glossar pages. Navigation now has exactly seven entries: Übersicht,
+Quellen & KI, Anforderungen, Profile & Testfälle, Prüfberichte, Testabdeckung, Hilfe & Ablauf.
+Manufacturer package preparation and result import are embedded once in Übersicht; its
+summary is not duplicated as a second page. Quellversionen vergleichen is below document
+inspection in Quellen & KI. Glossary/timeline/direct execution renderers and their action
+links are removed. Old bookmarked hashes redirect to dashboard, sources or reports.
+
+The user clarified manufacturers execute the tests. UI launch and explicit subset/full
+reruns now create import-mode packages, never simulations. New packages wait for
+manufacturer observations; simulation controls and fictitious fault-run buttons are not
+available in the UI. Existing simulation reports remain labelled as historical simulation;
+legacy APIs remain compatible for backend tests and existing integrations. No records were
+deleted. Existing opted-in project events retain backend policy semantics; newly UI-created
+import suites also wait for imports after rule changes.
+
+Local branch codex/simplify-navigation; parent remote head observed
+6209f2e0a27a855f2ac6f58d2db6b65983be45f2. Browser scripts updated to use the embedded
+manufacturer workflow. The original smoke script exercises legacy execution compatibility
+through the API and reads resulting reports through the retained UI. No user-facing
+execution screen is restored by tests. See VALIDATION.md for final results before publish.
+
+0.3.1 final local check: 80 Python tests passed (8.430 s); JavaScript syntax, compileall and diff checks passed.
+
+# 0.3.2 minimal dashboard / icon assistant
+
+User invoked Figma and requested a simpler, less dense UI with beautiful overview graphics
+and an icon-only assistant in the corner. Created an editable Figma concept at
+https://www.figma.com/design/bmj0psVtlm26tSuizevY52?node-id=2-395 using discovered library
+instances, auto-layout, editable labels and vectors. Verified native node types/no image
+fills and Inter typography, corrected clipped layout and SVG ring rendering. Figma values
+are illustrative. No app data, original documents or credentials were uploaded to Figma.
+
+Implemented in existing native frontend: three KPIs (package jobs, distinct generated
+profiles, waiting imports), latest completed manufacturer-import ring with text legend,
+next-action card, three latest package rows/Alle anzeigen, collapsed setup/change tools,
+icon-only accessible chat/spark corner button and calmer shared spacing/panels/headings.
+Latest result is ordered by finish time, not creation time; simulations and superseded
+suite runs do not enter the graphic. Default view does not open a report or technical form.
+No chart library or external font/runtime dependency. Existing package/import/review flow
+is unchanged. Local branch codex/clean-dashboard; starting local commit c62a768.
+
+Observed: 80 Python tests passed (8.304 s). All three browser suites passed at 1440/390 px
+with zero page errors. Added browser checks for exactly three metrics, icon-only accessible
+trigger, collapsed setup, completion-time/import-only summary semantics, graphic values
+matching stored counts and expanding/collapsing the full package list. Final desktop/mobile
+screenshots inspected. Sources/reviews/imports/PDF/assistant and backend 4,000-case checks
+remain covered. Publish to existing codex/auditflow-prototype with expected-head lease.
+
+# Active checkpoint — 0.5 customer audit conveyor (2026-10-27)
+
+Latest user requests an ERP-style conveyor: customer/input files, automatic source identity
+and version comparison, intermediate reports behind document icons, AI recommendations with
+exact revision marks, HUMAN requirement approval, automatic case/profile drafting, reviewed
+package delivery, manufacturer result import and human final sign-off.
+
+Local branch codex/document-review-workflow. Unpublished 0.4 work is included. Remote PR #1
+head observed c37cbf00ffafa278726038120e7675ce36fc9e01 on codex/auditflow-prototype.
+Remote-only sidebar/polish/icons changes from 122281a were inspected and preserved locally.
+Do not overwrite them or merge main. Publish verified files using expected-head lease.
+
+Implemented documents.py/library.js: original BLOB persistence, source families/version
+history, automatic compare and resumable section jobs, exact-quote validated AI recommendations,
+Unicode-safe highlights, human-readable UI, merged results/coverage, new pending revisions.
+Older versions stay historical; partial PDF views remain separate. Changed complete source
+basis never silently inherits a human approval. Local mode never claims AI inference.
+
+Implemented workflow.py/workflow.js: customer-bound SQLite worklist, immutable input after
+start, durable phase/case cursor, requirement gate, AI 2–4 cases per approved requirement or
+explicit local skeletons with unknown expectations, case/expectation review gate, snapshots,
+JSON package excluding expected values, SMTP TLS auto-send opt-in, manual handoff, exact package
+result import, missing-safe typed comparisons, final report and human named acceptance/rework.
+Source/approval changes invalidate live packages and return to requirement review. Closed
+records preserve their historic basis. Intermediate HTML/PDF reports are append-only snapshots.
+SMTP ambiguous delivery is unknown, never automatically retried. Real SMTP and real AI calls
+have NOT been verified; all tests use synthetic data/mocked inference and SMTP.
+
+Observed at this checkpoint: 115 Python tests passed (14.466s); pure Node frontend contracts
+pass all nine phases, escaping, report controls and Unicode marks. Current subsequent catalog/help
+and polling changes still need final checks. Native cloud browser confirmed input creation,
+source attachment, automatic source analysis → requirement gate and readable document-icon
+report. One synthetic human decision persisted; no real rules approved. Preview uses an ignored
+package.json and preview_dev.py with synthetic-only var/conveyor-preview.sqlite3; remove temporary
+preview files before final handoff. Do not commit runtime DB or screenshots/originals/secrets.
+
+Next: finish targeted backend/frontend tests, inspect updated browser flow, update docs, commit,
+publish to existing PR branch, observe CI. Earlier browser suites were adapted for #packages
+but are not claimed rerun for 0.5. Live AI, real mail, SAP integration, arbitrary payroll evaluation,
+cryptographic signatures, official certification and multi-user auth remain unverified/out of scope.
+
+0.5 final local checkpoint: 117 Python tests passed (15.936 s), all JS syntax/compileall/diff
+checks passed; Node contracts now also verify German Ja/Nein parsing. Native browser verified
+all four synthetic human approvals → automatic eight local skeletons → package gate, with
+three readable intermediate reports. Final HTML/PDF includes source versions, approvals,
+package release, handoff and results; signed report retains that full evidence snapshot.
+Customer JSON/HTML/PDF hides internal expected values. New revisions queue fresh prechecks;
+missing/stale prechecks prevent generation even after human approval. No real inference or
+mail was performed. Publish next, then record actual remote SHA and CI run.
+
+0.5 published code: bd9fb73c6a96852f539555eb24ff39b7724b38b7 on codex/auditflow-prototype / PR #1. Remote parent c37cbf0 was preserved using expected-head lease. Main was not merged. CI observation pending. Temporary package.json/preview_dev.py removed and disposable preview stopped. Browser screenshot could not synchronize to the main container; do not return a broken screenshot link.
+
+CI found two new tests assumed optional reportlab was installed. Corrected the tests to
+verify explicit PDF-unavailable fallback without skipping human/HTML checks; Python 3.13
+CI now installs existing optional requirements. Both local environments pass: 117 tests
+with extras (13.092 s) and no-site-packages runtime (12.351 s, four optional tests skipped).
+Initial remote run 40436352597 failed only those two assumptions, including Windows. Await
+corrective commit CI; never claim the failed run succeeded.
+
+Corrective remote head: 84c23feebd7f94db7928f7fe79d210486e9621ba. CI push run 40436631573 and PR run 40436636009 in progress. Local worktree was clean after 345cec9 before this note.
+
+## 0.5 verified remote handoff
+
+Code head **84c23feebd7f94db7928f7fe79d210486e9621ba** passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40436631573:
+Python 3.11/3.12/3.13/3.14 on Linux (3.13 includes optional document extras), frontend
+syntax/contracts and Windows/Python 3.14. Initial failed PDF-test assumptions were fixed;
+no application feature was disabled to make CI pass. Later commits only record these notes.
+
+Update the user's existing clone: stop old server, `git pull origin codex/auditflow-prototype`,
+then `python -m auditflow`, open http://127.0.0.1:8080/#dashboard and hard-refresh. Install
+requirements.txt if PDF/DOCX support is missing. Choose Vorgänge → Neuer Vorgang. For live
+preparation configure a working server-side HAI_API_KEY/model endpoint; for real delivery
+configure SMTP as docs/WORKFLOW.md, then opt in per workflow. No key, originals, customer
+runtime data or screenshot was uploaded. The preview was disposable and is stopped.
+
+# Active 0.6 checkpoint — list controls, settings, system chat and lifecycle
+
+User requested sort/filter icons throughout useful lists, edit mode with multi-checkbox
+selection, trash/export/forward actions, aligned source card actions, Correct instead of
+re-approving approved requirements, a system-wide Joule-like read-only chat, bottom-left
+settings (English UI only, dark/light/system, SMTP, time tracking), top-left mailbox,
+new/unread red dots for requirements/cases, uploaded-file inventory and exact case count.
+Additional steering: document deletion cascades to all linked business records; hide dims
+and strikes through source/dependants; visibility sorting/filtering; settings trash supports
+explicit permanent deletion. All authorized as app behavior; no actual customer mail sent.
+
+Local branch codex/workspace-controls. Remote starting head b0d9ad8b14a87210390c5d32562d5e7b6bf2641a.
+New workspace.py handles read migration/marks, settings without secrets, SMTP test, time
+sessions with capped heartbeats, read-only chat/history, selection export/forward/outbox,
+explicit dependency closure, cascade trash batches/restoration, independently layered hide
+sources and confirmed permanent purge. workflow.py now supports exact 1–4,000 requested
+cases using durable batches <=4 each; legacy unspecified total still gives 2/requirement.
+New controls.js/locale.js supply controls/theme/static UI translations while protecting
+source text and record content. No subagents used. Git publication is still pending.
+
+Observed so far: 130 Python tests passed (15.631s), prior Node frontend contracts pass.
+New 13 tests cover lifecycle versions/linked workflows, read migration, hide layering,
+purge/blob removal, no-secret settings, readonly/no-ref chat, live failure, time cap and
+exact 17-case output. Subsequent worker race protection/locale patches need final rerun.
+Native browser on isolated synthetic preview confirmed EN+dark, original source text
+unchanged, new-dot clears on click, edit checkboxes and two-item export dialog; system chat
+opened without finding. Still finish source hide/trash/restore UI and chat response checks.
+
+Preview running through sites-preview with ignored package.json/preview_dev.py and
+var/controls-preview.sqlite3, containing authored synthetic data only. Stop/remove those
+helpers before commit. Real keys cleared for preview; never commit any DB/secret/original.
+Live AI/SMTP not verified. Permanent deletion can only act on trash with DELETE confirmation.
+No production multi-user auth, SAP connection, independent legal oracle or official signature.
+
+0.6 checkpoint: 134 tests passed with extras (13.905s) and without site packages (14.130s,
+four optional skips). Native browser confirmed system chat with actual counts, dark/EN UI,
+source dim/strike, cascade trash and restoring source+requirement through settings. Follow-up
+fixes protect in-flight worker writes from lifecycle races, persist package mail history,
+purge earlier-trash dependants and redact linked event payloads while rebuilding the local
+(non-sealed) chain. Document shared-byte retention is tested. Final guards and docs still
+need final run, commit, GitHub publication and CI. Working tree is authorized, not published.
+
+0.6 final local verification: 134 tests passed with optional document extras (14.943s) and
+without site packages (13.751s, four optional skips). Both Node contract suites, all static
+JS/script syntax checks, compileall and diff checks pass. Final sidebar ARIA translation
+state was also covered by controls contracts. Native QA used synthetic fixtures only;
+preview was stopped and ignored package.json/preview_dev.py removed. Source original bytes,
+DBs, customer data and credentials are excluded from git. Publish to existing PR branch
+using b0d9ad8b14a87210390c5d32562d5e7b6bf2641a as expected head; observe new CI next.
+
+0.6 code published as 9606d9c348a683219d08933c453704e8f27f83c0 on codex/auditflow-prototype / PR #1. Expected-head lease preserved b0d9ad8. Push CI run 40444920446 and PR CI 40444923452 are in progress; no merge into main.
+
+## 0.6 verified GitHub handoff
+
+Code **9606d9c348a683219d08933c453704e8f27f83c0** passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40444920446:
+Linux Python 3.11/3.12/3.13/3.14 (3.13 includes optional document extras), frontend syntax plus
+both render/control contract suites, and Windows/Python 3.14. There is no pending code fix.
+Later commits only record verification. Existing source/approval/data migrations are additive.
+
+User update: stop server (Ctrl+C), `git pull origin codex/auditflow-prototype`, restart
+`python -m auditflow`, then Ctrl+F5. Bearbeiten enables contextual trash/export; document eye
+icon propagates hide/show; gear bottom left → Papierkorb restores groups or confirms DELETE.
+Envelope is top left; assistant is bottom right. Choose requested case count in workflow
+creation/intake or requirement gate. API/SMTP secrets remain server-side, never in chat/git.
+No live inference/mail or actual user-data purge was performed. Preview is stopped, helpers
+removed and runtime databases remain ignored. Read docs/WORKSPACE.md for lifecycle/erasure
+semantics and scope before future changes. Do not merge main automatically.
+
+
+## 0.7 Kunden integration (2026-10-27)
+
+User explicitly approved selectively adopting the customer/software features from
+feat/dokumente-versionen-8094 under navigation name **Kunden**. Local branch
+codex/customers-integration; remote expected parent 08f23f46d232b6548112d4f4b3051670bc3dc7bb.
+No whole-branch merge and no main merge. No subagents. Customers/manufacturers, software
+versions, contact edits with frozen workflow snapshots, submissions/decision history,
+confirmed reminders, filters/sorting/edit/export and existing hide/trash are implemented.
+
+Customers.py adapts the branch concepts to current workflows, not old auto_job approval.
+A selected software version is resolved server-side. Free entry registers master data.
+Startup links existing workflows/auto_projects without approvals or fictitious customers.
+Approval gate requires the newest started visible conveyor's complete passing import,
+positive human final sign-off, current basis and approved visible submissions. No waiver
+of unknown observations. New evidence changes and effective confirmed reminders mark a
+stored approval for recheck, preserving history. Typed names remain self-declared.
+
+Lifecycle closure includes customer/version/submission/workflow/project dependants. Shared
+source documents are preserved. Version-only bulk selection never selects parent customers;
+whole-customer trash is a separate explicit UI action. Shared reminders retain historical
+opaque IDs while other target versions remain. Original submission bytes stay in SQLite;
+metadata/export omit payload. Safe Unicode download filenames use RFC5987 header encoding.
+No runtime database from the other checkout was imported or committed.
+
+Observed: first full pass 149 Python tests OK (20.049s); all static JS/script syntax,
+compileall and three Node render/control suites passed. Added a further lifecycle regression
+and Unicode HTTP download checks; final full runs below supersede this count. Native browser
+on disposable var/customer-preview.sqlite3 verified Kunden navigation/layout, three-version
+bulk export dialog, version detail gates, contact prefill, linked workflow creation and return
+to the customer list showing the stored workflow. Synthetic data only; no email/model call.
+Managed preview stopped and temporary package.json/preview_dev.py removed. Test DB ignored.
+Full old browser suites and mobile/dark-mode manual reruns were not repeated for 0.7.
+See docs/CUSTOMERS.md for exact contracts and scope. Final GitHub publication/CI next.
+
+0.7 final local verification: **150 Python tests passed** with optional extras (17.016s);
+`python3 -S` discovered 150 and passed with four optional skips (17.743s). All JavaScript
+syntax, three Node contract suites, compileall and git diff --check pass. Native QA also
+confirmed version-only select-all (3 versions, no parents), export dialog and successful
+customer-linked workflow creation. Preview stopped and helpers removed. Publish only source,
+tests and docs to codex/auditflow-prototype using expected head 08f23f46. No live model/mail.
+
+0.7 code published as 9201959aa8e357dd5efcba47568e4025dcad5f12 on
+codex/auditflow-prototype / PR #1 using the expected-head lease. Push CI run
+40448487394: Linux Python 3.11–3.14 and frontend contracts already green; Windows job
+still running at this checkpoint. Main was not merged and the source branch is untouched.
+Update: stop Python server, git pull origin codex/auditflow-prototype, python -m auditflow,
+then Ctrl+F5. Kunden is the second navigation entry. Choose a software version then
+Neuer Vorgang to prefill contacts, or select it in the ordinary new-workflow form.
+
+0.7 GitHub code 9201959 passed all six jobs in run 40448487394, including Windows/Python
+3.14. PR #1 metadata updated. During completion the user supplied the exact Hessian cURL
+contract and asked whether an API is connected. Inspected runtime: HAI_API_KEY is absent
+in THIS environment, so no successful live connection can be claimed; the user's machine
+is not inspectable from here. Existing adapter URL and Bearer format match. Corrected
+default model spelling from vllm/GLM-Flash-Latest to user-supplied vllm/GLM-Flash:Latest in
+model.py, .env.example and README. Added masked Windows PowerShell setup and a mocked
+request/override contract test. Existing environment overrides must also be corrected
+locally. No key was supplied in the cURL text: $HAI_API_KEY is only a variable reference.
+No unauthenticated/live external call was made. Final adapter test run/publication next.
+
+Adapter correction final local validation: 151 Python tests pass (15.407s), compileall
+and diff check pass. Model request is mocked, not a live Hessian response. Customer code
+already has six green remote jobs; the adapter follow-up requires its own remote CI.
+
+
+## Demo gate confusion fix (2026-10-27)
+User saw “Zuerst C1, C2 und C4 fachlich freigeben” when trying to generate a test report,
+despite approving own requirements. Traced exact message to Service.generate_cases (legacy
+bounded demo generator), not conveyor generation/reporting. Root UX bug: workflowCasesPage
+fell back to the unqualified legacy cases() screen when no matching workflow cases existed.
+Now it shows a clear workflow-first empty state with existing workflow links/new workflow,
+explains approval/generation/report steps, and keeps legacy tools collapsed and explicitly
+labelled Demo. Demo error identifies blocked demo IDs and directs own-source work to the
+workflow. No approval bypass, no mapping arbitrary requirements to executable demo rules.
+Added Node empty-list regression and backend message assertion. No user runtime DB inspected;
+this diagnosis identifies the call path, not the actual status of their local approvals.
+Remote parent before this fix 0994dda2530ec8ba2fbc99ee4925c171ddad4dd1; do not merge main.
+
+Demo-gate fix validation: 151 Python tests passed (15.912s), all static JS syntax, three
+Node contract suites including the new empty-list regression, compileall and diff check
+passed. No new native browser or live model test. Publication on existing PR branch follows.
+# 0.7.1 native Gemini provider (2026-10-27)
+
+User wants to change providers and supplied a native Google Gemini cURL example. The
+message included a credential; do NOT reproduce, save, inspect in external services or use
+it. User was told to revoke it and generate a replacement locally. No actual key is in any
+source, test, log or docs created in this revision. No live model request was made.
+
+Read official https://ai.google.dev/api/generate-content for native request/response fields.
+Model now selects AUDITFLOW_MODEL_PROVIDER=hessian (default) or gemini explicitly. Gemini
+reads only GEMINI_API_KEY, defaults to the user-provided gemini-flash-latest alias and uses
+the fixed official Google HTTPS generateContent endpoint, ignoring stale Hessian URL
+overrides. Wrong provider key/model and unknown provider fail explicitly. Headers differ;
+there is no credential fallback. Response parsing excludes thought parts, rejects blocked,
+empty, malformed or truncated responses, and preserves existing extraction/review gates.
+Status/settings expose provider/model/key variable name, never key contents. Existing
+stored approvals/drafts remain intact; switching affects subsequent model requests.
+
+Local branch codex/gemini-provider. Eight mocked provider tests passed; full suite below.
+README documents masked PowerShell setup, same-terminal environment and restart; .env is
+still NOT auto-loaded. A set key/available model/free-tier quota remain unverified until the
+user tests locally. No keys from chat should ever be re-used. Publish on existing PR branch
+after checking current head; do not merge main. Original source files/DBs stay out of git.
+
+Gemini final local validation: 159 Python tests pass (15.917s), including eight native
+provider protocol/error/credential-isolation tests. Three Node contract suites and all
+static JS syntax checks pass; compileall and diff check pass. No live API call, browser
+credential entry, original customer data upload or actual key storage was performed.
+Provider UI additions use the existing settings dialog. Publish with expected remote
+parent 41b44ba5222528b68a0f5c8319d0793934ec528a; no main merge.
+
+
+## Source analysis recovery and progress (2026-10-27)
+User's screenshot shows a failed source job with only a generic workflow banner and a
+spinner still running. Their runtime DB/API error is not available, so no claim is made
+about the exact provider-side cause or live resolution. Fixes established from source:
+- Workflow retry now resumes the failed job's committed section cursor, retains retry_of,
+  reuses already completed jobs in the same mode and does not repeat completed pages.
+- Paused/running/queued jobs are reused rather than duplicated. Interrupted sections do
+  not advance their cursor until all section work finishes; existing drafted requirements
+  and completed recommendations are reused on resume.
+- Worker progress records stage, section/location, completed section count and per-section
+  review count with updated_at. Workflow failure includes the actual stored safe error,
+  filename and section. Source UI stops spinner on error and shows escaped diagnostics,
+  progress and last-update time. No invented ETA or skipped error/approval gate.
+- Gemini extraction/identity/review/case drafting explicitly request application/json via
+  call_json, while plain chat stays text and Hessian format remains compatible. HTTP
+  400/401/403/404/429/5xx errors provide distinct non-secret guidance. Structured response
+  validation remains strict; no automatic passing/fallback or raw provider-body echo.
+Official JSON output reference: https://ai.google.dev/gemini-api/docs/structured-output .
+Mocked Gemini and synthetic worker tests only; no credential from chat used, no live
+model call or user PDF imported. Local branch codex/source-analysis-recovery. First full
+run 162 tests passed (15.691s), Node contracts/syntax/compileall/diff passed; final rerun
+includes paused/interrupted cursor guard. Publish on existing feature branch, not main.
+
+Final recovery validation: 164 Python tests passed (15.663s). Tests cover failure at the
+second section with no replay of the first, workflow error/cursor retry, reuse of paused
+jobs, interrupted sections retaining their cursor, Gemini JSON-only tasks versus text
+chat, and escaped failed/running progress rendering. Three Node contracts, static JS
+syntax, compileall and diff check pass. No native browser/live Gemini/SMTP call or user
+PDF/database access. Publish with expected remote parent 76c100d8, no main merge.
+
+
+## Model timeout diagnostics (2026-10-27)
+User screenshot now reports the former combined “not reachable or timeout” error on PDF
+page 1. This does not prove which network cause occurred. No local user server, key or
+live API access is available. Raised default per-socket model timeout 45→120 seconds and
+added validated AUDITFLOW_MODEL_TIMEOUT (10–300). Model status exposes timeout_seconds.
+Network exceptions now distinguish timeout, DNS, TLS verification/handshake, refused and
+other unreachable errors without exposing raw URLs/transport details/keys. TLS verification
+stays enabled; no blind retry, fake successful extraction or approval bypass. Update/retry
+in existing workflow retains completed sections. Tests cover overrides/bounds/error types;
+full validation follows. Local branch codex/model-timeout-diagnostics; no main merge.
+
+Timeout follow-up final validation: 166 Python tests pass (15.600s), including configurable
+timeout validation/transport propagation and distinct redacted timeout, DNS, TLS and
+connection-refused errors. Existing three Node suites, JS syntax, compileall and diff
+checks pass. No live API request or runtime key access. Remote expected parent 74c5185e;
+no claim that extending a timeout fixes an unreachable endpoint.
+
+
+## Reuse completed library source analysis at workflow start (2026-10-27)
+User reports the same task works in Quellen & KI but not workflow. Both use documents.queue.
+Code confirmed Workflow.begin still used queue without resume=True, unlike Workflow.retry:
+a library job already completed before Begin was unnecessarily scheduled again. Begin now
+uses the same resume/reuse contract: latest completed same-mode jobs are reused, failed
+ones resume, live/offline changes still require the correct mode. No cross-mode approval
+or previous failed result is silently converted to success. Added regression representing
+completed library preparation, asserts no new job/worker and progression to requirements.
+This identifies a code-path defect, not proof of the user's exact local provider failure.
+No live API, keys, user PDFs/DB inspected. Local branch codex/reuse-source-analysis.
+
+Reuse fix verification: 167 backend tests passed (15.228s), three Node contracts, all
+static JS syntax, compileall and diff checks pass. No live API or native browser run.
+Publishing to existing PR branch from expected head 8eb4a7d; keep same-terminal model
+environment on restart. Existing failed workflows can Retry after source analysis succeeds
+under Quellen & KI for the same stored document and processing mode.
+
+
+## Source cards and common resume path (2026-10-27)
+User reports vertical filename and working Sources & AI versus waiting workflow. Replaced
+broad descendant span flex rules with independent header grid, metadata, status, actions
+and progress blocks; nested source/error labels have normal inline layout. Added direct
+Sources & AI document action and explicit local versus live completion labels. Missing
+document records render a safe placeholder. Sources upload/re-analyze now use resume=True
+as workflow begin/retry already do: same document/mode reuses completion or section cursor.
+Added failed-workflow → later library completion regression; no human approval bypass.
+Both full-analysis paths use the same queue/worker. Single-section drafting in the library
+is less work than full-document extraction plus recommendation for every requirement.
+No live model/user database access; cannot prove local external timeout cause. Tests follow.
+
+Validation: 168 Python tests passed (17.090s), all three Node contract suites and static
+JS syntax/diff checks pass. No native visual verification or live model request this
+revision. User must pull shared branch and restart local server; existing configuration
+remains local. Target remote parent 7ffaec56; no main merge.
+
+
+## Hessian empty-answer and truncation handling (2026-10-27)
+User asks to investigate PDF-to-text/model input and fix empty-answer processing. PDF text
+is already extracted per page and Model.extract sends that string, not PDF bytes. Actual
+user PDF and live provider response are unavailable. Confirmed adapter defect: ignored
+Hessian finish_reason and only checked content, giving unhelpful empty error and accepting
+nonempty truncation. Now rejects length (including apparently complete JSON), refusal/filter,
+tool-only and unknown completion states. Distinguishes reasoning-only versus empty final
+content; never exposes/uses reasoning/refusal/tool payloads or raw provider bodies. Supports
+legacy missing finish_reason with final string. Native Gemini unchanged.
+Hessian fixed max_tokens3500 replaced by validated AUDITFLOW_MODEL_MAX_TOKENS512–32768,
+default8192; explicit stream:false. No undocumented model-specific thinking flags, JSON
+mode parameters, fallback, automatic retry or approval changes. Settings shows budget and
+timeout. Official vLLM source describes reasoning/older reasoning_content separate from
+final content; actual Hessian deployed model capability unverified.
+17 adapter tests pass including six new Hessian tests with synthetic transport only.
+Full checks follow. Local branch codex/hessian-response-diagnostics; no main merge.
+
+Final validation: 174 Python tests passed (16.624s); all three Node contracts, JS syntax,
+compileall and diff checks passed. Status budget matches provider-specific behavior. No
+live request, real key, user PDF/DB, or native browser verification. Publish to existing
+feature branch from 383e8098, not main. User restarts same terminal and retries saved job.
+
+
+## Prepared challenge demonstration (2026-10-27)
+User changes plan: fixed supplied inputs, pre-authored requirements/cases, no model reasoning
+at runtime. Built explicit prepared demo mode, default in new workflow/upload forms. Do not
+present this as live inference or complete legal analysis. Used PDF/document reading skills
+for source inspection. Six PDFs, two DOCX, one extensionless technical specimen inspected.
+Catalogue: exact SHA-256 recognition for nine supplied originals, 27 curated requirements
+with source page/paragraph/table snippets, version/scope metadata, synthetic case patterns.
+No original bytes, source dump, local DB, key, runtime logs or real profile data in git.
+Import known full files uses selected excerpts (full original PDF still downloadable), bypasses
+external identity/extraction/review; synchronous queue writes prepared drafts and completed
+demo marker. Known ~5.54MB Annex3 supported; bounded HTTP body10MB for base64, unknown
+files retain5MB decoded cap. Renaming works; altered bytes rejected in strict demo mode.
+No model call even with live mode/key configured for known sources. Other live/offline paths
+retained. Prior workers cannot start fresh model inference for recognized sources; restart
+local server to end any already in-flight request. Prior same-source requirements retained
+as history via supersession links; human approvals never invented/inherited.
+Workflow generation uses prepared synthetic profiles, concrete threshold/arithmetic/sample
+cases or clearly specified scenario assertions. Exact boundary/missing-data expectations may
+remain null and block release. Large counts repeat finite patterns; no extra legal coverage
+claim. Manual edits block outdated case templates; recommendations for revised text clarify.
+2026 and2027 sources cannot share a workflow; library can hold both. Reference docs kept
+separate in metadata. DOCX March2025/2026 inconsistency explicitly marked.
+Demo provenance shown in UI/source completion/recommendations, reports and customer package
+execution_mode/preparation_note, with internal Sollwerte still excluded from customer export.
+Human requirement approval, expectation review, handoff, import and final sign-off retained.
+No mock vendor results sent or automatically accepted; no SMTP or live model request used.
+Actual local HTTP QA uploaded all nine provided originals and verified27 quote matches,
+all drafts pending, no Model.call allowed; total0.31s on this environment (not a speed SLA).
+Native browser inspected requirement gate/demo recommendations and library completion
+status in disposable Sites preview with curated metadata; no original uploaded to preview.
+Preview stopped, helper files removed; ignored disposable DB only.
+Synthetic unit tests cover fingerprint/dedup/unknown files, human gates, results, scope,
+revisions, lifecycle, null expectations and stale worker behavior. Full checks follow.
+Local branch codex/prepared-challenge-demo, expected remote parent b4f274a5.
+
+Final validation:181 Python tests pass (16.005s). Three Node contract suites, JS syntax,
+compileall and diff check pass; added explicit prepared-mode UI assertions. Actual nine-file
+HTTP upload QA verified27 citations/no model calls including the over5MB source. No live
+API/SMTP/manufacturer test or official legal certification. No helpers/originals staged.
+
+Publication approval follow-up: automatic review previously rejected the tree upload
+because source excerpts were not explicitly approved for GitHub disclosure. The user
+has now expressly authorized publishing the prepared requirements and short quotations
+to codex/auditflow-prototype, excluding original files. Retrying that authorized scope.
+
+
+## Inline case decisions and stable expansion (2026-10-27)
+User requests automatic checks, approve/reject directly in the case and staying expanded.
+Added structural/source prechecks to existing case_review state; prepared demo explicitly
+labelled, local mode local. Live approval uses a structured Model.call_json recommendation
+with bounded schema and conflict handling. No model call for demo. Negative prechecks
+persist for display; unresolved values/questions cannot become approved. New review-case
+endpoint stores manual decision, actual self-declared session label or transparent
+unauthenticated operator fallback, current case basis hash and event/history. No invented
+identity, legal certification or approval. Editing invalidates the current decision.
+Package UI only has an adopt-approved button, no mandatory typing. Individual policy
+requires all cases decided and >=1 approved per source requirement. Rejected cases are
+retained as excluded_cases and in release report; only approved subset delivered/compared
+with recalculated package hash. Existing legacy package-level review API retained for old
+clients, but cannot bypass a workflow once individual decisions are recorded.
+Case details now have workflow-scoped expansion keys captured before every content render,
+including polling and decision load. No forced collapse on read markers or approval.
+Validation:185 backend tests passed16.743s, three Node suites plus JS syntax, compileall,
+diff check. Regressions cover pending/unknown decisions, no fabricated missing expectation,
+coverage, excluded-case export/import, edit invalidation, idempotence and mocked live
+recommendation conflicts. Frontend assertions cover open/closed independence and disabled
+null approval. Native disposable browser QA confirmed approved and rejected statuses with
+both cases still expanded across subsequent polling; visual layout inspected. No live API,
+SMTP, actual vendor test or user DB access. Preview stopped, helpers removed; ignored
+synthetic preview DB only. Local codex/case-approval-inline; remote expected0f2e5812.
+
+
+## Read-only station navigation, catalogue v2 and demo timing (2026-10-27)
+User requests back navigation, more requirements for every supplied source and a 9-second
+artificial source loading presentation. Implemented explicitly labelled demo animation;
+never claims live inference or real analysis progress. Station buttons/Back select a UI
+view only: past intake, source list/reports, requirement snapshots, cases and delivery;
+future stages disabled. Current-stage button returns to live human gate. No backend
+phase rollback, input edits, approval reset or email repetition caused by navigation.
+Demo UI creates workflows with validated demo_presentation boolean. Begin persists start
+ms/duration9000; tick waits nonblockingly after checking source completion/errors. Browser
+250ms progress updates with four stage labels and explicit simulation text; existing
+polling transitions to requirements. Reload does not restart; other modes have no delay.
+Catalogue v2 adds exactly2 authored source-linked checks per file:6,6,5,6,5,5,4,4,4=45.
+Added cases for minimum transmitted periods, explicit sample field codes, month/period
+selection and another arithmetic example; no general schema inferred from TEEL prefixes.
+Nine actual originals imported in a temporary DB, all45 quotes verified, all requirements
+pending and four generated cases per rule validated, Model.call prohibited throughout.
+Local importer total0.27s excluding presentation delay, not a latency guarantee.
+Visible old prepared sources upgrade on startup; curated excerpts extended, existing
+unchanged human decisions retained, prepared precheck hashes refreshed, additions pending.
+Deleted/hidden records not resurrected; full-text imports not overwritten. New catalogue
+requirements invalidate in-progress package basis as before; historical reports retained.
+Validation:187 Python tests passed17.110s, all three Node contracts/JS syntax/compileall/
+diff check passed. New tests cover exact9s gate via mocked clock and idempotent catalogue
+growth with unchanged human decisions. Frontend covers no editable controls in earlier
+intake view, navigation actions, explicit simulation markup. Native browser verified
+1→54% animated progress, automatic requirement gate0/6, Back into past Sources, and
+return to same current gate. Visual screenshot inspected. No live API/SMTP/vendor call.
+Preview stopped and helpers removed. Local codex/demo-navigation-expanded-catalogue.
+Publish from expected a21a4474 to existing feature branch; original files excluded,
+user's explicit approval for short excerpts in this repository remains applicable.
+## Back navigation, bulk approval, demo pacing, larger catalogue (2026-10-27)
+Branch `workflow-back-nav-bulk-approve` from main a21a447. User asked for: stepping back,
+more requirements for all sources, a ~9s fake analysis delay with progress bar in Quellen,
+and one-click approval of all requirements/test cases.
+- Catalogue 27 → 58 requirements, all 9 sources extended. Quotes cut mechanically from locally
+  extracted originals (../itsg/Hackathon-itsg/docs/provided, hashes match catalogue); originals
+  not committed. New `table` kind with authored variants; no invented thresholds/layouts.
+- Demo pacing: `AUDITFLOW_DEMO_PACING_SECONDS` (default 9). User wanted it to conceal that
+  nothing is analysed; per AGENTS.md (simulation explicit) the station carries a visible
+  "Präsentationspause / Katalog, keine Live-Analyse" line. Removing that label is a user decision.
+- Bulk approval: requirement checkbox+button loops /api/review; cases use new
+  /api/workflow/review-cases (skips null expectations). Back: /api/workflow/back + advance.
+Observed: 190 Python tests OK (52.6s, 4 skipped), compileall, all node --check, three contract
+suites, git diff --check. HTTP E2E with real GG original on temp DB: sources 9.3s, 8/8 verified
+citations, 16/16 cases bulk-approved, back→requirements holds, advance regenerates, back→intake.
+Limits: requirement bulk approval is N sequential requests; existing runtime DBs gain new
+requirements only when a known file is re-uploaded/re-analysed; new approvals still required.
+Next: visual browser check of pacing bar and rail; decide whether to keep the pacing label.
+
+## Case TXT attachments and checked imports (2026-10-27)
+User asked for TXT files on test cases (like TEEL0), and import for existing requirements/test cases
+"prüfen". Chosen: per-case Testanleitung.txt (customer, no Sollwert) plus internal synthetic DSLW/DBVO
+Soll-Datensatz for prepared 41 cases with expectation true (auditflow/teel.py, self-checked by parser).
+Imports: /api/requirements/import (verbatim quote check incl. original full text for prepared sources,
+duplicate skip) and /api/workflow/import-cases (snapshot requirement check, duplicate skip).
+Imported requirements are no longer superseded by prepared reloads and get open skeleton cases in demo.
+Observed: 194 tests OK (56.0s), compileall, node checks, three contract suites, diff check. HTTP E2E
+with real 2026 originals (GG, two DOCX, TEEL0 renamed .txt): page-10 full-text quote imported, invented
+quote rejected, 40 cases with 7 parser-valid reference records, duplicate case skipped.
+Limits: PDF full-text quote check needs pdfplumber (system python3 here lacks it; clear error shown).
+Reference record is DSLW only; VOSZ/DSKO/NCSZ not generated. No browser screenshot yet (Chromium
+download pending).
+
+## Current consolidation: existing import reused, guarded bulk release and five-step preparation (2026-10-27)
+User corrected that import already exists. Checked all GitHub branches and found
+workflow-back-nav-bulk-approve at b7e104379bb428f413038839a3507570d68f519c, containing
+requirements/import, workflow/import-cases, back/advance, source-bound TXT attachments and
+bulk approval. Integrated those existing implementations; discarded the interim new importer
+(only in local safety stash). No duplicate migration endpoint/module is published.
+Local integration used an isolated worktree snapshot from that exact GitHub commit; originals,
+credentials, DBs, helpers and runtime logs excluded. Shared codex/auditflow-prototype remains
+the delivery branch; main is not merged or changed.
+
+Both authored catalogues are retained, 76 selected source-linked checks across nine originals.
+Existing v2 keys retain their meaning; collisions from the other catalogue get an extended key.
+Exact matching earlier statements are remapped to that key during preparation without changing
+human decisions. Old text is retained while selected quotes are appended; prechecks refresh when
+section text changes. Imports are not superseded by prepared refresh. New requirements pending.
+Actual inspected source text (both PDF extraction layouts) matched all76 quotes after whitespace
+and line-break hyphen normalization. Disposable actual-nine-original import QA: all76 citation
+statuses verified and pending,304 synthetic case patterns constructed, zero model calls.
+Checks can overlap; count is not independent/complete legal coverage.
+
+POST workflow/bulk-release previews without saving and returns a token tied to current cases,
+requirement basis, decisions and warnings. Human confirmation accepts recommended revision
+explicitly, stores warnings and human overrides, excludes already rejected cases, and moves to
+step5. No warning: the explicit bulk click proceeds directly. Unknown expectations/questions
+remain not assessable even when actual values are supplied; positive final sign-off stays blocked.
+Legacy per-case/review-cases/release APIs remain compatible. Stale preview tokens are rejected.
+
+Normal rail is five preparation stations. Confirmed manual/SMTP handoff shows preparation
+completed (not final software certification), stops counting as active preparation, and offers a
+collapsed later-customer-reply import. Importing actual results reveals the extra evaluation and
+human-final-review station. No customer data/results or SMTP success are fabricated.
+Visible search on lists, including case profile/inputs and IDs; Enter applies. Existing import and
+export icons adjacent. Help nav removed, route retained as dashboard+chat alias; offline/live chat
+receives current process knowledge, with focused bulk/reply answers. Document language unchanged.
+Demo pacing remains explicitly labelled; native progress values update without unsafe inline CSS.
+
+Validation:198 Python tests pass20.388s; all3 Node suites, JS syntax and compileall pass.
+New regressions: preview no mutation, explicit warning confirmation, stale-token rejection,
+excluded-case retention, unknown expectations never pass/never positive final sign-off.
+Native isolated browser QA: negative warning displayed, confirmed two synthetic open cases →
+step5; manual synthetic handoff → preparation-completed; later result panel expands and remains
+open across polling; assistant responds about later customer replies. Layout visually inspected.
+No live inference, SMTP, real vendor execution, original-file publication or actual user DB access.
+Preview stopped and known temporary helpers removed. Ignored disposable DB only.
+Limitations: no authenticated identities; typed/session operator attribution; overlapping authored
+patterns and finite catalogue; unknown expectations still need independent specification before
+meaningful successful comparison. Existing in-progress packages may return to requirement review
+when added catalogue checks change their source basis. Restart server and refresh after pulling.

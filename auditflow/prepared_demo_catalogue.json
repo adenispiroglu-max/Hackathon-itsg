@@ -1,0 +1,1305 @@
+{
+  "version": "itsg-demo-v3",
+  "entries": [
+    {
+      "sha256": "fd25917a9133fae97816a0f4ef3577dd65e4e7f0025ffd0d30a3a98522f828b9",
+      "name": "GG_EEL_V13.1_06.05.2025(2).pdf",
+      "size": 242483,
+      "id": "gg-2026",
+      "version": "13.1",
+      "scope": "2026",
+      "role": "Gemeinsame Grundsätze",
+      "valid_from": "2026-01-01",
+      "requirements": [
+        {
+          "key": "gg-2026-1",
+          "section_id": "page-8",
+          "location": "PDF-Seite 8",
+          "quote": "dem Arbeitgeber für die aktuelle Arbeitsunfähigkeit ein Arbeitsunfähigkeitsnachweis vorliegt und • in den letzten 6 Monaten vor Beginn der aktuellen Arbeitsunfähigkeit mindestens eine be- sc",
+          "title": "Attest für die aktuelle AU",
+          "criterion": "Eine Anfrage setzt einen beim Arbeitgeber vorliegenden Arbeitsunfähigkeitsnachweis für die aktuelle AU voraus.",
+          "kind": "attest",
+          "question": null
+        },
+        {
+          "key": "gg-2026-2",
+          "section_id": "page-8",
+          "location": "PDF-Seite 8",
+          "quote": "in den letzten 6 Monaten vor Beginn der aktuellen Arbeitsunfähigkeit mindestens eine be- scheinigte potentielle Vorerkrankung in Bezug auf die aktuelle Arbeitsunfähigkeit im Daten- bestand vorliegt und • die kumulierten Zeiten aller potentiellen",
+          "title": "Bescheinigte Vorerkrankung im Sechsmonatszeitraum",
+          "criterion": "Mindestens eine bescheinigte potentielle Vorerkrankung muss im beschriebenen Sechsmonatszeitraum vorliegen.",
+          "kind": "months",
+          "question": "Die exakte Kalendermonatsgrenze und Zählweise muss fachlich bestätigt werden."
+        },
+        {
+          "key": "gg-2026-3",
+          "section_id": "page-8",
+          "location": "PDF-Seite 8",
+          "quote": "die kumulierten Zeiten aller potentiellen Vorerkrankungen in den letzten 12 Monaten zusam- men mit der aktuellen Arbeitsunfähigkeit zum Zeitpunkt der Meldung mindestens 30 Tage umfassen. Werden im Entgeltabrechnungssystem die Fehlzeiten mit einem offenen Ende verwaltet, ist zur Prüfung des Erreichens der 30 T",
+          "title": "Mindestens 30 Tage im System",
+          "criterion": "Systemseitig müssen potentielle Vorerkrankungen der letzten zwölf Monate und aktuelle AU zum Meldezeitpunkt zusammen mindestens 30 Tage umfassen.",
+          "kind": "days",
+          "question": null
+        },
+        {
+          "key": "gg-2026-4",
+          "section_id": "page-9",
+          "location": "PDF-Seite 9",
+          "quote": "Sofern der Krankenkasse kein Arbeitsunfähigkeitsnachweis für die vom Arbeitgeber angefragte aktu- elle Arbeitsunfähigkeit oder Vorerkrankung vorliegt, antwortet diese im Feld „KZ-AK-AU“ oder „KZ- NACHWEIS „nn““ mit dem Kennzeichen „4“. Diese Rückmeldung stellt insoweit eine Zwischenmittei- lung der Krankenkasse dar, aufgrund welcher die Krankenkassen für die Dauer von 8 Wochen nach Versand der Zwischennachricht regelmäßig überprüfen, ob ein entsprechender Arbeitsunfähigkeits- nachweis eingegangen ist. Geht der Krankenkasse ein entsprechender Arbeitsunfähigkeitsnachweis zu, ist sie verpflichtet dem Arbeitgeber ohn",
+          "title": "Nachgereichter Nachweis und Korrektur",
+          "criterion": "Bei zunächst fehlendem Nachweis ist die beschriebene Zwischenmitteilung mit Kennzeichen 4 zu berücksichtigen; bei späterem Eingang folgt ohne neue Anfrage eine korrigierte Mitteilung.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "gg-2026-5",
+          "section_id": "page-8",
+          "location": "PDF-Seite 8",
+          "quote": "für die angefragten Zeiträume ein Beschäftigungsverhältnis des Arbeitnehmers bei dem an- fragenden Arbeitgeber besteht oder bestand und • dem Arbeitgeber für die aktuelle Arbeitsunfähigkeit ein Arbeitsunfähigkeitsnachweis vorliegt und • in den letzten 6 Monaten vor Beginn der aktuellen",
+          "title": "Beschäftigungsverhältnis für angefragte Zeiten",
+          "criterion": "Für angefragte Zeiträume muss ein Beschäftigungsverhältnis beim anfragenden Arbeitgeber bestehen oder bestanden haben.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "gg-2026-6",
+          "section_id": "page-7",
+          "location": "PDF-Seite 7",
+          "quote": "Sofern der Arbeitnehmer privat krankenversichert oder geringfügig beschäftigt ist, ist eine Vorerkran- kungsanfrage im Rahmen des DTA EEL nicht möglich. Vorerkrankungsanfragen im Zusammenhang mit einer Berufskrankheit oder einem Arbeitsunfall für",
+          "title": "Ausschluss privat Versicherter und geringfügig Beschäftigter",
+          "criterion": "Für privat krankenversicherte oder geringfügig beschäftigte Arbeitnehmer ist die beschriebene Vorerkrankungsanfrage im DTA EEL nicht möglich.",
+          "kind": "insurance",
+          "question": null
+        },
+        {
+          "key": "gg-2026-5-extended",
+          "section_id": "page-7",
+          "location": "PDF-Seite 7",
+          "quote": "Sofern der Arbeitnehmer privat krankenversichert oder geringfügig beschäftigt ist, ist eine Vorerkran- kungsanfrage im Rahmen des DTA EEL nicht möglich.",
+          "title": "Ausschluss privat Versicherter und Minijobber",
+          "criterion": "Für privat krankenversicherte oder geringfügig beschäftigte Arbeitnehmer darf keine Vorerkrankungsanfrage im DTA EEL erzeugt werden.",
+          "kind": "insurance",
+          "question": null
+        },
+        {
+          "key": "gg-2026-6-extended",
+          "section_id": "page-8",
+          "location": "PDF-Seite 8",
+          "quote": "für die angefragten Zeiträume ein Beschäftigungsverhältnis des Arbeitnehmers bei dem an- fragenden Arbeitgeber besteht oder bestand",
+          "title": "Beschäftigung im angefragten Zeitraum",
+          "criterion": "Eine Vorerkrankungsanfrage setzt voraus, dass für die angefragten Zeiträume ein Beschäftigungsverhältnis beim anfragenden Arbeitgeber besteht oder bestand.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Beschäftigung im Zeitraum",
+              "inputs": {
+                "Beschaeftigung_im_angefragten_Zeitraum": true,
+                "sonstige_Voraussetzungen": "erfüllt"
+              },
+              "field": "anfrage_berechtigt",
+              "value": true
+            },
+            {
+              "title": "Keine Beschäftigung im Zeitraum",
+              "inputs": {
+                "Beschaeftigung_im_angefragten_Zeitraum": false,
+                "sonstige_Voraussetzungen": "erfüllt"
+              },
+              "field": "anfrage_berechtigt",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "gg-2026-7",
+          "section_id": "page-8",
+          "location": "PDF-Seite 8",
+          "quote": "Werden im Entgeltabrechnungssystem die Fehlzeiten mit einem offenen Ende verwaltet, ist zur Prüfung des Erreichens der 30 Tage die AU mit einer Dauer von einer Wo- che in die Zukunft ab dem Tagesdatum zu beurteilen.",
+          "title": "Offenes AU-Ende eine Woche in die Zukunft",
+          "criterion": "Bei Fehlzeiten mit offenem Ende ist die aktuelle AU für die 30-Tage-Prüfung mit einer Dauer von einer Woche in die Zukunft ab Tagesdatum zu bewerten.",
+          "kind": "table",
+          "question": "Ob der Tagesdatum-Tag in die Woche eingerechnet wird, ist fachlich zu bestätigen.",
+          "variants": [
+            {
+              "title": "Deutlich über 30 Tagen",
+              "inputs": {
+                "Vorerkrankungstage_12_Monate": 25,
+                "aktuelle_AU_bisher_Tage": 5,
+                "AU_Ende_im_System": "offen"
+              },
+              "field": "mindestdauer_erreicht",
+              "value": true
+            },
+            {
+              "title": "Deutlich unter 30 Tagen",
+              "inputs": {
+                "Vorerkrankungstage_12_Monate": 10,
+                "aktuelle_AU_bisher_Tage": 5,
+                "AU_Ende_im_System": "offen"
+              },
+              "field": "mindestdauer_erreicht",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "gg-2026-8",
+          "section_id": "page-8",
+          "location": "PDF-Seite 8",
+          "quote": "Der Arbeitgeber hat eine Meldung über die Höhe der beitragspflichtigen Einnahmen an den Sozial- versicherungsträger zu übermitteln, wenn diese zusammen mit der Entgeltersatzleistung um mehr als 50,00 EUR das bisherige Vergleichs-Nettoarbeitsentgelt übersteigt.",
+          "title": "Meldung Abgabegrund 51 ab 50 EUR Überschreitung",
+          "criterion": "Eine Meldung mit Abgabegrund 51 ist nur zu erzeugen, wenn beitragspflichtige Einnahmen zusammen mit der Entgeltersatzleistung das Vergleichs-Nettoarbeitsentgelt um mehr als 50,00 EUR übersteigen.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Überschreitung 60 EUR",
+              "inputs": {
+                "Ueberschreitung_Vergleichsnetto_EUR": 60
+              },
+              "field": "meldung_51_erforderlich",
+              "value": true
+            },
+            {
+              "title": "Überschreitung genau 50 EUR",
+              "inputs": {
+                "Ueberschreitung_Vergleichsnetto_EUR": 50
+              },
+              "field": "meldung_51_erforderlich",
+              "value": false
+            },
+            {
+              "title": "Überschreitung 40 EUR",
+              "inputs": {
+                "Ueberschreitung_Vergleichsnetto_EUR": 40
+              },
+              "field": "meldung_51_erforderlich",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha256": "4f5d66079f69cb77ce86f203d42218383b8037f372ce61144914d59e06466fca",
+      "name": "DTA-EEL-Beispiel_Vorerkrankung(1).docx",
+      "size": 37918,
+      "id": "dbvo-scenario",
+      "version": "geliefertes Szenario",
+      "scope": "2026",
+      "role": "Aufgabenstellung",
+      "valid_from": null,
+      "requirements": [
+        {
+          "key": "dbvo-scenario-1",
+          "section_id": "t2r1",
+          "location": "Quellabschnitt t2r1",
+          "quote": "Es ist systemseitig sichergestellt, dass eine Meldung mit Abgabegrund \"41\" nur erzeugt werden kann, wenn sowohl die aktuelle Arbeitsunfähigkeit als auch mindestens eine vorherige Arbeitsunfähigkeit attestiert sind.",
+          "title": "Attestierte aktuelle und frühere AU",
+          "criterion": "Abgabegrund 41 darf im Szenario nur bei attestierter aktueller und mindestens einer attestierten vorherigen AU erzeugt werden.",
+          "kind": "certificates",
+          "question": null
+        },
+        {
+          "key": "dbvo-scenario-2",
+          "section_id": "t2r2",
+          "location": "Quellabschnitt t2r2",
+          "quote": "Es ist maschinell sichergestellt, dass die Meldung mit Abgabegrund \"41\" nur erzeugt werden kann, wenn zwischen dem Beginn der aktuellen Arbeitsunfähigkeit und dem Ende der letzten attestierten Arbeitsunfähigkeit nicht mehr als 6 Monate liegen.",
+          "title": "Abstand zur letzten attestierten AU",
+          "criterion": "Der Abstand zwischen aktuellem AU-Beginn und Ende der letzten attestierten AU ist nach der Sechsmonatsvorgabe zu prüfen.",
+          "kind": "months",
+          "question": "Sechsmonatsgrenze fachlich bestätigen."
+        },
+        {
+          "key": "dbvo-scenario-3",
+          "section_id": "t2r3",
+          "location": "Quellabschnitt t2r3",
+          "quote": "AU-Zeiten vor Beginn der aktuellen Arbeitsunfähigkeit werden nur dann in die Meldung mit Abgabegrund \"41\" aufgenommen, wenn jeweils zwischen dem Beginn einer AU-Zeit und dem Ende der vorhergehenden AU-Zeit nicht mehr als 6 Monate liegen.",
+          "title": "Übermittelte Vorerkrankungskette",
+          "criterion": "In der übermittelten Kette darf der Abstand zwischen aufeinanderfolgenden AU-Zeiten die beschriebene Sechsmonatsgrenze nicht überschreiten.",
+          "kind": "months",
+          "question": "Sechsmonatsgrenze fachlich bestätigen."
+        },
+        {
+          "key": "dbvo-scenario-4",
+          "section_id": "t2r4",
+          "location": "Quellabschnitt t2r4",
+          "quote": "Es ist systemseitig sichergestellt, dass eine Meldung mit Abgabegrund \"41\" nur erzeugt werden kann, wenn die systemseitig vorliegenden Vorerkrankungszeiten zusammen mit der aktuellen AU-Zeit mindestens 30 Tage umfassen.",
+          "title": "Systemseitige Mindestdauer",
+          "criterion": "Vorerkrankungszeiten und aktuelle AU müssen systemseitig zusammen mindestens 30 Tage umfassen.",
+          "kind": "days",
+          "question": null
+        },
+        {
+          "key": "dbvo-scenario-5",
+          "section_id": "t1r1",
+          "location": "Quellabschnitt t1r1",
+          "quote": "Als „bescheinigte“ Arbeitsunfähigkeitszeiten gelten auch die im elektronischen Arbeitsunfähigkeitsverfahren übermittelten Datensätze. Bei der Anfrage sollen durch den Arbeitgeber möglichst alle",
+          "title": "Elektronischer AU-Nachweis zählt mit",
+          "criterion": "Als bescheinigte AU-Zeiten gelten im beschriebenen Szenario auch die im elektronischen AU-Verfahren übermittelten Datensätze.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "dbvo-scenario-6",
+          "section_id": "t1r1",
+          "location": "Quellabschnitt t1r1",
+          "quote": "es muss mindestens eine Vorerkrankung angegeben sein. Es ist daher nicht erforderlich, dass die übermittelten kumulierten Zeiten aller potentiellen Vorerkrankungen zusammen mit der aktuellen Arbeitsunfähigkeit",
+          "title": "Mindestens eine Vorerkrankung übermitteln",
+          "criterion": "Die Anfrage muss mindestens eine Vorerkrankung enthalten; die systemseitige 30-Tage-Prüfung bleibt davon getrennt.",
+          "kind": "min_periods",
+          "question": null
+        },
+        {
+          "key": "dbvo-scenario-5-extended",
+          "section_id": "t1r1",
+          "location": "Quellabschnitt t1r1",
+          "quote": "Als „bescheinigte“ Arbeitsunfähigkeitszeiten gelten auch die im elektronischen Arbeitsunfähigkeitsverfahren übermittelten Datensätze.",
+          "title": "eAU gilt als bescheinigt",
+          "criterion": "Im elektronischen AU-Verfahren übermittelte Datensätze gelten als bescheinigte Arbeitsunfähigkeitszeiten.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Vorerkrankung per eAU",
+              "inputs": {
+                "Nachweis_Vorerkrankung": "eAU"
+              },
+              "field": "als_bescheinigt_gewertet",
+              "value": true
+            },
+            {
+              "title": "Krankmeldung ohne Bescheinigung",
+              "inputs": {
+                "Nachweis_Vorerkrankung": "keiner"
+              },
+              "field": "als_bescheinigt_gewertet",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "dbvo-scenario-6-extended",
+          "section_id": "t1r1",
+          "location": "Quellabschnitt t1r1",
+          "quote": "Bei der Anfrage sollen durch den Arbeitgeber möglichst alle potentiellen Vorerkrankungen angegeben werden, es muss mindestens eine Vorerkrankung angegeben sein.",
+          "title": "Mindestens eine Vorerkrankung angeben",
+          "criterion": "Eine Anfrage mit Abgabegrund 41 muss mindestens eine Vorerkrankung enthalten.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Eine Vorerkrankung angegeben",
+              "inputs": {
+                "angegebene_Vorerkrankungen": 1
+              },
+              "field": "anfrage_zulaessig",
+              "value": true
+            },
+            {
+              "title": "Keine Vorerkrankung angegeben",
+              "inputs": {
+                "angegebene_Vorerkrankungen": 0
+              },
+              "field": "anfrage_zulaessig",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "dbvo-scenario-7",
+          "section_id": "t1r1",
+          "location": "Quellabschnitt t1r1",
+          "quote": "Schließt sich keine bescheinigte Arbeitsunfähigkeit nahtlos an diese Zeiten an (Kurz-Arbeitsunfähigkeit), sind diese Zeiten nicht als potentielle Vorerkrankung zu übermitteln.",
+          "title": "Kurz-AU ohne Bescheinigung",
+          "criterion": "Unbescheinigte Kurz-AU-Zeiten ohne nahtlos anschließende bescheinigte AU dürfen nicht als potentielle Vorerkrankung übermittelt werden.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Kurz-AU ohne Anschluss",
+              "inputs": {
+                "Bescheinigung": false,
+                "nahtlos_folgende_bescheinigte_AU": false
+              },
+              "field": "als_vorerkrankung_uebermittelt",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha256": "daa4cdaf67b89bac1532bf95b60f5c63c9a1f10488ff595ddff2448e514a04e3",
+      "name": "Hinweise_DTA-EEL-Bespiel_Vorerkrankung_Testkonstellation(3).docx",
+      "size": 41218,
+      "id": "scenario-notes",
+      "version": "gelieferte Testkonstellation",
+      "scope": "2026",
+      "role": "Szenariohinweise",
+      "valid_from": null,
+      "requirements": [
+        {
+          "key": "scenario-notes-1",
+          "section_id": "p16",
+          "location": "Quellabschnitt p16",
+          "quote": "die Krankenkasse wird zunächst für den AU-Zeitraum vom 01.03.2026 bis 03.03.2026 das Kennzeichen „4 – AU liegt nicht vor“ zurückmelden mit Abgabegrund 61",
+          "title": "Zunächst fehlender Papiernachweis",
+          "criterion": "Im gelieferten Szenario meldet die Krankenkasse den Zeitraum 01.03.2026 bis 03.03.2026 zunächst mit Kennzeichen 4 und Abgabegrund 61 zurück.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "scenario-notes-2",
+          "section_id": "p22",
+          "location": "Quellabschnitt p22",
+          "quote": "Daraufhin storniert der AG seine erste Entgeltbescheinigung mit dem neuen Abgabegrund 88 und sendet eine weitere neue Entgeltbescheinigung mit Abgabegrund 01, da die EFZ nunmehr bereits am 27.03.2026 geendet hat",
+          "title": "Storno und neue Entgeltbescheinigung",
+          "criterion": "Nach der korrigierten Rückmeldung ist im Szenario die erste Entgeltbescheinigung mit Abgabegrund 88 zu stornieren und eine neue mit Abgabegrund 01 zu erstellen.",
+          "kind": "correction",
+          "question": null
+        },
+        {
+          "key": "scenario-notes-3",
+          "section_id": "p24",
+          "location": "Quellabschnitt p24",
+          "quote": "Die Beschäftigung endet zum 31.03.2026.",
+          "title": "Beschäftigungsende im Szenario",
+          "criterion": "Das Beschäftigungsende am 31.03.2026 ist als Szenariodatum zu berücksichtigen; es ist keine allgemeine gesetzliche Frist.",
+          "kind": "employment_end",
+          "question": "Widerspruch: Absatz 13 nennt 01.03.2025, Absatz 7 und 16 nennen 01.03.2026. Szenarioverantwortlichen fragen."
+        },
+        {
+          "key": "scenario-notes-4",
+          "section_id": "p20",
+          "location": "Quellabschnitt p20",
+          "quote": "Die AU-Zeit vom 01.03.2026 bis 03.03.2026 wird nunmehr vom Arbeitnehmer der Krankenkasse vorgelegt und die Krankenkasse korrigiert nunmehr den DBVO und übermittelt proaktiv einen zweiten DBVO (Abgabegrund 61)",
+          "title": "Proaktive zweite DBVO-Mitteilung",
+          "criterion": "Nach Nachreichen des Nachweises übermittelt die Krankenkasse im gelieferten Szenario proaktiv einen zweiten DBVO mit Abgabegrund 61.",
+          "kind": "return61",
+          "question": null
+        },
+        {
+          "key": "scenario-notes-5",
+          "section_id": "t1r14",
+          "location": "Quellabschnitt t1r14",
+          "quote": "31.03.2026 | 99",
+          "title": "Ende der EEL in der Szenariotabelle",
+          "criterion": "Die letzte Rückmeldung der Szenariotabelle enthält Ende EEL 31.03.2026 und Ende-EEL-Grund 99; dies ist eine konkrete Szenariovorgabe.",
+          "kind": "end_reason99",
+          "question": null
+        },
+        {
+          "key": "scenario-notes-4-extended",
+          "section_id": "p9",
+          "location": "Quellabschnitt p9",
+          "quote": "die aktuelle AU beginnt am 11.03.2026, zunächst bis 20.03.2026 => diese AU dauert schlussendlich bis 10.04.2026",
+          "title": "Aktuelle AU im Szenario",
+          "criterion": "Im gelieferten Szenario beginnt die aktuelle AU am 11.03.2026 und dauert schließlich bis 10.04.2026.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "AU-Ende laut Szenario",
+              "inputs": {
+                "AU_Beginn": "2026-03-11",
+                "erste_Bescheinigung_bis": "2026-03-20"
+              },
+              "field": "AU_Ende",
+              "value": "2026-04-10"
+            }
+          ]
+        },
+        {
+          "key": "scenario-notes-5-extended",
+          "section_id": "p18",
+          "location": "Quellabschnitt p18",
+          "quote": "Somit endet die EFZ zunächst am 30.03.2026 und der AG wird die Entgeltbescheinigung entsprechend absetzen",
+          "title": "Erstes EFZ-Ende im Szenario",
+          "criterion": "Vor der korrigierten Rückmeldung endet die Entgeltfortzahlung im Szenario zunächst am 30.03.2026.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "EFZ-Ende vor Korrektur",
+              "inputs": {
+                "Rueckmeldung_Kennzeichen_4_fuer": "01.03.2026–03.03.2026"
+              },
+              "field": "EFZ_Ende",
+              "value": "2026-03-30"
+            }
+          ]
+        },
+        {
+          "key": "scenario-notes-6",
+          "section_id": "p22",
+          "location": "Quellabschnitt p22",
+          "quote": "da die EFZ nunmehr bereits am 27.03.2026 geendet hat",
+          "title": "Korrigiertes EFZ-Ende im Szenario",
+          "criterion": "Nach der korrigierten DBVO-Rückmeldung endet die Entgeltfortzahlung im Szenario bereits am 27.03.2026.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "EFZ-Ende nach Korrektur",
+              "inputs": {
+                "korrigierte_DBVO_Rueckmeldung": true
+              },
+              "field": "EFZ_Ende",
+              "value": "2026-03-27"
+            }
+          ]
+        },
+        {
+          "key": "scenario-notes-7",
+          "section_id": "t1r14",
+          "location": "Quellabschnitt t1r14",
+          "quote": "KK | 62 | N |  |  | 11112222-FFFF-3333-5555-CCCCCCCCCCCC | 1234-5678-007 |  | 31.03.2026 | 99",
+          "title": "Rückmeldung Ende EEL im Szenario",
+          "criterion": "Die Tabelle des Szenarios erwartet eine Rückmeldung mit Abgabegrund 62, Ende EEL 31.03.2026 und Ende-EEL-Grund 99.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Ende EEL laut Tabelle",
+              "inputs": {
+                "Abgabegrund": "62"
+              },
+              "field": "Ende_EEL",
+              "value": "31.03.2026"
+            },
+            {
+              "title": "Ende-EEL-Grund laut Tabelle",
+              "inputs": {
+                "Abgabegrund": "62"
+              },
+              "field": "Ende_EEL_Grund",
+              "value": "99"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha256": "94ecfd874033615d33cd42a368a0fe9cb75acc0d7e16f18d319e42b9649e1397",
+      "name": "2026_03_10_Endfassung_Verfahrensbeschreibung_DTA_EEL_Version_13.4_ab_01.01.2027(1).pdf",
+      "size": 1811049,
+      "id": "procedure-2027",
+      "version": "13.4",
+      "scope": "2027",
+      "role": "Verfahrensbeschreibung",
+      "valid_from": "2027-01-01",
+      "requirements": [
+        {
+          "key": "procedure-2027-1",
+          "section_id": "page-135",
+          "location": "PDF-Seite 135",
+          "quote": "dem Arbeitgeber für die aktuelle Arbeitsunfähigkeit eine Arbeitsunfähigkeitsbescheini- gung vorliegt, • zusätzlich in den letzten 6 Monaten vor Beginn der aktuellen Arbeitsunfähigkeit mindes",
+          "title": "Nachweis der aktuellen Arbeitsunfähigkeit",
+          "criterion": "Die Anfrage mit Abgabegrund 41 setzt den beschriebenen Nachweis der aktuellen Arbeitsunfähigkeit voraus.",
+          "kind": "attest",
+          "question": null
+        },
+        {
+          "key": "procedure-2027-2",
+          "section_id": "page-135",
+          "location": "PDF-Seite 135",
+          "quote": "zusätzlich in den letzten 6 Monaten vor Beginn der aktuellen Arbeitsunfähigkeit mindes- tens eine bescheinigte potentielle Vorerkrankung in Bezug auf die aktuelle Arbeitsunfä- higkeit im Datenbestand vorliegt und • die kumulierten Zeiten aller potentiellen Vor",
+          "title": "Bescheinigte Vorerkrankung",
+          "criterion": "Mindestens eine bescheinigte potentielle Vorerkrankung im beschriebenen Zeitraum ist Voraussetzung.",
+          "kind": "months",
+          "question": "Exakte Sechsmonatsgrenze separat fachlich klären."
+        },
+        {
+          "key": "procedure-2027-3",
+          "section_id": "page-135",
+          "location": "PDF-Seite 135",
+          "quote": "die kumulierten Zeiten aller potentiellen Vorerkrankungen in den letzten 12 Monaten zusammen mit der aktuellen Arbeitsunfähigkeit zum Zeitpunkt der Meldung mindestens 30 Tage umfassen. Werden im Entgeltabrechnungssystem die Fehlzeiten mit einem offe- nen Ende verwaltet, ist zur Prüfung der Frist die AU mit einer Dauer von einer Woche in die Zukunft ab dem Tagesdatum zu beurteilen. Als „bescheinigte“ Arbeitsunfähigkeitszeiten gelten auch die im elektronisch",
+          "title": "30-Tage-Prüfung und offene AU",
+          "criterion": "Die systemseitige Summe ist gegen mindestens 30 Tage zu prüfen. Für offene AU-Enden beschreibt die Quelle eine Bewertung eine Woche in die Zukunft ab Tagesdatum.",
+          "kind": "days",
+          "question": "Für offene AU das fachlich freigegebene Tagesdatum und die Zählweise festlegen."
+        },
+        {
+          "key": "procedure-2027-4",
+          "section_id": "page-136",
+          "location": "PDF-Seite 136",
+          "quote": "Sofern der Arbeitnehmer privat krankenversichert oder geringfügig beschäftigt ist, ist eine Vor- erkrankungsanfrage im Rahmen des DTA EEL nicht möglich. Vorerkrankungsanfragen im Zu- sammenhang mit einer Berufskrankheit oder einem Arbeitsunfall für privat krankenversicherte Arbeitnehmende sind durch",
+          "title": "Ausschluss bestimmter Beschäftigtengruppen",
+          "criterion": "Privat krankenversicherte und geringfügig Beschäftigte sind von der Vorerkrankungsanfrage im beschriebenen DTA-EEL-Verfahren ausgeschlossen.",
+          "kind": "insurance",
+          "question": null
+        },
+        {
+          "key": "procedure-2027-5",
+          "section_id": "page-135",
+          "location": "PDF-Seite 135",
+          "quote": "Als „bescheinigte“ Arbeitsunfähigkeitszeiten gelten auch die im elektronischen Arbeitsunfähig- keitsverfahren übermittelten Datensätze. Bei der Anfrage sollen durch den Arbeitgeber",
+          "title": "Elektronische AU als Bescheinigung",
+          "criterion": "Die Quelle zählt auch elektronisch übermittelte AU-Datensätze zu den bescheinigten Arbeitsunfähigkeitszeiten.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "procedure-2027-6",
+          "section_id": "page-135",
+          "location": "PDF-Seite 135",
+          "quote": "es muss mindestens eine Vorerkrankung angegeben sein. Es ist daher nicht erforderlich, dass die übermittelten kumulierten Zeiten aller potentiellen Vorerkrankungen zu- sammen mit der aktuellen Arbeitsunfähigkeit mindestens 30 Tage umfassen, systemseitig müs- sen jedoch weiterhin zusammen mit der aktuellen Arbeitsunfähigkeit zum Zeitpunkt der Mel- dung",
+          "title": "Mindestanzahl angefragter Vorerkrankungen",
+          "criterion": "In der Anfrage ist mindestens eine Vorerkrankung anzugeben. Die 30-Tage-Summe im System ist getrennt von der Summe der übermittelten Zeiten zu prüfen.",
+          "kind": "min_periods",
+          "question": null
+        },
+        {
+          "key": "procedure-2027-5-extended",
+          "section_id": "page-135",
+          "location": "PDF-Seite 135",
+          "quote": "Werden im Entgeltabrechnungssystem die Fehlzeiten mit einem offe- nen Ende verwaltet, ist zur Prüfung der Frist die AU mit einer Dauer von einer Woche in die Zukunft ab dem Tagesdatum zu beurteilen.",
+          "title": "Offenes AU-Ende eine Woche in die Zukunft",
+          "criterion": "Bei offenen AU-Enden ist die aktuelle AU für die Fristprüfung eine Woche in die Zukunft ab Tagesdatum zu bewerten.",
+          "kind": "table",
+          "question": "Ob der Tagesdatum-Tag in die Woche eingerechnet wird, ist fachlich zu bestätigen.",
+          "variants": [
+            {
+              "title": "Deutlich über 30 Tagen",
+              "inputs": {
+                "Vorerkrankungstage_12_Monate": 25,
+                "aktuelle_AU_bisher_Tage": 5,
+                "AU_Ende_im_System": "offen"
+              },
+              "field": "mindestdauer_erreicht",
+              "value": true
+            },
+            {
+              "title": "Deutlich unter 30 Tagen",
+              "inputs": {
+                "Vorerkrankungstage_12_Monate": 10,
+                "aktuelle_AU_bisher_Tage": 5,
+                "AU_Ende_im_System": "offen"
+              },
+              "field": "mindestdauer_erreicht",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "procedure-2027-6-extended",
+          "section_id": "page-135",
+          "location": "PDF-Seite 135",
+          "quote": "Als „bescheinigte“ Arbeitsunfähigkeitszeiten gelten auch die im elektronischen Arbeitsunfähig- keitsverfahren übermittelten Datensätze.",
+          "title": "eAU gilt als bescheinigt",
+          "criterion": "Im elektronischen AU-Verfahren übermittelte Datensätze gelten als bescheinigte Arbeitsunfähigkeitszeiten.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Vorerkrankung per eAU",
+              "inputs": {
+                "Nachweis_Vorerkrankung": "eAU"
+              },
+              "field": "als_bescheinigt_gewertet",
+              "value": true
+            },
+            {
+              "title": "Krankmeldung ohne Bescheinigung",
+              "inputs": {
+                "Nachweis_Vorerkrankung": "keiner"
+              },
+              "field": "als_bescheinigt_gewertet",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "procedure-2027-7",
+          "section_id": "page-135",
+          "location": "PDF-Seite 135",
+          "quote": "Bei der Anfrage sollen durch den Arbeitgeber möglichst alle potentiellen Vorerkrankungen an- gegeben werden, es muss mindestens eine Vorerkrankung angegeben sein.",
+          "title": "Mindestens eine Vorerkrankung angeben",
+          "criterion": "Eine Anfrage mit Abgabegrund 41 muss mindestens eine Vorerkrankung enthalten.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Eine Vorerkrankung angegeben",
+              "inputs": {
+                "angegebene_Vorerkrankungen": 1
+              },
+              "field": "anfrage_zulaessig",
+              "value": true
+            },
+            {
+              "title": "Keine Vorerkrankung angegeben",
+              "inputs": {
+                "angegebene_Vorerkrankungen": 0
+              },
+              "field": "anfrage_zulaessig",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "procedure-2027-8",
+          "section_id": "page-136",
+          "location": "PDF-Seite 136",
+          "quote": "Wurden von der Krankenkasse an den Arbeitgeber mit 3.1.18 „Abgabegrund“ = „61“ Zeiten unter 3.12.12 „Kennzeichen Arbeitsunfähigkeit „nn““ als „5“ = „teilweise anrechen- bar“ zurückgemeldet, sind dem Rentenversicherungsträger ebenfalls nur die anrechenbaren Teilzeiträume in den Feldern",
+          "title": "Teilweise anrechenbare Zeiten bei Übergangsgeld",
+          "criterion": "Bei von der Krankenkasse als teilweise anrechenbar (5) zurückgemeldeten Zeiten sind dem Rentenversicherungsträger nur die anrechenbaren Teilzeiträume zu übermitteln.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Nur anrechenbarer Teilzeitraum",
+              "inputs": {
+                "KK_Rueckmeldung_Kennzeichen": "5",
+                "Abgabegrund": "11"
+              },
+              "field": "nur_anrechenbare_Teilzeitraeume_uebermittelt",
+              "value": true
+            }
+          ]
+        },
+        {
+          "key": "procedure-2027-9",
+          "section_id": "page-137",
+          "location": "PDF-Seite 137",
+          "quote": "Meldegrund „3“ ist nicht bei Übergangsgeldfällen der BA und der UV zulässig, weil entspre- chende Vorerkrankungszeiten keine Relevanz für den Übergangsgeldanspruch haben.",
+          "title": "GRUNDAV 3 nicht für BA und UV",
+          "criterion": "Grund der Anforderung 3 darf bei Übergangsgeldfällen der BA und der UV nicht verwendet werden.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Übergangsgeld der BA",
+              "inputs": {
+                "GRUNDAV": "3",
+                "Traeger_Uebergangsgeld": "BA"
+              },
+              "field": "grundav_zulaessig",
+              "value": false
+            },
+            {
+              "title": "Übergangsgeld der UV",
+              "inputs": {
+                "GRUNDAV": "3",
+                "Traeger_Uebergangsgeld": "UV"
+              },
+              "field": "grundav_zulaessig",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha256": "1355bfd7cbe71cf77e8f9573d747b2b9d86d23198daf91637c0eb42b60339386",
+      "name": "2026_03_10_Endfassung_Beispielpapier_DTA_EEL_Version_13.3_gueltig_ab_01.01.2027(1).pdf",
+      "size": 1687601,
+      "id": "examples-2027",
+      "version": "13.3",
+      "scope": "2027",
+      "role": "Beispielpapier",
+      "valid_from": "2027-01-01",
+      "requirements": [
+        {
+          "key": "examples-2027-1",
+          "section_id": "page-113",
+          "location": "PDF-Seite 113",
+          "quote": "ANZAHL-AU 1",
+          "title": "Anzahl der Vorerkrankungen im Beispiel 13.1",
+          "criterion": "Das konkrete Beispiel 13.1 enthält im DBVO eine Vorerkrankung. Der erwartete Wert ANZAHL-AU ist 1.",
+          "kind": "count_one",
+          "question": null
+        },
+        {
+          "key": "examples-2027-2",
+          "section_id": "page-114",
+          "location": "PDF-Seite 114",
+          "quote": "ANZAHL-AU 2",
+          "title": "Anzahl der Vorerkrankungen im Beispiel 13.2",
+          "criterion": "Das konkrete Beispiel 13.2 enthält im DBVO zwei Vorerkrankungen. Der erwartete Wert ANZAHL-AU ist 2.",
+          "kind": "count_two",
+          "question": null
+        },
+        {
+          "key": "examples-2027-3",
+          "section_id": "page-114",
+          "location": "PDF-Seite 114",
+          "quote": "Die Arbeitsunfähigkeit vom 01.10.20YY – 28.10.20YY darf nicht mehr angefragt werden, weil zwischen dem 03.05.20XX und der 28.10.20YY mehr als 6 Monate liegen. 13.3 Keine Vorerkrankungsanfrage wegen 6 Monatsfrist 114 Stand 10.03.2026",
+          "title": "Unterbrochene Kette im Beispiel",
+          "criterion": "Die AU vom 01.10.20YY bis 28.10.20YY wird im beschriebenen Beispiel wegen eines Abstands von mehr als sechs Monaten nicht mehr angefragt.",
+          "kind": "months",
+          "question": null
+        },
+        {
+          "key": "examples-2027-4",
+          "section_id": "page-112",
+          "location": "PDF-Seite 112",
+          "quote": "ABGABEGRUND",
+          "title": "Abgabegrund im Beispiel 13.1",
+          "criterion": "Das Beispiel 13.1 verwendet im DSLW den Abgabegrund 41. Die Vorgabe betrifft dieses konkrete Beispiel.",
+          "kind": "reason41",
+          "question": null
+        },
+        {
+          "key": "examples-2027-5",
+          "section_id": "page-112",
+          "location": "PDF-Seite 112",
+          "quote": "MM-VOER",
+          "title": "Vorerkrankungsbaustein im Beispiel markieren",
+          "criterion": "Das Beispiel 13.1 setzt das Merkmal MM-VOER auf J. Die konkrete Musterbelegung ist gegen die Ausgabe zu vergleichen.",
+          "kind": "marker_j",
+          "question": null
+        },
+        {
+          "key": "examples-2027-4-extended",
+          "section_id": "page-115",
+          "location": "PDF-Seite 115",
+          "quote": "Eine Vorerkrankungsanfrage darf nicht erfolgen, weil zwischen dem Ende der Arbeitsunfähigkeit vom 10.01.20XX – 28.01.20XX und dem Beginn der aktuellen Arbeitsunfähigkeit am 31.08.20XX mehr als 6 Monate vergangen sind.",
+          "title": "Beispiel 13.3 · keine Anfrage",
+          "criterion": "Im Beispiel 13.3 darf wegen mehr als sechs Monaten Abstand keine Vorerkrankungsanfrage erzeugt werden.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Beispiel 13.3",
+              "inputs": {
+                "vorherige_AU": "10.01.20XX–28.01.20XX",
+                "aktuelle_AU_Beginn": "31.08.20XX"
+              },
+              "field": "Vorerkrankungsanfrage_erzeugt",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "examples-2027-5-extended",
+          "section_id": "page-115",
+          "location": "PDF-Seite 115",
+          "quote": "Es ist kein Datensatz abzugeben, weil die kumulierten Zeiten (01.06.20XX – 10.06.20XX = 10 Tage, 03.05.20XX – 06.05.20XX = 4 Tage, 31.08. 20XX – 08.09.20XX = 9 Tage, insgesamt 23 Tage) der anzufragenden",
+          "title": "Beispiel 13.4 · 23 Tage",
+          "criterion": "Im Beispiel 13.4 umfassen die kumulierten Zeiten 23 Tage; es ist kein Datensatz abzugeben.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Summe der Tage",
+              "inputs": {
+                "anrechenbar": "01.06.–10.06.20XX",
+                "nicht_anrechenbar": "03.05.–06.05.20XX",
+                "aktuelle_AU": "31.08.–08.09.20XX"
+              },
+              "field": "kumulierte_Tage",
+              "value": 23
+            },
+            {
+              "title": "Datensatzabgabe",
+              "inputs": {
+                "kumulierte_Tage": 23
+              },
+              "field": "Datensatz_abzugeben",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "examples-2027-6",
+          "section_id": "page-115",
+          "location": "PDF-Seite 115",
+          "quote": "Werden in Entgeltabrechnungssystemen die Fehlzeiten mit einem offenen Ende verwaltet, ist zur Prüfung der Frist die AU mit einer Dauer von einer Woche in die Zukunft ab dem Tagesdatum zu beurteilen, demnach in diesem Fall bis zum 08.09.20XX.",
+          "title": "Beispiel 13.5 · offenes AU-Ende",
+          "criterion": "Im Beispiel 13.5 ist die offene AU bei Tagesdatum 02.09.20XX bis 08.09.20XX zu bewerten.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Bewertetes AU-Ende",
+              "inputs": {
+                "Tagesdatum": "02.09.20XX",
+                "AU_Ende_im_System": "offen"
+              },
+              "field": "bewertetes_AU_Ende",
+              "value": "08.09.20XX"
+            }
+          ]
+        },
+        {
+          "key": "examples-2027-7",
+          "section_id": "page-113",
+          "location": "PDF-Seite 113",
+          "quote": "GRUNDAV 1 AU-AB-AG 20XX0831 AU-AB-SV 00000000 KZ-AK-AU 0",
+          "title": "Beispiel 13.1 · DBVO-Kopf",
+          "criterion": "Im Beispiel 13.1 enthält der DBVO GRUNDAV 1, AU-AB-AG 20XX0831 und KZ-AK-AU 0.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "GRUNDAV",
+              "inputs": {
+                "Beispiel": "13.1"
+              },
+              "field": "GRUNDAV",
+              "value": "1"
+            },
+            {
+              "title": "AU-AB-AG",
+              "inputs": {
+                "Beispiel": "13.1"
+              },
+              "field": "AU_AB_AG",
+              "value": "20XX0831"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha256": "7666f9d7fff99664d460ddb6e6fef8a8a95551178c5ac733f3c5bcdf70f0d6b1",
+      "name": "2024_12_11_NS_FLB_TOP_02_24c24i4444b45SGBV45SGBVII47SGBXIV_Aktualisierung_der_GR_zu_Entgeltersatzleistungen_Anl3(1).pdf",
+      "size": 5544945,
+      "id": "sickpay-2024",
+      "version": "Fassung 11.12.2024",
+      "scope": "reference",
+      "role": "Rundschreiben Krankengeld",
+      "valid_from": null,
+      "requirements": [
+        {
+          "key": "sickpay-2024-1",
+          "section_id": "page-100",
+          "location": "PDF-Seite 100",
+          "quote": "Die AU-Bescheinigung muss erkennen lassen, ob es sich um eine Erst- oder Folgebescheinigung handelt. Eine Erstbescheinigung darf nur dann ausgestellt werden, wenn die Arbeitsunfähigkeit erstmalig festgestellt wird. Dauert die Arbeitsunfähigkeit länger als in der Erstbescheinigung an- gegeben, ist nach Prüfung der aktuellen Verhältnisse eine Folgebescheinigung auszustellen. Hat nach dem Ende einer Arbeitsunfähigkeit Arbeitsfähigkeit bestanden (wen",
+          "title": "Erst- und Folgebescheinigung unterscheiden",
+          "criterion": "Die Verarbeitung muss die in der Quelle unterschiedenen Erst- und Folgebescheinigungen im jeweiligen Sachverhalt berücksichtigen.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "sickpay-2024-2",
+          "section_id": "page-214",
+          "location": "PDF-Seite 214",
+          "quote": "§ 47 Abs. 1 Satz 7 SGB V schreibt vor, dass der Monat mit 30 Tagen anzusetzen ist, wenn das Krankengeld für einen ganzen Kalendermonat zu zahlen ist. Diese Vorschrift stellt darauf ab, dass die Zahlung für einen vollen Monat erfolgt. Ist ein Monat nicht voll mit Krankengeld belegt, sind die restlichen Kalendertage des betreffenden Monats anzusetzen. Beispiel 129 - Entgeltfortzahlungsende im laufen",
+          "title": "Voller Krankengeldmonat mit 30 Tagen",
+          "criterion": "Für einen vollen Kalendermonat mit Krankengeldzahlung sind nach dem vorliegenden Rundschreiben 30 Tage anzusetzen; Teilmonate sind getrennt zu betrachten.",
+          "kind": "full_month",
+          "question": null
+        },
+        {
+          "key": "sickpay-2024-3",
+          "section_id": "page-214",
+          "location": "PDF-Seite 214",
+          "quote": "Das Krankengeld wird für den Zeitraum vom 26.11. – 30.11. für 5 Kalendertage gezahlt. Beispiel 130 - Entgeltfortzahlungsende",
+          "title": "Teilmonat im Beispiel 129",
+          "criterion": "Im konkreten Beispiel 129 umfasst die Zahlung vom 26.11. bis 30.11. fünf Kalendertage.",
+          "kind": "partial_month",
+          "question": null
+        },
+        {
+          "key": "sickpay-2024-4",
+          "section_id": "page-214",
+          "location": "PDF-Seite 214",
+          "quote": "Das Krankengeld wird für Kalendertage gezahlt. §",
+          "title": "Kalendertage als Zahlungsgrundlage",
+          "criterion": "Das Rundschreiben beschreibt Kalendertage als Zahlungsgrundlage; die Sonderregel für volle Kalendermonate ist zusätzlich zu berücksichtigen.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "sickpay-2024-5",
+          "section_id": "page-214",
+          "location": "PDF-Seite 214",
+          "quote": "Das Krankengeld wird für den Zeitraum vom 27.10. – 31.10. für 5 Kalendertage gezahlt. Beispiel 131",
+          "title": "Teilmonat mit 31 Tagen im Beispiel 130",
+          "criterion": "Im Beispiel 130 umfasst die Zahlung vom 27.10. bis 31.10. fünf Kalendertage.",
+          "kind": "partial_october",
+          "question": null
+        },
+        {
+          "key": "sickpay-2024-4-extended",
+          "section_id": "page-100",
+          "location": "PDF-Seite 100",
+          "quote": "Hat nach dem Ende einer Arbeitsunfähigkeit Arbeitsfähigkeit bestanden (wenn auch nur kurzfris- tig, z. B. stundenweise), ist für eine darauffolgende Arbeitsunfähigkeit eine Erstbescheinigung auszustellen. Dies gilt auch dann, wenn eine neue Arbeitsunfähigkeit am Tag nach dem Ende der vorherigen Arbeitsunfähigkeit beginnt.",
+          "title": "Erstbescheinigung nach Arbeitsfähigkeit",
+          "criterion": "Lag zwischen zwei AU-Zeiten Arbeitsfähigkeit vor, ist die neue AU als Erstbescheinigung zu behandeln, auch bei Beginn am Folgetag.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Neue AU am Folgetag nach Arbeitsfähigkeit",
+              "inputs": {
+                "Arbeitsfaehigkeit_dazwischen": true,
+                "Beginn_neue_AU": "Folgetag"
+              },
+              "field": "Bescheinigungsart",
+              "value": "Erstbescheinigung"
+            }
+          ]
+        },
+        {
+          "key": "sickpay-2024-5-extended",
+          "section_id": "page-214",
+          "location": "PDF-Seite 214",
+          "quote": "Beispiel 130 - Entgeltfortzahlungsende im laufenden Monat mit 31 Tagen Beginn der Arbeitsunfähigkeit 15.09. Entgeltfortzahlung bis 26.10. Ergebnis: Das Krankengeld wird für den Zeitraum vom 27.10. – 31.10. für 5 Kalendertage gezahlt.",
+          "title": "Teilmonat im Beispiel 130",
+          "criterion": "Im Beispiel 130 wird Krankengeld vom 27.10. bis 31.10. für 5 Kalendertage gezahlt.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Beispiel 130",
+              "inputs": {
+                "Zahlung_von": "27.10.",
+                "Zahlung_bis": "31.10."
+              },
+              "field": "Zahlungstage",
+              "value": 5
+            }
+          ]
+        },
+        {
+          "key": "sickpay-2024-6",
+          "section_id": "page-215",
+          "location": "PDF-Seite 215",
+          "quote": "Beispiel 134 - Entgeltfortzahlungsende am Beginn eines Monats (Besonderheit Februar) Beginn der Arbeitsunfähigkeit 22.12. Entgeltfortzahlung bis 01.02. Ergebnis: Das Krankengeld wird im Februar für 27 Kalendertage (im Schaltjahr für 28 Tage) gezahlt.",
+          "title": "Februar im Beispiel 134",
+          "criterion": "Im Beispiel 134 wird Krankengeld im Februar für 27 Kalendertage gezahlt, im Schaltjahr für 28 Tage.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Kein Schaltjahr",
+              "inputs": {
+                "Entgeltfortzahlung_bis": "01.02.",
+                "Schaltjahr": false
+              },
+              "field": "Zahlungstage_Februar",
+              "value": 27
+            },
+            {
+              "title": "Schaltjahr",
+              "inputs": {
+                "Entgeltfortzahlung_bis": "01.02.",
+                "Schaltjahr": true
+              },
+              "field": "Zahlungstage_Februar",
+              "value": 28
+            }
+          ]
+        },
+        {
+          "key": "sickpay-2024-7",
+          "section_id": "page-215",
+          "location": "PDF-Seite 215",
+          "quote": "Beispiel 135 - Nahtloser Anschluss unterschiedlicher Entgeltersatzleistungen Verletztengeld 01.01. – 30.01. Krankengeld 31.01. – 01.03. Ergebnis: Im Januar wird kein Krankengeld gezahlt. Im Februar wird das Krankengeld für 30 Kalendertage gezahlt. Im März wird das Krankengeld für 1 Kalendertag gezahlt.",
+          "title": "Nahtloser Anschluss im Beispiel 135",
+          "criterion": "Im Beispiel 135 wird im Januar kein Krankengeld, im Februar für 30 und im März für 1 Kalendertag gezahlt.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Februar",
+              "inputs": {
+                "Verletztengeld": "01.01.–30.01.",
+                "Krankengeld": "31.01.–01.03."
+              },
+              "field": "Zahlungstage_Februar",
+              "value": 30
+            },
+            {
+              "title": "März",
+              "inputs": {
+                "Verletztengeld": "01.01.–30.01.",
+                "Krankengeld": "31.01.–01.03."
+              },
+              "field": "Zahlungstage_Maerz",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha256": "2f6dfde9c0581d17f193b180648e1333e6cc1c5ed92757a7324e2d70848d4f30",
+      "name": "2025_12_10_NS_FLB_TOP_01_24c24i45SGBV45SGBVII47SGBXIV_Aktualisierung_der_GR_zu_EEL_Anl1(1).pdf",
+      "size": 1730339,
+      "id": "childpay-2025",
+      "version": "Fassung 10.12.2025",
+      "scope": "reference",
+      "role": "Rundschreiben Kinderkrankengeld",
+      "valid_from": null,
+      "requirements": [
+        {
+          "key": "childpay-2025-1",
+          "section_id": "page-47",
+          "location": "PDF-Seite 47",
+          "quote": "Für die Ermittlung der Anspruchsdauer hat der Arbeitgeber der Krankenkasse die Anzahl der frei- gestellten Arbeitstage im Freistellungszeitraum im Rahmen des Verfahrens „Datenaustausch Ent- geltersatzleistungen nach § 107 SGB IV“ (DTA EEL nach § 107 SGB IV) zu melden, also die Tage, an denen ohne Erkrankung des Kindes hätte gearbeitet werden müssen. Für Zeiten ab dem 01.01.2026 können Arbeitgeber auch eine Meldung von vollständig bezahlten Freistellungszei- ten/Arbeitstagen a",
+          "title": "Freigestellte Arbeitstage melden",
+          "criterion": "Im beschriebenen Verfahren sind die Arbeitstage des Freistellungszeitraums zu melden, an denen ohne Erkrankung des Kindes hätte gearbeitet werden müssen.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "childpay-2025-2",
+          "section_id": "page-47",
+          "location": "PDF-Seite 47",
+          "quote": "Wird am ersten Tag der Freistellung wegen Erkrankung des Kindes noch teilweise gearbeitet, er- folgt für den Rest des Tages eine unbezahlte Freistellung durch den Arbeitgeber und wird bei der Krankenkasse für diesen Tag Kinderkrankengeld beantragt, ist dieser Tag auf die Höchstdauer gemäß § 45 Abs. 2 und Abs. 2a SGB V anzurechnen. Ganze Tage, an denen Versicherte unter Weiterzahlung ihres Arbeitse",
+          "title": "Teilweise gearbeitet und unbezahlt freigestellt",
+          "criterion": "Der in der Quelle beschriebene erste Tag mit teilweiser Arbeit, anschließender unbezahlter Freistellung und beantragtem Kinderkrankengeld zählt zur Höchstdauer.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "childpay-2025-3",
+          "section_id": "page-47",
+          "location": "PDF-Seite 47",
+          "quote": "Ganze Tage, an denen Versicherte unter Weiterzahlung ihres Arbeitsentgelts der Arbeit fernblei- ben, werden ebenso auf die Höchstanspruchsdauer gemäß § 45 Abs. 2 und Abs. 2a SGB V ange- rechnet (Näheres s. Abschnitt 9.1.1 „Arbeitsentgelt“). Der Arbeitgeber meldet hierfür ebenfalls per „Datenaustausch Entgeltersatzleistungen",
+          "title": "Vollständig bezahlte Freistellungstage",
+          "criterion": "Ganze Freistellungstage mit weitergezahltem Arbeitsentgelt werden nach dem beschriebenen Rundschreiben auf die Höchstanspruchsdauer angerechnet.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "childpay-2025-4",
+          "section_id": "page-47",
+          "location": "PDF-Seite 47",
+          "quote": "Tage, an denen Versicherte nur stundenweise zur Beaufsichtigung, Betreuung oder Pflege ihres erkrankten Kindes der Arbeit fernbleiben und hierfür den Verdienstausfall von ihrem Arbeitgeber erhalten, sind jedoch nicht auf die Höchstanspruchsdauer nach § 45 Abs. 2 und Abs. 2a SGB V anzurechnen. Dies ist insbesondere der Fall, wenn der Arbeitgeber am",
+          "title": "Stundenweise bezahlte Abwesenheit abgrenzen",
+          "criterion": "Nur stundenweise Abwesenheit zur Betreuung mit erstattetem Verdienstausfall wird im beschriebenen Sachverhalt nicht auf die Höchstanspruchsdauer angerechnet.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "childpay-2025-3-extended",
+          "section_id": "page-47",
+          "location": "PDF-Seite 47",
+          "quote": "Ganze Tage, an denen Versicherte unter Weiterzahlung ihres Arbeitsentgelts der Arbeit fernblei- ben, werden ebenso auf die Höchstanspruchsdauer gemäß § 45 Abs. 2 und Abs. 2a SGB V ange- rechnet",
+          "title": "Bezahlt freigestellte ganze Tage",
+          "criterion": "Ganze Tage mit weitergezahltem Arbeitsentgelt werden auf die Höchstanspruchsdauer angerechnet.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Ganzer bezahlter Freistellungstag",
+              "inputs": {
+                "ganzer_Tag": true,
+                "Arbeitsentgelt_weitergezahlt": true
+              },
+              "field": "auf_Hoechstdauer_angerechnet",
+              "value": true
+            }
+          ]
+        },
+        {
+          "key": "childpay-2025-4-extended",
+          "section_id": "page-47",
+          "location": "PDF-Seite 47",
+          "quote": "Tage, an denen Versicherte nur stundenweise zur Beaufsichtigung, Betreuung oder Pflege ihres erkrankten Kindes der Arbeit fernbleiben und hierfür den Verdienstausfall von ihrem Arbeitgeber erhalten, sind jedoch nicht auf die Höchstanspruchsdauer nach § 45 Abs. 2 und Abs. 2a SGB V anzurechnen.",
+          "title": "Stundenweise Abwesenheit mit Verdienstausfall",
+          "criterion": "Nur stundenweises Fernbleiben mit Verdienstausfallzahlung des Arbeitgebers wird nicht auf die Höchstanspruchsdauer angerechnet.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Stundenweise mit Entgelt",
+              "inputs": {
+                "nur_stundenweise": true,
+                "Verdienstausfall_vom_Arbeitgeber": true
+              },
+              "field": "auf_Hoechstdauer_angerechnet",
+              "value": false
+            }
+          ]
+        },
+        {
+          "key": "childpay-2025-5",
+          "section_id": "page-47",
+          "location": "PDF-Seite 47",
+          "quote": "Anrechnungsfrei bleiben auch Tage der Erkrankung des Kindes, für die kein Krankengeld geltend gemacht wurde und für die auch keine bezahlte Freistellung wegen Erkrankung des Kindes er- folgte",
+          "title": "Tage ohne Krankengeld und ohne Freistellung",
+          "criterion": "Tage ohne geltend gemachtes Kinderkrankengeld und ohne bezahlte Freistellung bleiben anrechnungsfrei.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Weder Krankengeld noch bezahlte Freistellung",
+              "inputs": {
+                "Kinderkrankengeld_beantragt": false,
+                "bezahlte_Freistellung": false
+              },
+              "field": "auf_Hoechstdauer_angerechnet",
+              "value": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha256": "40e47048633bfe1e2e82eeca75f1f9f9ff4e6259466d8a1022d8d88bd62db466",
+      "name": "2025_12_10_NS_FLB_TOP_01_24c24i45SGBV45SGBVII47SGBXIV_Aktualisierung_der_GR_zu_EEL_Anl2(1).pdf",
+      "size": 1210951,
+      "id": "maternity-2025",
+      "version": "Fassung 10.12.2025",
+      "scope": "reference",
+      "role": "Rundschreiben Mutterschaftsgeld",
+      "valid_from": null,
+      "requirements": [
+        {
+          "key": "maternity-2025-1",
+          "section_id": "page-91",
+          "location": "PDF-Seite 91",
+          "quote": "Der Monat August ist als einzig abgerechneter Kalendermonat für die Berechnung des Mutterschaftsgeldes zugrunde zu legen. 1.500 EUR 30 Kalendertage (90-60) = 50 EUR kalendertägliches Nettoarbeitsentgelt",
+          "title": "Berechnungsbeispiel 48",
+          "criterion": "Im konkreten Beispiel 48 wird der einzig abgerechnete Monat August verwendet: 1.500 EUR geteilt durch 30 Kalendertage ergibt 50 EUR kalendertägliches Nettoarbeitsentgelt.",
+          "kind": "maternity_48",
+          "question": null
+        },
+        {
+          "key": "maternity-2025-2",
+          "section_id": "page-91",
+          "location": "PDF-Seite 91",
+          "quote": "Es liegt noch kein abgerechneter Kalendermonat vor. Für die Berechnung des Mut- terschaftsgeldes ist daher das Arbeitsentgelt vom 01.09. bis 23.09. zugrunde zu le- gen. 920 EUR 23 Kalendertage (90-67) = 50 EUR kalendertägliches Nettoarbeitsentgelt Gemeinsames Rundschreiben vom 06./07.12.2017 in der Fassung vom 10.12.2025 zu den Leistungen",
+          "title": "Berechnungsbeispiel 49",
+          "criterion": "Im konkreten Beispiel 49 werden 920 EUR für den Zeitraum 01.09. bis 23.09. durch 23 Kalendertage geteilt; das Ergebnis ist 50 EUR kalendertägliches Nettoarbeitsentgelt.",
+          "kind": "maternity_49",
+          "question": null
+        },
+        {
+          "key": "maternity-2025-3",
+          "section_id": "page-91",
+          "location": "PDF-Seite 91",
+          "quote": "Der Monat August ist als einzig abgerechneter Kalendermonat für die Berechnung des Mutterschaftsgeldes zugrunde zu legen. 1.500",
+          "title": "Berechnungsmonat im Beispiel 48 auswählen",
+          "criterion": "Für das konkrete Beispiel 48 ist August als einziger abgerechneter Kalendermonat auszuwählen.",
+          "kind": "month_august",
+          "question": null
+        },
+        {
+          "key": "maternity-2025-4",
+          "section_id": "page-91",
+          "location": "PDF-Seite 91",
+          "quote": "Es liegt noch kein abgerechneter Kalendermonat vor. Für die Berechnung des Mut- terschaftsgeldes ist daher das Arbeitsentgelt vom 01.09. bis 23.09. zugrunde zu le- gen. 920 EUR 23 Kalendertage (90-67) = 50 EUR kalendertägliches Nettoarbeitsentgelt Gemeinsames",
+          "title": "Zeitraum im Beispiel 49 auswählen",
+          "criterion": "Im Beispiel 49 liegt kein abgerechneter Kalendermonat vor. Das Entgelt vom 01.09. bis 23.09. bildet die dargestellte Grundlage.",
+          "kind": "period_23",
+          "question": null
+        },
+        {
+          "key": "maternity-2025-3-extended",
+          "section_id": "page-92",
+          "location": "PDF-Seite 92",
+          "quote": "2.100 EUR x 30 h 210 h x 7 = 42,86 EUR kalendertägliches Nettoarbeitsentgelt",
+          "title": "Berechnungsbeispiel 50",
+          "criterion": "Im Beispiel 50 ergibt sich bei Stundenlohn ein kalendertägliches Nettoarbeitsentgelt von 42,86 EUR.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Rechenbeispiel der Quelle",
+              "inputs": {
+                "Nettoentgelt_EUR": 2100,
+                "Wochenarbeitszeit_h": 30,
+                "Arbeitsstunden": 210
+              },
+              "field": "kalendertaegliches_Nettoentgelt_EUR",
+              "value": 42.86
+            }
+          ]
+        },
+        {
+          "key": "maternity-2025-4-extended",
+          "section_id": "page-90",
+          "location": "PDF-Seite 90",
+          "quote": "3.652 EUR x 28 h 332 h x 7 = 44,00 EUR kalendertägliches Nettoarbeitsentgelt",
+          "title": "Berechnungsbeispiel 47",
+          "criterion": "Im Beispiel 47 bleiben unverschuldete Fehlstunden an Teiltagen unberücksichtigt; das kalendertägliche Nettoarbeitsentgelt beträgt 44,00 EUR.",
+          "kind": "table",
+          "question": null,
+          "variants": [
+            {
+              "title": "Rechenbeispiel der Quelle",
+              "inputs": {
+                "Nettoentgelt_EUR": 3652,
+                "Wochenarbeitszeit_h": 28,
+                "Arbeitsstunden": 332
+              },
+              "field": "kalendertaegliches_Nettoentgelt_EUR",
+              "value": 44.0
+            }
+          ]
+        },
+        {
+          "key": "maternity-2025-5",
+          "section_id": "page-92",
+          "location": "PDF-Seite 92",
+          "quote": "Bei der Berechnung des Mutterschaftsgeldes nach § 24i Abs. 2 Sätze 1 – 4 SGB V und des Zu- schusses zum Mutterschaftsgeld nach § 20 MuSchG ist im Rahmen des Übergangsbereichs (§°20°Abs. 2 SGB IV) von dem tatsächlich erzielten Nettoarbeitsentgelt auszugehen.",
+          "title": "Übergangsbereich",
+          "criterion": "Im Übergangsbereich ist von dem tatsächlich erzielten Nettoarbeitsentgelt auszugehen.",
+          "kind": "evidence",
+          "question": null
+        }
+      ]
+    },
+    {
+      "sha256": "466a3521788f12d6193b2526357d1f2d053e91975a39ea2fca0238fe3efc7d9a",
+      "name": "TEEL0-Test1-DBVO(2)",
+      "size": 1560,
+      "id": "technical-2026",
+      "version": "gelieferte Musterdatei",
+      "scope": "2026",
+      "role": "Technische Testdatei",
+      "valid_from": null,
+      "requirements": [
+        {
+          "key": "technical-2026-1",
+          "section_id": "technical-sample",
+          "location": "Quellabschnitt technical-sample",
+          "quote": "VOSZAGEE",
+          "title": "Satzarten der gelieferten Musterdatei",
+          "criterion": "Für diese konkrete Musterdatei werden die Satzarten VOSZ, DSKO, DSLW und NCSZ in dieser Reihenfolge erwartet. Dies ersetzt keine allgemeine Satzbeschreibung.",
+          "kind": "record_order",
+          "question": null
+        },
+        {
+          "key": "technical-2026-2",
+          "section_id": "technical-sample",
+          "location": "Quellabschnitt technical-sample",
+          "quote": "DSLWLEIS",
+          "title": "Leistungsdatensatz im Muster",
+          "criterion": "Die konkrete Musterdatei enthält einen DSLW-Leistungsdatensatz. Feldpositionen oder allgemeine Encodingregeln werden aus diesem Muster nicht abgeleitet.",
+          "kind": "evidence",
+          "question": null
+        },
+        {
+          "key": "technical-2026-3",
+          "section_id": "technical-sample",
+          "location": "Quellabschnitt technical-sample",
+          "quote": "NCSZAGEE",
+          "title": "Nachlaufsatz des technischen Musters",
+          "criterion": "Die gelieferte Musterdatei endet mit einem NCSZ-Nachlaufsatz. Hier wird nur der beobachtete Mustersatz geprüft, keine allgemeine Felddefinition.",
+          "kind": "trailer_ncsz",
+          "question": null
+        },
+        {
+          "key": "technical-2026-4",
+          "section_id": "technical-sample",
+          "location": "Quellabschnitt technical-sample",
+          "quote": "DSKOLEIS",
+          "title": "Kommunikationsdatensatz des Musters",
+          "criterion": "Die gelieferte Musterdatei enthält einen DSKO-Kommunikationsdatensatz. Ein fehlender DSKO-Satz weicht von diesem konkreten Muster ab.",
+          "kind": "record_dsko",
+          "question": null
+        },
+        {
+          "key": "technical-2026-3-extended",
+          "section_id": "technical-sample",
+          "location": "Quellabschnitt technical-sample",
+          "quote": "DBVO1202603110",
+          "title": "DBVO-Baustein im Muster",
+          "criterion": "Die konkrete Musterdatei enthält einen DBVO-Baustein. Feldpositionen werden aus diesem Muster nicht abgeleitet.",
+          "kind": "evidence",
+          "question": null
+        }
+      ]
+    }
+  ]
+}
