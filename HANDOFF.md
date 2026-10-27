@@ -334,3 +334,22 @@ state was also covered by controls contracts. Native QA used synthetic fixtures 
 preview was stopped and ignored package.json/preview_dev.py removed. Source original bytes,
 DBs, customer data and credentials are excluded from git. Publish to existing PR branch
 using b0d9ad8b14a87210390c5d32562d5e7b6bf2641a as expected head; observe new CI next.
+
+0.6 code published as 9606d9c348a683219d08933c453704e8f27f83c0 on codex/auditflow-prototype / PR #1. Expected-head lease preserved b0d9ad8. Push CI run 40444920446 and PR CI 40444923452 are in progress; no merge into main.
+
+## 0.6 verified GitHub handoff
+
+Code **9606d9c348a683219d08933c453704e8f27f83c0** passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40444920446:
+Linux Python 3.11/3.12/3.13/3.14 (3.13 includes optional document extras), frontend syntax plus
+both render/control contract suites, and Windows/Python 3.14. There is no pending code fix.
+Later commits only record verification. Existing source/approval/data migrations are additive.
+
+User update: stop server (Ctrl+C), `git pull origin codex/auditflow-prototype`, restart
+`python -m auditflow`, then Ctrl+F5. Bearbeiten enables contextual trash/export; document eye
+icon propagates hide/show; gear bottom left → Papierkorb restores groups or confirms DELETE.
+Envelope is top left; assistant is bottom right. Choose requested case count in workflow
+creation/intake or requirement gate. API/SMTP secrets remain server-side, never in chat/git.
+No live inference/mail or actual user-data purge was performed. Preview is stopped, helpers
+removed and runtime databases remain ignored. Read docs/WORKSPACE.md for lifecycle/erasure
+semantics and scope before future changes. Do not merge main automatically.

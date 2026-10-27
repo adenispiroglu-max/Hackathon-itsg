@@ -180,3 +180,12 @@ Final 0.6 local rerun after lifecycle guards: **134 tests pass with extras (14.9
 contract suites and all JS syntax/compileall/diff checks pass. Source-job/automation/workflow
 workers respect hidden/trash state without recreating purged progress records. Publication
 and remote Linux/Windows results are recorded separately below when actually observed.
+
+### 0.6 observed GitHub result
+
+Code `9606d9c348a683219d08933c453704e8f27f83c0` passed all six jobs in
+https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40444920446:
+Linux Python 3.11–3.14, optional document extras on 3.13, frontend syntax with both Node
+contract suites, and Windows/Python 3.14. Subsequent documentation-only commits record
+this exact verified code. No real model/SMTP connectivity or full older Playwright rerun
+is implied by this result.
