@@ -91,7 +91,7 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual([x['expected_message'] for x in created],[False,True,True,None])
         self.assertTrue(all(x['review_status']=='pending' for x in created))
     def test_generation_requires_approved_rules(self):
-        with self.assertRaises(InputError):self.service.generate_cases({})
+        with self.assertRaisesRegex(InputError,'synthetischen Demoregeln.*zugehörigen Vorgang'):self.service.generate_cases({})
     def test_invalid_live_generation_saves_nothing(self):
         self.ready();count=len(self.service.store.list('case'))
         with patch('auditflow.service.Model.call',return_value='{"cases":[{"name":"wrong"}]}'):

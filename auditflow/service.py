@@ -183,7 +183,8 @@ class Service:
         if baseline['ruleset']!='fixture-2026':raise InputError('Kein ausführbarer Vorlagenstand für diesen Ausgangsfall.')
         rules=[self.store.get('requirement',id) for id in ['C1','C2','C4']]
         if any(r.get('trashed_at') or r.get('hidden') or r['status']!='approved' for r in rules):
-            raise InputError('Zuerst C1, C2 und C4 fachlich freigeben.')
+            blocked=[r['id'] for r in rules if r.get('trashed_at') or r.get('hidden') or r['status']!='approved']
+            raise InputError('Diese Funktion nutzt nur die synthetischen Demoregeln C1, C2 und C4. Nicht freigegeben oder nicht verfügbar: '+', '.join(blocked)+'. Eigene Dokumentanforderungen zählen hier nicht. Für eigene KI-Testfälle den zugehörigen Vorgang öffnen; dort läuft die Erstellung nach der Anforderungsfreigabe.')
         mode=body.get('mode','boundary');drafts=[]
         test_type=body.get('test_type','boundary')
         if test_type not in ['positive','negative','boundary','missing_data']:raise InputError('Unbekannte Testfallart.')

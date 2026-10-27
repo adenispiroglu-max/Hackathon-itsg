@@ -22,3 +22,11 @@ const libContext={document:{addEventListener(){}},setInterval(){},labels:{},e};v
 assert.ok(libContext.markText('📄 Prüfe die Frist',{issues:[{target:'criterion',quote:'Frist',start:12,end:17,reason:'Test'}]},'criterion').includes('>Frist</mark>'));
 assert.ok(!libContext.markText('Unchanged',{issues:[{target:'criterion',quote:'invented',start:0,end:7}]},'criterion').includes('<mark'));
 console.log('Frontend contracts: all 9 conveyor phases, escaped input, report icons and Unicode marks passed.');
+
+// Empty/filtered workflow lists must guide real customer work, never present demo tools as the primary action.
+ctx.heading=(tag,title,desc,action='')=>`<h1>${title}</h1><p>${desc}</p>${action}`;
+ctx.cases=()=>'<p>LEGACY DEMO TOOLS</p>';
+let empty=ctx.workflowCasesPage();
+assert.ok(empty.includes('data-action="flow-new"'));assert.ok(empty.includes('data-action="flow-select"'));assert.ok(empty.includes('class="panel"><summary>Unabhängige synthetische Demofälle'));
+assert.ok(empty.indexOf('flow-select')<empty.indexOf('LEGACY DEMO TOOLS'));
+ctx.state.workflow.items=[];empty=ctx.workflowCasesPage();assert.ok(empty.includes('Noch keine Vorgänge vorhanden.'));assert.ok(empty.includes('Herstellerergebnisse'));

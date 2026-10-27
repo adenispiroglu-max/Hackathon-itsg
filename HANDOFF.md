@@ -418,3 +418,21 @@ No unauthenticated/live external call was made. Final adapter test run/publicati
 Adapter correction final local validation: 151 Python tests pass (15.407s), compileall
 and diff check pass. Model request is mocked, not a live Hessian response. Customer code
 already has six green remote jobs; the adapter follow-up requires its own remote CI.
+
+
+## Demo gate confusion fix (2026-10-27)
+User saw “Zuerst C1, C2 und C4 fachlich freigeben” when trying to generate a test report,
+despite approving own requirements. Traced exact message to Service.generate_cases (legacy
+bounded demo generator), not conveyor generation/reporting. Root UX bug: workflowCasesPage
+fell back to the unqualified legacy cases() screen when no matching workflow cases existed.
+Now it shows a clear workflow-first empty state with existing workflow links/new workflow,
+explains approval/generation/report steps, and keeps legacy tools collapsed and explicitly
+labelled Demo. Demo error identifies blocked demo IDs and directs own-source work to the
+workflow. No approval bypass, no mapping arbitrary requirements to executable demo rules.
+Added Node empty-list regression and backend message assertion. No user runtime DB inspected;
+this diagnosis identifies the call path, not the actual status of their local approvals.
+Remote parent before this fix 0994dda2530ec8ba2fbc99ee4925c171ddad4dd1; do not merge main.
+
+Demo-gate fix validation: 151 Python tests passed (15.912s), all static JS syntax, three
+Node contract suites including the new empty-list regression, compileall and diff check
+passed. No new native browser or live model test. Publication on existing PR branch follows.
