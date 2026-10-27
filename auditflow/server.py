@@ -13,6 +13,7 @@ from . import __version__
 from .domain import InputError
 from .model import Model, ModelError
 from .service import Service
+from .portal import Forbidden
 from .store import Store
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -69,7 +70,7 @@ def handler_for(service):
             # Do not log user input, credentials, paths with queries or source text.
             pass
 
-        def send(self,data,status=200,mime='application/json; charset=utf-8',filename=None,inline=False):
+        def send(self,data,status=200,mime='application/json; charset=utf-8',filename=None,inline=False,cookie=None):
             if not isinstance(data,bytes):data=json.dumps(data,ensure_ascii=False).encode()
             self.send_response(status);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)))
             self.send_header('X-Content-Type-Options','nosniff');self.send_header('Cache-Control','no-store')
@@ -78,7 +79,53 @@ def handler_for(service):
                 # ASCII fallback plus RFC 5987 UTF-8 name, so umlauts or quotes cannot break the header.
                 safe=re.sub(r'[^A-Za-z0-9._-]','_',filename)[:200] or 'download'
                 self.send_header('Content-Disposition',f'{"inline" if inline else "attachment"}; filename="{safe}"; filename*=UTF-8\'\'{quote(filename,safe="")}')
+            if cookie:self.send_header('Set-Cookie',cookie)
             self.end_headers();self.wfile.write(data)
+
+        # Demo login: the session cookie only selects a view and scopes portal data; it is no security boundary.
+        def session_token(self):
+            from http.cookies import SimpleCookie
+            try:c=SimpleCookie(self.headers.get('Cookie',''));return c['af_session'].value if 'af_session' in c else None
+            except Exception:return None
+
+        def account(self):
+            token=self.session_token();return service.portal.account_for(token) if token else None
+
+        def role_allowed(self,path):
+            acc=self.account()
+            if acc and acc['role']=='hersteller' and not (path=='/api/health' or path.startswith('/api/portal/')):
+                self.send({'error':'Herstellerkonten sehen nur das Herstellerportal.'},403);return False
+            return True
+
+        def portal_get(self,path):
+            parts=path.split('/');acc=self.account()
+            if path=='/api/portal/accounts':return self.send(service.portal.accounts())
+            if path=='/api/portal/me':return self.send({'account':acc})
+            if acc is None:return self.send({'error':'Bitte zuerst anmelden (Demo-Anmeldung).'},401)
+            if path=='/api/portal/overview':return self.send(service.portal.overview(acc))
+            if len(parts)==5 and parts[3]=='package':
+                return self.send(service.portal.package_input(acc,parts[4]),filename='AuditFlow-Testpaket-'+parts[4]+'.json')
+            if len(parts)==5 and parts[3]=='submission':
+                data,mime,name=service.portal.download_submission(acc,parts[4]);return self.send(data,mime=mime,filename=name)
+            return self.send({'error':'Portal-Endpunkt nicht gefunden.'},404)
+
+        def portal_post(self,path,body):
+            if path=='/api/portal/login':
+                r=service.portal.login(body)
+                return self.send({'account':r['account']},cookie=f"af_session={r['token']}; HttpOnly; SameSite=Strict; Path=/")
+            if path=='/api/portal/logout':
+                token=self.session_token()
+                if token:service.portal.logout(token)
+                return self.send({'ok':True},cookie='af_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0')
+            if path=='/api/portal/register':
+                r=service.portal.register(body)
+                return self.send({'account':r['account']},cookie=f"af_session={r['token']}; HttpOnly; SameSite=Strict; Path=/")
+            acc=self.account()
+            if acc is None:return self.send({'error':'Bitte zuerst anmelden (Demo-Anmeldung).'},401)
+            if path=='/api/portal/software':return self.send(service.portal.add_software(acc,body))
+            if path=='/api/portal/import':return self.send(service.portal.import_results(acc,body))
+            if path=='/api/portal/submission':return self.send(service.portal.submit(acc,body))
+            return self.send({'error':'Portal-Endpunkt nicht gefunden.'},404)
 
         def authorized(self):
             token=os.environ.get('AUDITFLOW_ACCESS_TOKEN','')
@@ -88,8 +135,9 @@ def handler_for(service):
 
         def do_GET(self):
             path=urlparse(self.path).path
-            if path.startswith('/api/') and not self.authorized():return
+            if path.startswith('/api/') and (not self.authorized() or not self.role_allowed(path)):return
             try:
+                if path.startswith('/api/portal/'):return self.portal_get(path)
                 if path=='/api/state':
                     with service.store.lock:service.review.refresh_validity()
                     docs=service.store.list('document');reqs=service.store.list('requirement');runs=service.store.list('run')
@@ -146,13 +194,15 @@ def handler_for(service):
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
                 files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/locale.js':('locale.js','text/javascript; charset=utf-8'),'/customers.js':('customers.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/results.js':('results.js','text/javascript; charset=utf-8')}
+                files.update({'/portal.js':('portal.js','text/javascript; charset=utf-8'),'/portal.css':('portal.css','text/css; charset=utf-8')})
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
+            except Forbidden as e:return self.send({'error':str(e) or 'Kein Zugriff auf diesen Datensatz.'},403)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
             except (InputError,ValueError) as e:return self.send({'error':str(e)},422)
 
         def do_POST(self):
-            if not self.authorized():return
+            if not self.authorized() or not self.role_allowed(urlparse(self.path).path):return
             # Local UI is same-origin; reject cross-site writes and DNS-rebinding origins.
             origin=self.headers.get('Origin')
             if origin and urlparse(origin).netloc!=self.headers.get('Host'):
@@ -166,6 +216,8 @@ def handler_for(service):
                 body=json.loads(self.rfile.read(length))
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
                 path=urlparse(self.path).path
+                if path.startswith('/api/portal/'):
+                    with service.store.lock:return self.portal_post(path,body)
                 if path=='/api/assistant/explain':
                     from .assistant import explain
                     # Network inference must not hold the worker's database lock.
@@ -212,6 +264,7 @@ def handler_for(service):
                         result={'status':'connected','model':Model().model,'reply':reply[:100]}
                     else:return self.send({'error':'Nicht gefunden.'},404)
                 return self.send(result)
+            except Forbidden as e:return self.send({'error':str(e) or 'Kein Zugriff auf diesen Datensatz.'},403)
             except ModelError as e:return self.send({'error':str(e)},502)
             except KeyError as e:return self.send({'error':'Fehlendes Feld oder unbekannter Datensatz: '+str(e)},422)
             except (InputError,ValueError,TypeError) as e:return self.send({'error':str(e)},422)

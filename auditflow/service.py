@@ -31,6 +31,8 @@ class Service:
         self.review=Review(store)
         self.library=Library(store,Path(store.path).parent/'documents',on_new_version=self.review.apply_document_change)
         with store.lock:self.library.migrate();self.review.migrate()
+        from .portal import Portal
+        self.portal=Portal(store,self.certification,self.automation)
 
     # Interface preferences only (adapted from codex/auditflow-prototype). Records and approvals are untouched.
     def settings(self):

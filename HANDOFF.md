@@ -355,3 +355,42 @@ assistant ref; update `scripts/*_smoke.cjs` for the new routes.
 - Added "Registrierte Software": ring chart of all software versions by stored status (neu, in Prüfung, erneut prüfen, freigegeben, abgelehnt), total in the centre; the card links to Kunden & Software. Legend colours use classes because the CSP blocks inline style attributes.
 - "Nächste 90 Tage" renamed "Anstehende Termine" (EN "Upcoming events"); the 90-day window is unchanged.
 - Observed: 141 tests OK (5 skipped); node --check OK; browser DE/light and EN/dark at 1440 and 390 without page errors or horizontal scroll.
+## Checkpoint 27.10.2026: demo login and manufacturer portal (branch feat/hersteller-portal)
+
+Contract: `.plans/hersteller-portal-contract.md`. User decisions: demo login (no security), the
+manufacturer sees status, submits documents, downloads test packages / uploads results, reads ITSG
+decisions; the server returns only the manufacturer's own data.
+
+- `auditflow/portal.py`: demo accounts (ITSG-Prüfer + one per fictional manufacturer), sessions
+  (kind `session`, token never logged), scoped overview, package download (internal package approval
+  stripped), result import, submissions, downloads. Unknown or foreign ids raise `Forbidden` (403).
+  Version creation is not listed as an ITSG decision.
+- `server.py`: cookie `af_session` (HttpOnly, SameSite=Strict); `/api/portal/*` routes; a
+  manufacturer session gets 403 on every other `/api/*` except `/api/health`. No session keeps the
+  old behaviour (all existing tests and scripts) – documented demo limitation.
+- `portal.js` / `portal.css`: login page, reviewer header (name + Abmelden), manufacturer portal
+  (Übersicht, Einreichungen, Testpakete, Entscheidungen), drag-and-drop, client-side result file
+  checks, own EN dictionary via `Object.assign(UX_EN, …)`, theme/language kept in localStorage
+  outside reviewer mode. `app.js` boots through `portalGate()` on DOMContentLoaded.
+
+Observed: 153 tests OK (5 skipped without optional packages). Browser walkthrough (headless
+Chrome via CDP, fresh DB on port 8097): login page → login as Lohnwerk (fiktiv) → only own
+versions, `/api/state` 403 → package download (no expected outcomes, no ITSG approval data) →
+result JSON dropped and uploaded → job completed 3/3/0 → submission dropped and uploaded → logout →
+ITSG-Prüfer sees submission (uploaded_by = manufacturer) and the import result, rejects with note →
+manufacturer sees the decision. No horizontal overflow at 390 px on the three portal pages.
+
+Limitations: anyone can pick any account; sessions never expire; without a session the reviewer
+API stays open. Test packages are still created by ITSG through the API/automation (the reviewer UI
+for packages is hidden pending the redesign). Theme/language outside reviewer mode are per browser.
+Not merged yet with the other session's uncommitted edits to workspace.js/style.css/locale.js.
+- Self-registration (27.10.2026): login page button "Neues Konto erstellen" → form (Firmenname,
+  Ansprechperson, optional E-Mail, 1–10 software versions with optional description, required demo
+  consent). `POST /api/portal/register` creates the manufacturer (scope `registration`, contact
+  stored, email never in events) and its versions via `Certification._version` (status `neu`, own
+  test-package project, history note "Vom Hersteller zur Prüfung registriert."), then signs in.
+  Duplicate company names are refused. In the portal, "+ Software registrieren" →
+  `POST /api/portal/software`. ITSG sees the new manufacturer under Kunden & Software at once.
+  Portal notice now reads "Angaben werden nicht geprüft" (self-registered data is not fictional by
+  definition). Observed: portal tests 16 OK; browser: register 2 versions → portal → add a third →
+  ITSG list shows all three; no overflow at 390 px. Limitation: no verification of company or email.
