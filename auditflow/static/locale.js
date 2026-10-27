@@ -261,7 +261,7 @@ Evidenzanzeige und feste Prüfschritte ohne Modellaufruf.|Evidence display and f
 beantwortet die Frage mit dem konfigurierten Modell. Fehler werden angezeigt; kein verdeckter Wechsel zu einer angeblichen KI-Antwort.|answers the question with the configured model. Errors are shown; there is no hidden switch to a supposed AI answer.
 Der Assistent kann keine Freigaben erteilen, Befunde ändern oder Software zulassen.|The assistant cannot grant approvals, change findings or certify software.
 Gemeinsamer Stand und Grenzen|Shared state and limits
-Die Übersicht bündelt offene Zertifizierungen, Dokumente zur Freigabe und Erinnerungen. Testpakete und Ergebnisimporte liegen in der jeweiligen Version unter Kunden & Software. Der Vergleich zur Vorversion wird beim Upload unter Quellen & KI gespeichert. Ergebnisse, Abdeckung und Prüfberichte stehen unter|The overview collects open certifications, documents to approve and reminders. Test packages and result imports are in each version under Customers & software. The comparison with the previous version is stored on upload under Sources & AI. Results, coverage and reports are under
+Die Übersicht bündelt Hersteller, registrierte Software, offene Zertifizierungen und Erinnerungen. Testpakete und Ergebnisimporte liegen in der jeweiligen Version unter Kunden & Software. Der Vergleich zur Vorversion wird beim Upload unter Quellen & KI gespeichert. Ergebnisse, Abdeckung und Prüfberichte stehen unter|The overview collects manufacturers, registered software, open certifications and reminders. Test packages and result imports are in each version under Customers & software. The comparison with the previous version is stored on upload under Sources & AI. Results, coverage and reports are under
 . Die Oberfläche nutzt weiterhin ITSG-inspiriertes Rot.|. The interface keeps its ITSG-inspired red.
 Base44-Konten und Cloud-Dateiablage sind nicht verbunden. Die Anwendung bleibt lokal mit einem optionalen gemeinsamen Zugriffstoken. Eine echte Mehrbenutzerverwaltung ist nicht enthalten.|Base44 accounts and cloud file storage are not connected. The application stays local with an optional shared access token. Real multi-user management is not included.
 Unterstützt werden strukturierte synthetische C1-/C2-/C4-Vorlagen und die begrenzte Einzeldateiprüfung. Keine vollständige Lohnprüfung, amtliche Zertifizierung oder automatisch ausführbaren neuen Gesetze.|Supported are structured synthetic C1/C2/C4 templates and the limited single-file check. No complete payroll audit, official certification or automatically executable new laws.
@@ -281,6 +281,16 @@ Veraltete Nachweise bleiben sichtbar, zählen aber nicht als aktueller Nachweis.
 Abdeckung|Coverage
 Fehlend: kein Testfall oder kein Ergebnis. Offen: offene Erwartung oder Freigabe ausstehend. Veraltet: Nachweis beruht auf einer älteren Version. Mehr Testfälle bedeuten nicht automatisch mehr fachliche Abdeckung.|Missing: no test case or no result. Open: open expectation or approval pending. Outdated: evidence is based on an older version. More test cases do not automatically mean more coverage.
 Nicht beurteilbar zählt nie als bestanden. Einzelne unklare Ergebnisse lassen sich nur mit Name und Begründung fachlich akzeptieren.|Not assessable never counts as passed. Individual unclear results can only be accepted with name and reason.
+Registrierte Software|Registered software
+Alle Software-Versionen auf der Plattform nach Status|All software versions on the platform by status
+registriert|registered
+Noch keine Software registriert.|No software registered yet.
+Hersteller und Version unter Kunden & Software anlegen.|Create the manufacturer and version under Customers & software.
+Hersteller, registrierte Software und anstehende Termine.|Manufacturers, registered software and upcoming events.
+Anstehende Termine|Upcoming events
+Keine anstehenden Termine in den nächsten 90 Tagen.|No upcoming events in the next 90 days.
+Keine offenen Erinnerungen.|No open reminders.
+Änderungen mit Quelle über „+ Erinnerung“ erfassen oder ein Dokument mit Gültigkeitsdatum importieren.|Record changes with a source via “+ Reminder” or import a document with a validity date.
 Einstellungen|Settings
 Einstellungen öffnen|Open settings
 ARBEITSPLATZ|WORKSPACE

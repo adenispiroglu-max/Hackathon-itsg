@@ -270,3 +270,15 @@ html[data-theme=dark] :is(.pill.pending,.pill.in_pruefung,.pill.not_assessable,.
 html[data-theme=dark] :is(.rem-row.overdue){background:#2e1f24}html[data-theme=dark] :is(.rem-row.soon){background:#2d2a1f}
 html[data-theme=dark] :is(td,th,tr,hr,.panel-header,.history-list li,.cert-row,.doc-row,.lib-doc-row,.rem-row){border-color:var(--line)}
 html[data-theme=dark] .res-track{fill:#2c323d}
+/* Overview: registered-software ring next to the two KPIs. */
+.cert-top{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:20px;margin:0 0 20px;align-items:stretch}
+.cert-kpi-stack{display:grid;gap:20px;grid-template-rows:1fr 1fr}
+.software-panel{display:block;color:inherit;text-decoration:none;margin:0}
+@media(hover:hover){.software-panel:hover{border-color:var(--brand)}}
+.software-visual{justify-content:flex-start;padding:8px 0 4px}.software-visual .chart-legend{flex:1;max-width:320px}
+@media(max-width:900px){.cert-top{grid-template-columns:minmax(0,1fr)}.cert-kpi-stack{grid-template-rows:none;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.software-visual{flex-direction:column;align-items:stretch}.software-visual .ring-wrap{margin:0 auto}.cert-kpi-stack{grid-template-columns:minmax(0,1fr)}}
+html[data-theme=dark] .ring-track{stroke:#2c323d}
+/* Legend dots use classes: the CSP forbids inline style attributes. Colors match softwareStatusColors. */
+.legend-sw-neu{background:#8a93a3}.legend-sw-in_pruefung{background:#b77a19}.legend-sw-erneut_pruefen{background:#7b5cc4}.legend-sw-freigegeben{background:#20806a}.legend-sw-abgelehnt{background:#d50032}
+html[data-theme=dark] .sidebar-bottom{color:var(--ink)}

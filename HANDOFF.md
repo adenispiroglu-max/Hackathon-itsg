@@ -349,3 +349,9 @@ assistant ref; update `scripts/*_smoke.cjs` for the new routes.
 - Also ported from ui/polish-overrides: evidence notice removed on the version page; upload row aligned (hint on its own row). Help text updated: the server can read HAI_API_KEY from a local .env.
 - Observed: 141 tests OK (5 skipped); node --check all JS. Browser (1440 and 390, disposable DB copy): all 8 pages in EN/dark have no untranslated interface text — the 12 remaining German strings are record content; DE↔EN and light↔dark toggle without reload and persist after reload; no page errors; no horizontal scroll at 390.
 - Not verified: dialogs other than Settings (e.g. upload, reminder, approve) were not walked in English. Strings missing from the dictionary simply stay German; add them to UX_EN or UX_RULES.
+
+## Overview simplified (2026-10-27)
+- Removed from Übersicht: "Dokumente zur Freigabe" KPI and panel, "Software-Versionen" KPI, and the "Offene Zertifizierungen" list panel (the count stays as a KPI linking to Kunden & Software → open).
+- Added "Registrierte Software": ring chart of all software versions by stored status (neu, in Prüfung, erneut prüfen, freigegeben, abgelehnt), total in the centre; the card links to Kunden & Software. Legend colours use classes because the CSP blocks inline style attributes.
+- "Nächste 90 Tage" renamed "Anstehende Termine" (EN "Upcoming events"); the 90-day window is unchanged.
+- Observed: 141 tests OK (5 skipped); node --check OK; browser DE/light and EN/dark at 1440 and 390 without page errors or horizontal scroll.
