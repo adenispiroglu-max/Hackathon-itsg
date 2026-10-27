@@ -116,7 +116,7 @@ class Workflow:
                 d=self.store.get('document',id)
                 if d.get('trashed_at') or d.get('hidden'):raise InputError('Dokument liegt im Papierkorb.')
                 if d.get('is_historical'):raise InputError('Historische Quelle ist kein aktueller Eingang.')
-                self.service.documents.queue(id,w['mode'])
+                self.service.documents.queue(id,w['mode'],resume=True)
             w['phase']='sources';self.save(w)
         self.start();return w
 

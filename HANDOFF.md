@@ -514,3 +514,21 @@ timeout validation/transport propagation and distinct redacted timeout, DNS, TLS
 connection-refused errors. Existing three Node suites, JS syntax, compileall and diff
 checks pass. No live API request or runtime key access. Remote expected parent 74c5185e;
 no claim that extending a timeout fixes an unreachable endpoint.
+
+
+## Reuse completed library source analysis at workflow start (2026-10-27)
+User reports the same task works in Quellen & KI but not workflow. Both use documents.queue.
+Code confirmed Workflow.begin still used queue without resume=True, unlike Workflow.retry:
+a library job already completed before Begin was unnecessarily scheduled again. Begin now
+uses the same resume/reuse contract: latest completed same-mode jobs are reused, failed
+ones resume, live/offline changes still require the correct mode. No cross-mode approval
+or previous failed result is silently converted to success. Added regression representing
+completed library preparation, asserts no new job/worker and progression to requirements.
+This identifies a code-path defect, not proof of the user's exact local provider failure.
+No live API, keys, user PDFs/DB inspected. Local branch codex/reuse-source-analysis.
+
+Reuse fix verification: 167 backend tests passed (15.228s), three Node contracts, all
+static JS syntax, compileall and diff checks pass. No live API or native browser run.
+Publishing to existing PR branch from expected head 8eb4a7d; keep same-terminal model
+environment on restart. Existing failed workflows can Retry after source analysis succeeds
+under Quellen & KI for the same stored document and processing mode.

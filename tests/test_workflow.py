@@ -46,6 +46,15 @@ class WorkflowTests(unittest.TestCase):
         w=self.create()
         with self.assertRaises(InputError):self.f.begin({'id':w['id']})
         self.assertEqual(self.f.tick(w['id'])['phase'],'intake')
+    def test_begin_reuses_finished_library_analysis_in_same_mode(self):
+        w=self.create();d=self.source(w)
+        # The source helper represents the library's finished offline preparation.
+        w=self.s.store.get('workflow',w['id']);w['phase']='intake';self.f.save(w)
+        before=self.s.store.filtered('document_job','document_id',d['id'])
+        with patch.object(self.s.documents,'start',side_effect=AssertionError('Completed source must not start a second worker')):
+            self.f.begin({'id':w['id']})
+        after=self.s.store.filtered('document_job','document_id',d['id'])
+        self.assertEqual(after,before);self.assertEqual(self.f.tick(w['id'])['phase'],'requirements')
     def test_sources_report_and_human_gate(self):
         w=self.create();d=self.source(w);w=self.f.tick(w['id'])
         self.assertEqual(w['phase'],'requirements');self.assertEqual(len(w['reports']),1)

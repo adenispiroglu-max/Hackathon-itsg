@@ -287,3 +287,7 @@ Model network timeout defaults to 120 seconds per socket connect/read operation 
 not an overall document completion deadline. Errors distinguish actual timeouts, DNS, TLS
 certificate/handshake failure and refused connections; raw transport details are not echoed.
 A longer timeout cannot fix unreachable endpoints, invalid credentials or exhausted quota.
+
+A workflow reuses an already completed analysis of the exact stored document in the same
+processing mode from Quellen & KI. Starting a workflow does not schedule it a second time.
+Offline preparation is not reused as a completed live AI analysis.
