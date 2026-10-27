@@ -84,3 +84,5 @@ tr[data-ux-id] td:first-child{position:relative;padding-right:38px}tr[data-ux-id
 .flow-analysis-detail p,.flow-analysis-detail small{overflow-wrap:break-word;line-height:1.7}
 .flow-analysis-detail p>strong{display:inline;font-size:13px}.flow-analysis-detail progress{display:block;max-width:none}
 @media(max-width:600px){.flow-file-header{grid-template-columns:34px minmax(0,1fr)}.flow-file-header>.pill{grid-column:2;justify-self:start}.flow-file-actions{margin-left:0}}
+
+.flow-case-check{padding:14px 16px;border:1px solid var(--line);border-radius:8px;background:var(--bg);margin:16px 0}.flow-case-check h4{margin:0 0 8px}.flow-case-check p,.flow-case-check li{font-size:12px;overflow-wrap:anywhere}.flow-case-check>strong{font-size:12px}.flow-case-decisions{padding:0 0 10px;border-bottom:1px solid var(--line)}.flow-decision-count{padding:12px 0;font-size:13px;color:var(--muted)}.flow-cases summary{align-items:center}.flow-cases summary>.pill{flex-shrink:0}

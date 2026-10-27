@@ -190,7 +190,7 @@ def handler_for(service):
                 if path.startswith('/api/workflow/'):
                     actions={'create':service.workflow.create,'attach':service.workflow.attach,'detach':service.workflow.detach,
                         'begin':service.workflow.begin,'count':service.workflow.set_count,'retry':service.workflow.retry,'edit-case':service.workflow.edit_case,
-                        'release':service.workflow.release,'deliver':service.workflow.deliver,'manual-delivery':service.workflow.manual_delivery,
+                        'review-case':service.workflow.review_case,'release':service.workflow.release,'deliver':service.workflow.deliver,'manual-delivery':service.workflow.manual_delivery,
                         'import':service.workflow.import_results,'close':service.workflow.close_workflow}
                     action=path.rsplit('/',1)[-1]
                     if action not in actions:return self.send({'error':'Vorgangsaktion nicht gefunden.'},404)

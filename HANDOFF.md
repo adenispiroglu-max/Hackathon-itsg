@@ -619,3 +619,29 @@ Publication approval follow-up: automatic review previously rejected the tree up
 because source excerpts were not explicitly approved for GitHub disclosure. The user
 has now expressly authorized publishing the prepared requirements and short quotations
 to codex/auditflow-prototype, excluding original files. Retrying that authorized scope.
+
+
+## Inline case decisions and stable expansion (2026-10-27)
+User requests automatic checks, approve/reject directly in the case and staying expanded.
+Added structural/source prechecks to existing case_review state; prepared demo explicitly
+labelled, local mode local. Live approval uses a structured Model.call_json recommendation
+with bounded schema and conflict handling. No model call for demo. Negative prechecks
+persist for display; unresolved values/questions cannot become approved. New review-case
+endpoint stores manual decision, actual self-declared session label or transparent
+unauthenticated operator fallback, current case basis hash and event/history. No invented
+identity, legal certification or approval. Editing invalidates the current decision.
+Package UI only has an adopt-approved button, no mandatory typing. Individual policy
+requires all cases decided and >=1 approved per source requirement. Rejected cases are
+retained as excluded_cases and in release report; only approved subset delivered/compared
+with recalculated package hash. Existing legacy package-level review API retained for old
+clients, but cannot bypass a workflow once individual decisions are recorded.
+Case details now have workflow-scoped expansion keys captured before every content render,
+including polling and decision load. No forced collapse on read markers or approval.
+Validation:185 backend tests passed16.743s, three Node suites plus JS syntax, compileall,
+diff check. Regressions cover pending/unknown decisions, no fabricated missing expectation,
+coverage, excluded-case export/import, edit invalidation, idempotence and mocked live
+recommendation conflicts. Frontend assertions cover open/closed independence and disabled
+null approval. Native disposable browser QA confirmed approved and rejected statuses with
+both cases still expanded across subsequent polling; visual layout inspected. No live API,
+SMTP, actual vendor test or user DB access. Preview stopped, helpers removed; ignored
+synthetic preview DB only. Local codex/case-approval-inline; remote expected0f2e5812.

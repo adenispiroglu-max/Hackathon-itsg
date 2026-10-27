@@ -66,6 +66,51 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(result['phase'],'requirements');self.assertIsNone(result['error'])
         self.assertEqual(len(self.s.store.filtered('document_job','document_id',d['id'])),3)
 
+    def test_inline_case_decisions_and_rejected_cases_not_delivered(self):
+        w=self.ready_cases();f=self.f;first,second=w['cases']
+        f.edit_case({'id':w['id'],'case_id':first['id'],'expected':True,'rationale':'Synthetic independently checked expectation'})
+        w=f.review_case({'id':w['id'],'case_id':first['id'],'decision':'approved'})
+        self.assertEqual(w['cases'][0]['precheck']['recommendation'],'recommend_approval')
+        self.assertIn('nicht authentifiziert',w['cases'][0]['human_decision']['reviewer'])
+        # The null expectation is explicitly rejected, never invented or counted as passing.
+        f.review_case({'id':w['id'],'case_id':second['id'],'decision':'rejected'})
+        w=f.release({'id':w['id'],'individual':True,'reviewer':'Synthetic expert','note':'Decisions accepted','acknowledged':True})
+        self.assertEqual(len(w['cases']),1);self.assertEqual(w['excluded_cases'][0]['id'],second['id'])
+        package=f.package(w['id']);self.assertEqual([c['id'] for c in package['cases']],[first['id']])
+        report=self.s.store.get('workflow_report',w['reports'][-1]);self.assertIn('Abgelehnte',report['sections'][-1]['heading'])
+        f.manual_delivery({'id':w['id'],'reviewer':'Synthetic expert','note':'Synthetic handoff'})
+        result=f.import_results({'id':w['id'],'data':{'workflow_id':w['id'],'package_hash':w['package_hash'],'records':[{'case_id':first['id'],'value':True}]}})
+        self.assertEqual(result['result']['counts']['pass'],1);self.assertEqual(result['result']['counts']['not_assessable'],0)
+
+    def test_inline_decisions_require_current_complete_cases_and_coverage(self):
+        w=self.ready_cases();f=self.f;c=w['cases'][0]
+        with self.assertRaises(InputError):f.review_case({'id':w['id'],'case_id':c['id'],'decision':'approved'})
+        with self.assertRaises(InputError):f.review_case({'id':w['id'],'case_id':c['id'],'decision':'invented'})
+        f.review_case({'id':w['id'],'case_id':c['id'],'decision':'rejected'})
+        f.review_case({'id':w['id'],'case_id':c['id'],'decision':'rejected'})
+        saved=self.s.store.get('workflow',w['id']);self.assertEqual(len(saved['cases'][0]['decision_history']),1)
+        with self.assertRaisesRegex(InputError,'jeden Testfall'):f.release({'id':w['id'],'individual':True})
+        f.review_case({'id':w['id'],'case_id':w['cases'][1]['id'],'decision':'rejected'})
+        with self.assertRaisesRegex(InputError,'je Anforderung'):f.release({'id':w['id'],'individual':True})
+
+    def test_edit_after_inline_approval_invalidates_decision(self):
+        w=self.ready_cases();f=self.f;c=w['cases'][0]
+        f.edit_case({'id':w['id'],'case_id':c['id'],'expected':True,'rationale':'First review'})
+        f.review_case({'id':w['id'],'case_id':c['id'],'decision':'approved'})
+        w=f.edit_case({'id':w['id'],'case_id':c['id'],'expected':False,'rationale':'Changed reviewed expectation'})
+        self.assertEqual(w['cases'][0]['review_status'],'pending');self.assertNotIn('human_decision',w['cases'][0]);self.assertNotIn('precheck',w['cases'][0])
+        self.assertEqual(len(w['cases'][0]['decision_history']),1)
+        with self.assertRaises(InputError):f.release({'id':w['id'],'individual':True})
+
+    def test_live_inline_precheck_and_contradictory_recommendation(self):
+        w=self.ready_cases();f=self.f;c=w['cases'][0]
+        w=f.edit_case({'id':w['id'],'case_id':c['id'],'expected':True,'rationale':'Source based expectation'});w['mode']='live';f.save(w)
+        with patch('auditflow.workflow.Model.call_json',return_value=json.dumps({'recommendation':'recommend_approval','reason':'Synthetic model review','issues':['Unresolved synthetic question']})):
+            with self.assertRaises(InputError):f.review_case({'id':w['id'],'case_id':c['id'],'decision':'approved'})
+        with patch('auditflow.workflow.Model.call_json',return_value=json.dumps({'recommendation':'recommend_approval','reason':'Synthetic model review','issues':[]})):
+            w=f.review_case({'id':w['id'],'case_id':c['id'],'decision':'approved'})
+        self.assertEqual(w['cases'][0]['precheck']['mode'],'live');self.assertEqual(w['cases'][0]['review_status'],'approved')
+
     def test_sources_report_and_human_gate(self):
         w=self.create();d=self.source(w);w=self.f.tick(w['id'])
         self.assertEqual(w['phase'],'requirements');self.assertEqual(len(w['reports']),1)

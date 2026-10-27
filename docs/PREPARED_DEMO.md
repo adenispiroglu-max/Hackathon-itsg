@@ -73,3 +73,25 @@ requirements and lifecycle behavior. A separate temporary HTTP check uploaded al
 provided originals and verified 27 matching citations without any model call. Browser inspection
 verified the prepared requirement/recommendation view and source completion status using a
 disposable preview. No live manufacturer, SMTP or model call was made.
+
+## Direct case decisions
+
+The package review now shows automatic prechecks inside each expandable case, with
+**Genehmigen** and **Ablehnen**. Demo checks use prepared completeness/source checks;
+local checks are labelled local. In live mode an approval click first requests a structured
+model recommendation. A model recommendation is never a human approval. Unresolved
+values/questions and recommendations for clarification cannot be approved unchanged.
+
+No extra name/note form is needed for the case/package buttons. The current session's
+reviewer label is used if available; otherwise the action is recorded as **Bediener (nicht
+authentifiziert)**, explicitly not an authenticated identity. Each decision is linked to the
+case content hash; edits reset its approval and preserve decision history.
+
+After every case is decided, the final button adopts only the approved cases. At least one
+approved case per requirement is mandatory. Rejected drafts remain in the intermediate
+report and the workflow's excluded_cases; they are not sent, tested or counted as passing.
+The delivered case count can therefore be smaller than the originally requested count.
+All customer imports compare only the released package and its recalculated hash.
+Expanded cases remain open across decisions and polling in the current browser page;
+a full browser reload resets the expansion state. Existing cases receive precheck cards
+without regenerating their original inputs or expected values.

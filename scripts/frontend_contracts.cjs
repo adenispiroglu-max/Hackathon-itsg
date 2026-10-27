@@ -57,3 +57,11 @@ assert.ok(ctx.flowObject({...w,mode:'demo',phase:'requirements',document_ids:['d
 assert.ok(fs.readFileSync('auditflow/static/workflow.js','utf8').includes('<option value="demo">Vorbereitete Challenge-Demo · ohne API</option>'));
 libContext.fmt=()=> 'Synthetic date';
 assert.ok(libContext.reviewCard({ai_review:{mode:'demo',recommendation:'clarify',reason:'Prepared recommendation',issues:[],created_at:'2026-10-27'}}).includes('Vorbereitete Demo-Empfehlung'));
+
+// Keep independent expanded cases across render/polling and expose direct decisions.
+const panel={dataset:{flowPanel:'w|c'},open:true};ctx.document.querySelectorAll=()=>[panel];ctx.flowRememberPanels();
+const sampleCase={id:'c',title:'Synthetic case',expected:{field:'value',value:true,rationale:'Synthetic'},questions:[],steps:['Check'],profile:{kind:'synthetic'},inputs:{flag:true},review_status:'pending',generation_mode:'demo',precheck:{mode:'demo',reason:'Prepared check',issues:[],recommendation:'recommend_approval'}};
+let caseHtml=ctx.flowCases({...w,id:'w',phase:'case_review',cases:[sampleCase]});
+assert.ok(caseHtml.includes('data-flow-panel="w|c" open'));assert.ok(caseHtml.includes('flow-case-approve'));assert.ok(caseHtml.includes('flow-case-reject'));assert.ok(caseHtml.includes('Vorbereitete Demo-Vorprüfung'));
+panel.open=false;ctx.flowRememberPanels();caseHtml=ctx.flowCases({...w,id:'w',phase:'case_review',cases:[sampleCase]});assert.ok(!caseHtml.includes('data-flow-panel="w|c" open'));
+sampleCase.expected.value=null;caseHtml=ctx.flowCases({...w,id:'w',phase:'case_review',cases:[sampleCase]});assert.ok(/flow-case-approve[^>]*disabled/.test(caseHtml));
