@@ -258,3 +258,12 @@ package release, handoff and results; signed report retains that full evidence s
 Customer JSON/HTML/PDF hides internal expected values. New revisions queue fresh prechecks;
 missing/stale prechecks prevent generation even after human approval. No real inference or
 mail was performed. Publish next, then record actual remote SHA and CI run.
+
+0.5 published code: bd9fb73c6a96852f539555eb24ff39b7724b38b7 on codex/auditflow-prototype / PR #1. Remote parent c37cbf0 was preserved using expected-head lease. Main was not merged. CI observation pending. Temporary package.json/preview_dev.py removed and disposable preview stopped. Browser screenshot could not synchronize to the main container; do not return a broken screenshot link.
+
+CI found two new tests assumed optional reportlab was installed. Corrected the tests to
+verify explicit PDF-unavailable fallback without skipping human/HTML checks; Python 3.13
+CI now installs existing optional requirements. Both local environments pass: 117 tests
+with extras (13.092 s) and no-site-packages runtime (12.351 s, four optional tests skipped).
+Initial remote run 40436352597 failed only those two assumptions, including Windows. Await
+corrective commit CI; never claim the failed run succeeded.

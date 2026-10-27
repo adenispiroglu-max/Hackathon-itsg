@@ -2,6 +2,7 @@
 import base64
 import copy
 import json
+import importlib.util
 import os
 import tempfile
 import unittest
@@ -99,7 +100,10 @@ class WorkflowTests(unittest.TestCase):
         w=self.f.close_workflow({'id':w['id'],'decision':'accepted','reviewer':'Expert','signature':'Expert','note':'Checked','acknowledged':True})
         self.assertEqual(w['phase'],'closed');self.assertNotEqual(old,w['reports'][-1]);self.assertIn('offen',self.s.store.get('workflow_report',old)['title'])
         with self.assertRaises(InputError):self.f.import_results(self.import_data(w))
-        report=self.s.store.get('workflow_report',w['reports'][-1]);self.assertTrue(report_pdf(report).startswith(b'%PDF'));self.assertIn(b'Expert',report_html(report))
+        report=self.s.store.get('workflow_report',w['reports'][-1]);self.assertIn(b'Expert',report_html(report))
+        if importlib.util.find_spec('reportlab'):self.assertTrue(report_pdf(report).startswith(b'%PDF'))
+        else:
+            with self.assertRaisesRegex(InputError,'reportlab'):report_pdf(report)
     def test_mail_missing_uncertain_sent_and_no_duplicate(self):
         w=self.release(self.ready_cases())
         with patch.dict(os.environ,{'AUDITFLOW_SMTP_HOST':'','AUDITFLOW_MAIL_FROM':''}):
@@ -165,7 +169,11 @@ class WorkflowHTTPTests(unittest.TestCase):
                 with request('/api/workflow/create',{'name':'Synthetic audit','company':'Synthetic','contact':'Test','email':'test@example.invalid','software':'Demo','software_version':'1','mode':'offline'}) as r:w=json.load(r)
                 with request('/api/state') as r:self.assertEqual(json.load(r)['workflow']['items'][0]['id'],w['id'])
                 s.workflow.report(w,'test','Synthetic intermediate report',[{'heading':'State','text':'Source comparison pending'}]);rid=w['reports'][0]
-                with request('/api/workflow/reports/'+rid+'/pdf') as r:self.assertEqual(r.read(4),b'%PDF')
+                if importlib.util.find_spec('reportlab'):
+                    with request('/api/workflow/reports/'+rid+'/pdf') as r:self.assertEqual(r.read(4),b'%PDF')
+                else:
+                    with self.assertRaises(urllib.error.HTTPError) as pdf_error:request('/api/workflow/reports/'+rid+'/pdf')
+                    self.assertEqual(pdf_error.exception.code,422);self.assertIn('reportlab',json.load(pdf_error.exception)['error']);pdf_error.exception.close()
                 with request('/api/workflow/reports/'+rid+'/html') as r:self.assertIn(b'Synthetic intermediate',r.read())
                 for path in ['/workflow.js','/icons.js']:
                     with request(path,auth=False) as r:self.assertEqual(r.status,200)

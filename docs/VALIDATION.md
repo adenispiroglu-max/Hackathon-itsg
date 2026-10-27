@@ -134,3 +134,12 @@ and uses labelled illustrative values; it is not evidence of real vendor inferen
   not live legal assessment. Real SMTP, customer software, arbitrary law-to-code compilation,
   SAP integration, full payroll/monetary correctness, qualified signatures and multi-user
   production operation are not established by these tests.
+
+CI portability correction: the first 0.5 run exposed two tests that incorrectly assumed
+optional reportlab was installed. The application returned the expected explicit 422/PDF
+unavailable error. Tests now assert this fallback while still exercising HTML and human
+sign-off. A Python 3.13 CI leg installs the existing optional requirements to exercise actual
+PDF/DOCX capabilities; other versions/Windows retain standard-library-only coverage.
+Observed after correction: 117 tests pass with extras (13.092 s); `python -S` also passes all
+117 discovered tests without extras (12.351 s, four pre-existing optional tests skipped).
+Frontend contracts pass. New remote CI result still to be recorded.
