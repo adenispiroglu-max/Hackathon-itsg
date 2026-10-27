@@ -219,3 +219,14 @@ errors without payload/secret echo, and compatibility with the existing extracti
 All static JS syntax, three Node contract suites, compileall and diff check pass.
 No live Gemini access, model alias availability, quota, browser settings changes or real
 credential storage was tested. A published credential was not used; replacement is local.
+
+
+## Source analysis recovery
+
+164 backend tests passed locally (15.663s). New regressions reproduce a failed second
+section and ensure retry does not replay the first; assert actual provider error/section
+in the workflow, reuse of paused jobs and cursor retention for interrupted sections.
+Gemini JSON-only tasks are distinct from text chat. Frontend contracts verify failed jobs
+stop the spinner, escaped errors and running per-section review progress. All three Node
+suites, static JS syntax, compileall and diff checks pass. No live connection or original
+user PDF was available; the screenshot alone cannot identify the provider-side failure.

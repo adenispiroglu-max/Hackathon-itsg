@@ -27,6 +27,12 @@ class GeminiTests(unittest.TestCase):
         m=self.configured(self.reply('Synthetic ','answer'));self.assertEqual(m.call('System','Question'),'Synthetic answer')
         self.assertEqual(m.status()['provider'],'gemini');self.assertEqual(m.status()['key_variable'],'GEMINI_API_KEY')
         self.assertTrue(m.status()['configured']);self.assertNotIn('synthetic-gemini-token',json.dumps(m.status()))
+    def test_json_tasks_request_native_json_but_chat_remains_text(self):
+        m=self.configured(self.reply('{}'));original=m.transport;requests=[]
+        def capture(request,timeout):requests.append(json.loads(request.data));return original(request,timeout)
+        m.transport=capture;m.call_json('Return JSON','Synthetic input');m.call('System','Question')
+        self.assertEqual(requests[0]['generationConfig']['responseMimeType'],'application/json')
+        self.assertNotIn('responseMimeType',requests[1]['generationConfig'])
 
     def test_thought_parts_are_not_application_output(self):
         reply=self.reply('Draft');reply['candidates'][0]['content']['parts']=[{'text':'Internal thought','thought':True},{'text':'Final answer'}]

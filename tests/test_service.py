@@ -133,7 +133,7 @@ class ModelTests(unittest.TestCase):
         with patch.dict(os.environ,{'HAI_API_KEY':'not-a-real-key'}):
             with self.assertRaisesRegex(ModelError,'nicht erreichbar'):Model(transport=fail).call('test','test')
     def test_invalid_draft_schema(self):
-        m=Model();m.call=lambda *a:'{"requirements":[{"title":3}]}'
+        m=Model();m.call=lambda *a,**kw:'{"requirements":[{"title":3}]}'
         with self.assertRaises(ModelError):m.extract({'name':'test','version':'1'},{'id':'x','text':'source'})
 
 class HTTPTests(unittest.TestCase):

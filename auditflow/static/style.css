@@ -71,3 +71,5 @@ tr[data-ux-id] td:first-child{position:relative;padding-right:38px}tr[data-ux-id
 .cust-version>div:first-of-type,.cust-submission>div:first-of-type{flex:1;min-width:180px}.cust-version small,.cust-submission small{display:block;margin-top:5px;color:var(--muted)}
 .cust-version a{color:inherit;text-decoration:none}.cust-version a:hover{text-decoration:underline}.cust-submission details{width:100%}.cust-workflows{display:grid;gap:10px;margin:18px 0}.cust-gate{list-style:none;padding:0}.cust-gate li{display:flex;gap:10px;align-items:center;margin:12px 0}.cust-history,.cust-reminder{padding:14px 0;border-top:1px solid var(--line)}.cust-history p,.cust-reminder p{overflow-wrap:anywhere}.cust-card h2{overflow-wrap:anywhere}
 @media(max-width:760px){.cust-version,.cust-submission{align-items:flex-start}.cust-version .actions,.cust-submission .actions{width:100%;flex-wrap:wrap}}
+
+.flow-analysis-detail{flex-basis:100%;width:100%;padding:8px 12px}.flow-analysis-detail p{margin:8px 0}.flow-analysis-detail progress{width:100%;max-width:420px;height:10px;accent-color:var(--brand)}.flow-analysis-detail .note{overflow-wrap:anywhere}

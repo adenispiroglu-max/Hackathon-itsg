@@ -30,3 +30,11 @@ let empty=ctx.workflowCasesPage();
 assert.ok(empty.includes('data-action="flow-new"'));assert.ok(empty.includes('data-action="flow-select"'));assert.ok(empty.includes('class="panel"><summary>Unabhängige synthetische Demofälle'));
 assert.ok(empty.indexOf('flow-select')<empty.indexOf('LEGACY DEMO TOOLS'));
 ctx.state.workflow.items=[];empty=ctx.workflowCasesPage();assert.ok(empty.includes('Noch keine Vorgänge vorhanden.'));assert.ok(empty.includes('Herstellerergebnisse'));
+// Source failures must stop the spinner and expose escaped errors and bounded progress.
+ctx.state.document_jobs=[{document_id:'d',status:'failed',cursor:1,total:4,error:'Synthetic <script> error',location:'Page 2'}];
+ctx.state.documents=[{id:'d',name:'Synthetic <img>.txt',version:'1'}];
+const failedHtml=ctx.flowAnalysis({document_ids:['d'],phase:'sources',error:'Synthetic failure'});
+assert.ok(!failedHtml.includes('class="spinner"'));assert.ok(failedHtml.includes('1 / 4'));assert.ok(failedHtml.includes('Fehlerursache:'));
+assert.ok(failedHtml.includes('&lt;script&gt;'));assert.ok(!failedHtml.includes('<script>'));
+ctx.state.document_jobs[0].status='running';ctx.state.document_jobs[0].stage='review';ctx.state.document_jobs[0].review_cursor=1;ctx.state.document_jobs[0].review_total=3;
+const runningHtml=ctx.flowAnalysis({document_ids:['d'],phase:'sources'});assert.ok(runningHtml.includes('class="spinner"'));assert.ok(runningHtml.includes('KI-Vorprüfung'));assert.ok(runningHtml.includes('(1 / 3)'));

@@ -28,7 +28,10 @@ class Model:
         return {'configured':bool(self.key),'provider':self.provider,'key_variable':self.key_name,'model':self.model,'prompt_version':PROMPT_VERSION,
                 'note':'Configured does not mean connectivity verified.'}
 
-    def call(self,system,user):
+    def call_json(self,system,user):
+        return self.call(system,user,json_output=True)
+
+    def call(self,system,user,json_output=False):
         if self.provider not in ['hessian','gemini']:raise ModelError('AUDITFLOW_MODEL_PROVIDER muss hessian oder gemini sein.')
         if not self.key:raise ModelError('Kein serverseitiger '+self.key_name+' konfiguriert. Offline-Modus bleibt verfügbar.')
         if self.provider=='gemini' and not re.fullmatch(r'gemini-[A-Za-z0-9._-]+',self.model):
@@ -38,6 +41,7 @@ class Model:
         if self.provider=='gemini':
             payload={'systemInstruction':{'parts':[{'text':system}]},'contents':[{'role':'user','parts':[{'text':user}]}],
                      'generationConfig':{'maxOutputTokens':8192}}
+            if json_output:payload['generationConfig']['responseMimeType']='application/json'
             headers={'X-goog-api-key':self.key,'Content-Type':'application/json'}
         else:
             payload={'model':self.model,'messages':[{'role':'system','content':system},{'role':'user','content':user}],
@@ -64,7 +68,8 @@ class Model:
             if not isinstance(content,str) or not content.strip():raise ModelError('Modell liefert keinen Antworttext.')
             return content
         except urllib.error.HTTPError as e:
-            raise ModelError(f'Modell-HTTP-Fehler {e.code}; Zugang, Modell-ID oder Limit prüfen.') from None
+            hints={400:'Anfrage oder Modelleinstellungen ungültig.',401:'API-Schlüssel ungültig oder abgelaufen.',403:'Zugriff verweigert; Schlüsselberechtigungen und API-Freigabe prüfen.',404:'Modell oder Endpunkt nicht gefunden; Modell-ID prüfen.',429:'Anfragelimit oder Kontingent erreicht; beim Anbieter prüfen und später erneut versuchen.',500:'Modellanbieter meldet einen Serverfehler.',503:'Modellanbieter vorübergehend nicht verfügbar.'}
+            raise ModelError(f'Modell-HTTP-Fehler {e.code}: '+hints.get(e.code,'Zugang, Modell-ID oder Limit prüfen.')) from None
         except (urllib.error.URLError,TimeoutError,OSError):
             raise ModelError('Modell nicht erreichbar oder Zeitlimit überschritten.') from None
         except (ValueError,KeyError,IndexError,TypeError,AttributeError):
@@ -77,7 +82,7 @@ Preserve conditions, exceptions and unresolved references. Return ONLY a JSON ob
 {"requirements":[{"title":"...","criterion":"...","source_excerpt":"exact source text",
 "conditions":[],"exceptions":[],"questions":[]}]}. Use German for titles and criteria.
 Never approve requirements. If context is missing, state it in questions. Maximum 12 rules.'''
-        content=self.call(instruction,json.dumps({'document':document['name'],'version':document.get('version'),
+        content=self.call_json(instruction,json.dumps({'document':document['name'],'version':document.get('version'),
                          'valid_from':document.get('valid_from'),'section_id':section['id'],'source':section['text']},ensure_ascii=False))
         content=re.sub(r'^```(?:json)?\s*|\s*```$','',content.strip())
         try:

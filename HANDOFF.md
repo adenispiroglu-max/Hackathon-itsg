@@ -465,3 +465,34 @@ static JS syntax checks pass; compileall and diff check pass. No live API call, 
 credential entry, original customer data upload or actual key storage was performed.
 Provider UI additions use the existing settings dialog. Publish with expected remote
 parent 41b44ba5222528b68a0f5c8319d0793934ec528a; no main merge.
+
+
+## Source analysis recovery and progress (2026-10-27)
+User's screenshot shows a failed source job with only a generic workflow banner and a
+spinner still running. Their runtime DB/API error is not available, so no claim is made
+about the exact provider-side cause or live resolution. Fixes established from source:
+- Workflow retry now resumes the failed job's committed section cursor, retains retry_of,
+  reuses already completed jobs in the same mode and does not repeat completed pages.
+- Paused/running/queued jobs are reused rather than duplicated. Interrupted sections do
+  not advance their cursor until all section work finishes; existing drafted requirements
+  and completed recommendations are reused on resume.
+- Worker progress records stage, section/location, completed section count and per-section
+  review count with updated_at. Workflow failure includes the actual stored safe error,
+  filename and section. Source UI stops spinner on error and shows escaped diagnostics,
+  progress and last-update time. No invented ETA or skipped error/approval gate.
+- Gemini extraction/identity/review/case drafting explicitly request application/json via
+  call_json, while plain chat stays text and Hessian format remains compatible. HTTP
+  400/401/403/404/429/5xx errors provide distinct non-secret guidance. Structured response
+  validation remains strict; no automatic passing/fallback or raw provider-body echo.
+Official JSON output reference: https://ai.google.dev/gemini-api/docs/structured-output .
+Mocked Gemini and synthetic worker tests only; no credential from chat used, no live
+model call or user PDF imported. Local branch codex/source-analysis-recovery. First full
+run 162 tests passed (15.691s), Node contracts/syntax/compileall/diff passed; final rerun
+includes paused/interrupted cursor guard. Publish on existing feature branch, not main.
+
+Final recovery validation: 164 Python tests passed (15.663s). Tests cover failure at the
+second section with no replay of the first, workflow error/cursor retry, reuse of paused
+jobs, interrupted sections retaining their cursor, Gemini JSON-only tasks versus text
+chat, and escaped failed/running progress rendering. Three Node contracts, static JS
+syntax, compileall and diff check pass. No native browser/live Gemini/SMTP call or user
+PDF/database access. Publish with expected remote parent 76c100d8, no main merge.

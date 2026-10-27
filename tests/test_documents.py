@@ -102,6 +102,50 @@ class DocumentTests(unittest.TestCase):
             if saved['status']=='completed':break
             time.sleep(.02)
         self.assertEqual(saved['status'],'completed');self.assertEqual(saved['cursor'],saved['total'])
+    def test_retry_resumes_failed_section_without_repeating_completed_work(self):
+        d=self.upload('A synthetic first requirement with a sufficiently long source statement.\n\nA synthetic second requirement with a sufficiently long source statement.')
+        original=self.lib.process_section;calls=[];fail=[True]
+        def process(doc,section,mode):
+            calls.append(section['id'])
+            if section['id']==d['sections'][1]['id'] and fail[0]:
+                fail[0]=False;raise ModelError('Synthetic timeout')
+            return original(doc,section,mode)
+        def wait_job(id):
+            for _ in range(250):
+                j=self.service.store.get('document_job',id)
+                if j['status'] in ['failed','completed']:return j
+                time.sleep(.02)
+            self.fail('Document job did not settle')
+        with patch.object(self.lib,'process_section',side_effect=process):
+            first=wait_job(self.lib.queue(d['id'],'offline')['id']);self.assertEqual(first['status'],'failed');self.assertEqual(first['cursor'],1)
+            self.assertEqual(first['section_id'],d['sections'][1]['id']);self.assertTrue(first['updated_at'])
+            second=wait_job(self.lib.queue(d['id'],'offline',resume=True)['id']);self.assertEqual(second['status'],'completed')
+            self.assertEqual(second['retry_of'],first['id']);self.assertEqual(second['cursor'],2)
+            self.assertEqual(calls.count(d['sections'][0]['id']),1);self.assertEqual(calls.count(d['sections'][1]['id']),2)
+            self.assertEqual(self.lib.queue(d['id'],'offline',resume=True)['id'],second['id'])
+    def test_workflow_exposes_cause_and_retry_preserves_cursor(self):
+        d=self.upload('Synthetic first paragraph with enough content for extraction.\n\nSynthetic second paragraph with enough content for extraction.')
+        w=self.service.workflow.create({'name':'Synthetic','company':'Synthetic','contact':'Demo','email':'demo@example.invalid','software':'Demo','software_version':'1','mode':'live'})
+        self.service.workflow.attach({'id':w['id'],'document_id':d['id']});w=self.service.store.get('workflow',w['id']);w['phase']='sources';self.service.workflow.save(w)
+        self.service.store.put('document_job',{'id':'synthetic-failed-job','document_id':d['id'],'mode':'live','status':'failed','cursor':1,'total':2,'error':'Modell-HTTP-Fehler 429: Synthetic quota','location':'Abschnitt 2'})
+        result=self.service.workflow.tick(w['id']);self.assertIn('429',result['error']);self.assertIn('Abschnitt 2',result['error']);self.assertIn(d['name'],result['error'])
+        with patch.object(self.lib,'start'),patch.object(self.service.workflow,'start'):
+            self.service.workflow.retry({'id':w['id']})
+        new=self.service.store.filtered('document_job','document_id',d['id'])[-1];self.assertEqual(new['cursor'],1);self.assertEqual(new['status'],'queued')
+        self.assertIsNone(self.service.store.get('workflow',w['id'])['error']);self.assertEqual(new['retry_of'],'synthetic-failed-job')
+    def test_paused_job_is_reused_instead_of_duplicate_work(self):
+        d=self.upload();j={'id':'synthetic-paused','document_id':d['id'],'mode':'offline','status':'paused','cursor':0,'total':1,'error':None}
+        self.service.store.put('document_job',j)
+        with patch.object(self.lib,'start'):
+            self.assertEqual(self.lib.queue(d['id'],'offline',resume=True)['id'],j['id'])
+        self.assertEqual(len(self.service.store.filtered('document_job','document_id',d['id'])),1)
+    def test_interrupted_section_never_advances_cursor(self):
+        d=self.upload()
+        def interrupted(*args):self.lib.stop.set()
+        with patch.object(self.lib,'process_section',side_effect=interrupted):
+            j=self.lib.queue(d['id'],'offline');self.lib.thread.join(3)
+        saved=self.service.store.get('document_job',j['id']);self.assertEqual(saved['cursor'],0)
+        self.assertNotEqual(saved['status'],'completed')
     def test_unknown_family_leaves_no_document_or_file(self):
         count=len(self.service.store.list('document'))
         with self.assertRaises(InputError):self.upload(family_id='missing')

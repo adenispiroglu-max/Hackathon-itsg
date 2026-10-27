@@ -267,3 +267,15 @@ open-AU case. **KI-Testentwürfe** uses the configured real model, validates its
 output and keeps every expectation pending. It cannot replace an independent reference.
 
 The pitch script is in `docs/PITCH.md`; API contracts and design rationale are in `docs/`.
+
+
+## Source analysis troubleshooting
+
+The workflow's Sources station shows completed sections, current extraction/precheck stage,
+last progress time and the actual safe error. A failed job stops the spinner. Fix the shown
+cause (e.g. missing key, model ID, permission, provider quota), then choose **Erneut versuchen**
+in the same workflow. Completed sections remain saved; retry resumes at the failed section
+and does not repeat already completed documents in the same mode. No re-upload/new workflow
+is needed. Restart Python in the same terminal so the model environment remains available.
+Gemini structured tasks request JSON output; human approvals and strict validation remain.
+A connection test alone does not prove that a full document fits provider quotas or limits.
