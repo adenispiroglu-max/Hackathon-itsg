@@ -232,6 +232,21 @@ Override `AUDITFLOW_MODEL_URL` only with a trusted HTTPS endpoint. The API key i
 
 Use **Quellen & KI → KI-Verbindung testen**. The development-environment connectivity attempt received **HTTP 403**; successful live extraction is therefore not claimed. Offline literal drafting is distinct and labelled.
 
+Hessian response handling rejects `finish_reason=length` even when the partial text looks
+like complete JSON. Filtered/refused/tool-only responses and reasoning-only output have
+separate safe errors; reasoning is never used as a requirement or shown in diagnostics.
+Unknown nonstandard finish reasons stop processing. Older responses without a finish
+reason remain supported when they contain final text.
+
+Hessian output budget defaults to **8192 tokens**, previously a fixed 3500. Override with
+`$env:AUDITFLOW_MODEL_MAX_TOKENS = "12000"` before restarting the server (integer 512–32768).
+The provider/model must support the requested budget; increasing it can increase latency
+and usage. Gemini retains its own 8192-token setting. Settings → AI shows the output budget
+and timeout separately. No automatic retry or claimed success for an empty/truncated answer.
+The two vLLM reasoning field names (`reasoning`, older `reasoning_content`) are detected
+only to diagnose missing final text. This does not verify Hessian's deployed model or parser.
+Reference: https://github.com/vllm-project/vllm/blob/main/docs/features/reasoning_outputs.md .
+
 ## Quality checks
 
 ```bash

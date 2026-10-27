@@ -550,3 +550,26 @@ Validation: 168 Python tests passed (17.090s), all three Node contract suites an
 JS syntax/diff checks pass. No native visual verification or live model request this
 revision. User must pull shared branch and restart local server; existing configuration
 remains local. Target remote parent 7ffaec56; no main merge.
+
+
+## Hessian empty-answer and truncation handling (2026-10-27)
+User asks to investigate PDF-to-text/model input and fix empty-answer processing. PDF text
+is already extracted per page and Model.extract sends that string, not PDF bytes. Actual
+user PDF and live provider response are unavailable. Confirmed adapter defect: ignored
+Hessian finish_reason and only checked content, giving unhelpful empty error and accepting
+nonempty truncation. Now rejects length (including apparently complete JSON), refusal/filter,
+tool-only and unknown completion states. Distinguishes reasoning-only versus empty final
+content; never exposes/uses reasoning/refusal/tool payloads or raw provider bodies. Supports
+legacy missing finish_reason with final string. Native Gemini unchanged.
+Hessian fixed max_tokens3500 replaced by validated AUDITFLOW_MODEL_MAX_TOKENS512–32768,
+default8192; explicit stream:false. No undocumented model-specific thinking flags, JSON
+mode parameters, fallback, automatic retry or approval changes. Settings shows budget and
+timeout. Official vLLM source describes reasoning/older reasoning_content separate from
+final content; actual Hessian deployed model capability unverified.
+17 adapter tests pass including six new Hessian tests with synthetic transport only.
+Full checks follow. Local branch codex/hessian-response-diagnostics; no main merge.
+
+Final validation: 174 Python tests passed (16.624s); all three Node contracts, JS syntax,
+compileall and diff checks passed. Status budget matches provider-specific behavior. No
+live request, real key, user PDF/DB, or native browser verification. Publish to existing
+feature branch from 383e8098, not main. User restarts same terminal and retries saved job.

@@ -97,3 +97,63 @@ class GeminiTests(unittest.TestCase):
         m=self.configured(self.reply(json.dumps(answer)))
         r=m.extract({'name':'Synthetic.txt','version':'1'},{'id':'p1','text':source})
         self.assertEqual(r[0]['source_excerpt'],source)
+
+
+class HessianTests(unittest.TestCase):
+    def reply(self,content='Synthetic final answer',reason='stop',**message):
+        return {'choices':[{'finish_reason':reason,'message':{'content':content,**message}}]}
+
+    def call(self,reply,**env):
+        requests=[]
+        def transport(request,timeout):
+            self.assertEqual(request.full_url,'https://hip-gw.hessian.ai/v1/chat/completions')
+            self.assertEqual(request.get_header('Authorization'),'Bearer synthetic-hessian-token')
+            self.assertIsNone(request.get_header('X-goog-api-key'))
+            requests.append(json.loads(request.data))
+            return io.BytesIO(json.dumps(reply).encode())
+        with patch.dict(os.environ,{'AUDITFLOW_MODEL_PROVIDER':'hessian','HAI_API_KEY':'synthetic-hessian-token',**env},clear=True):
+            m=Model(transport=transport)
+            result=m.call_json('Return JSON','Synthetic page text')
+        return result,requests,m.status()
+
+    def test_budget_and_nonstreaming_request(self):
+        result,requests,status=self.call(self.reply('{}'))
+        self.assertEqual(result,'{}');self.assertEqual(len(requests),1)
+        self.assertEqual(requests[0]['max_tokens'],8192);self.assertFalse(requests[0]['stream'])
+        self.assertEqual(requests[0]['model'],'vllm/GLM-Flash:Latest')
+        self.assertEqual(requests[0]['messages'][1]['content'],'Synthetic page text')
+        self.assertEqual(status['max_output_tokens'],8192)
+        self.assertNotIn('synthetic-hessian-token',json.dumps(status))
+        self.assertEqual(self.call(self.reply(),AUDITFLOW_MODEL_MAX_TOKENS='12000')[1][0]['max_tokens'],12000)
+
+    def test_invalid_budget_never_calls_network(self):
+        for value in ['0','511','32769','bad','8192.5']:
+            with self.subTest(value=value),patch.dict(os.environ,{'AUDITFLOW_MODEL_PROVIDER':'hessian','HAI_API_KEY':'synthetic','AUDITFLOW_MODEL_MAX_TOKENS':value},clear=True):
+                with self.assertRaisesRegex(ModelError,'512 bis 32768'):
+                    Model(transport=lambda *a,**kw:self.fail('Invalid budget must not call network')).call('S','Q')
+
+    def test_token_truncation_rejected_even_if_json_looks_complete(self):
+        for content in [None,'','{"requirements":[]}']:
+            with self.subTest(content=content),self.assertRaisesRegex(ModelError,'Tokenlimit.*8192'):
+                self.call(self.reply(content,'length',reasoning_content='private internal content'))
+
+    def test_reasoning_only_is_diagnosed_but_never_used_as_answer(self):
+        for field in ['reasoning','reasoning_content']:
+            with self.subTest(field=field),self.assertRaises(ModelError) as error:
+                self.call(self.reply(None,**{field:'private internal content'}))
+            self.assertIn('nur Reasoning',str(error.exception));self.assertNotIn('private',str(error.exception))
+            self.assertEqual(self.call(self.reply('Final answer',**{field:'private internal content'}))[0],'Final answer')
+
+    def test_empty_refused_tool_and_unknown_finish_are_distinct_safe_errors(self):
+        cases=[(self.reply(''),'leere Textantwort'),(self.reply(None,'content_filter'),'gefiltert'),
+               (self.reply(None,refusal='private refusal'),'abgelehnt'),
+               (self.reply(None,'tool_calls',tool_calls=[{'private':'payload'}]),'Werkzeugaufruf'),
+               (self.reply('Text','private unknown reason'),'regulär abgeschlossene')]
+        for reply,expected in cases:
+            with self.subTest(expected=expected),self.assertRaises(ModelError) as error:self.call(reply)
+            self.assertIn(expected,str(error.exception));self.assertNotIn('private',str(error.exception));self.assertNotIn('synthetic-hessian-token',str(error.exception))
+
+    def test_malformed_response_rejected_and_legacy_missing_finish_allowed(self):
+        for reply in [{},{'choices':[]},{'choices':[{}]},{'choices':[{'message':[]}]},self.reply(['invalid'])]:
+            with self.subTest(reply=reply),self.assertRaisesRegex(ModelError,'Ungültige Antwortstruktur'):self.call(reply)
+        self.assertEqual(self.call(self.reply('Legacy final',None))[0],'Legacy final')

@@ -534,6 +534,8 @@ Object.assign(UX_EN,{
 });
 Object.assign(UX_EN,{
  'In Quellen & KI öffnen':'Open in Sources & AI',
+ 'Zeitlimit je Anfrage (Sekunden)':'Timeout per request (seconds)',
+ 'Ausgabelimit (Tokens)':'Output limit (tokens)',
  'Quelldokument nicht verfügbar.':'Source document unavailable.',
  'Analyse pausiert':'Analysis paused',
  'Noch nicht analysiert':'Not analyzed yet',

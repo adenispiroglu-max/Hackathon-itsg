@@ -27,9 +27,11 @@ class Model:
         self.transport=transport or urllib.request.urlopen
         try:self.timeout=int(os.environ.get('AUDITFLOW_MODEL_TIMEOUT','120'))
         except ValueError:self.timeout=None
+        try:self.max_tokens=int(os.environ.get('AUDITFLOW_MODEL_MAX_TOKENS','8192'))
+        except ValueError:self.max_tokens=None
 
     def status(self):
-        return {'configured':bool(self.key),'provider':self.provider,'key_variable':self.key_name,'model':self.model,'timeout_seconds':self.timeout,'prompt_version':PROMPT_VERSION,
+        return {'configured':bool(self.key),'provider':self.provider,'key_variable':self.key_name,'model':self.model,'timeout_seconds':self.timeout,'max_output_tokens':8192 if self.provider=='gemini' else self.max_tokens,'prompt_version':PROMPT_VERSION,
                 'note':'Configured does not mean connectivity verified.'}
 
     def call_json(self,system,user):
@@ -38,6 +40,8 @@ class Model:
     def call(self,system,user,json_output=False):
         if self.timeout is None or not 10<=self.timeout<=300:raise ModelError('AUDITFLOW_MODEL_TIMEOUT muss eine ganze Zahl von 10 bis 300 Sekunden sein.')
         if self.provider not in ['hessian','gemini']:raise ModelError('AUDITFLOW_MODEL_PROVIDER muss hessian oder gemini sein.')
+        if self.provider=='hessian' and (self.max_tokens is None or not 512<=self.max_tokens<=32768):
+            raise ModelError('AUDITFLOW_MODEL_MAX_TOKENS muss eine ganze Zahl von 512 bis 32768 sein; das Modell muss diesen Wert unterstützen.')
         if not self.key:raise ModelError('Kein serverseitiger '+self.key_name+' konfiguriert. Offline-Modus bleibt verfügbar.')
         if self.provider=='gemini' and not re.fullmatch(r'gemini-[A-Za-z0-9._-]+',self.model):
             raise ModelError('Für Gemini AUDITFLOW_MODEL auf eine Gemini-Modell-ID setzen, z. B. gemini-flash-latest; alte Hessian-Modellangabe entfernen.')
@@ -50,7 +54,7 @@ class Model:
             headers={'X-goog-api-key':self.key,'Content-Type':'application/json'}
         else:
             payload={'model':self.model,'messages':[{'role':'system','content':system},{'role':'user','content':user}],
-                     'max_tokens':3500,'temperature':0.1}
+                     'max_tokens':self.max_tokens,'temperature':0.1,'stream':False}
             headers={'Authorization':'Bearer '+self.key,'Content-Type':'application/json'}
         req=urllib.request.Request(self.url,data=json.dumps(payload).encode(),headers=headers,method='POST')
         try:
@@ -69,7 +73,7 @@ class Model:
                 parts=candidate['content']['parts']
                 if not isinstance(parts,list) or any(not isinstance(p,dict) for p in parts):raise ValueError()
                 content=''.join(p['text'] for p in parts if isinstance(p.get('text'),str) and not p.get('thought'))
-            else:content=obj['choices'][0]['message']['content']
+            else:content=self.hessian_text(obj)
             if not isinstance(content,str) or not content.strip():raise ModelError('Modell liefert keinen Antworttext.')
             return content
         except urllib.error.HTTPError as e:
@@ -87,6 +91,28 @@ class Model:
             raise ModelError(message) from None
         except (ValueError,KeyError,IndexError,TypeError,AttributeError):
             raise ModelError('Ungültige Antwortstruktur vom Modell.') from None
+
+    def hessian_text(self,obj):
+        # Never use reasoning as the application answer, or expose raw provider content.
+        choice=obj['choices'][0]
+        message=choice['message']
+        if not isinstance(message,dict):raise ValueError()
+        reason=choice.get('finish_reason')
+        if reason=='length':
+            raise ModelError(f'Hessian-Ausgabe am Tokenlimit abgeschnitten (max_tokens={self.max_tokens}). AUDITFLOW_MODEL_MAX_TOKENS erhöhen oder einen kleineren Quellabschnitt verwenden. Keine vollständige Analyse gespeichert.')
+        if reason=='content_filter' or message.get('refusal'):
+            raise ModelError('Hessian hat die Antwort abgelehnt oder gefiltert. Anfrage und Modellfreigabe prüfen; keine Anforderung aus dieser Antwort übernommen.')
+        if reason in ['tool_calls','function_call'] or message.get('tool_calls') or message.get('function_call'):
+            raise ModelError('Hessian hat einen Werkzeugaufruf statt einer Textantwort geliefert. Für diese Analyse wird eine abschließende Textantwort benötigt.')
+        if reason not in [None,'stop']:
+            raise ModelError('Hessian hat keine regulär abgeschlossene Antwort geliefert. Modellkonfiguration beim Anbieter prüfen.')
+        content=message.get('content')
+        if content is not None and not isinstance(content,str):raise ValueError()
+        if not content or not content.strip():
+            if message.get('reasoning') or message.get('reasoning_content'):
+                raise ModelError('Hessian lieferte nur Reasoning, aber keinen abschließenden Antworttext. Modellkonfiguration und Ausgabelimit prüfen; Reasoning wird nicht als Ergebnis übernommen.')
+            raise ModelError('Hessian lieferte eine leere Textantwort ohne erkennbaren Abbruchgrund. Kurze KI-Verbindung testen und Modellkonfiguration beim Anbieter prüfen.')
+        return content
 
     def extract(self,document,section):
         instruction='''Extract candidate DTA-EEL business requirements ONLY from the supplied source.
