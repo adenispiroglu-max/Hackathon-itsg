@@ -208,3 +208,42 @@ trigger, collapsed setup, completion-time/import-only summary semantics, graphic
 matching stored counts and expanding/collapsing the full package list. Final desktop/mobile
 screenshots inspected. Sources/reviews/imports/PDF/assistant and backend 4,000-case checks
 remain covered. Publish to existing codex/auditflow-prototype with expected-head lease.
+
+# 0.4 UI polish, collapsible sidebar, certification overview
+
+Branch ui/polish-overrides (merged origin/codex/auditflow-prototype at 79dddb0; pushed c37cbf0 earlier).
+Spec agreed with the user in an interview: `.plans/uebersicht-redesign-spec.md`.
+
+Implemented:
+- UI polish block and collapsible sidebar (appended to style.css/app.js): touch-safe hover,
+  0.96 press feedback, 8px/12px radii, dialog scroll containment; sidebar collapses on desktop
+  (localStorage `auditflow.sidebar`) and is a drawer with its own close button at <=760px.
+- `auditflow/static/icons.js` + `docs/ICONS.md`: prepared SVG set, NOT wired in and not in the
+  server whitelist. Next step: merge these icons into the existing `uiIcon` helper instead.
+- Certification backend `auditflow/certification.py` and `/api/cert/*` routes: manufacturer,
+  software version (neu, in_pruefung, freigegeben, abgelehnt; erneut_pruefen derived), manual
+  transitions with reviewer and reason, approval gate (completed import job only, no fail or
+  technical_error, every not_assessable accepted per case and per job, submissions decided,
+  four-eyes by self-declared names), submissions in SQLite with SHA-256 (PDF/DOCX/TXT <= 5 MB),
+  reminders (manual with required source note, or derived from document `valid_from`),
+  90/14-day windows, overdue rule. Existing auto_projects migrate to `neu` versions, idempotent.
+  Fresh demo DB seeds 3 fictional "(fiktiv)" manufacturers, 5 versions, 1 synthetic reminder.
+- Frontend: overview rewritten (4 KPIs, open certifications, reminders and dates, documents to
+  decide), new page `#customers` (`customers.js`), `#requirements?doc=` filter, nav badge.
+  Test packages are now started from the version detail; removed from the overview.
+
+Observed: 101 unittest tests OK (3 skipped); `node --check` passes on all static JS. Browser
+checks (Windows Chrome via playwright-core, disposable DB) passed at 1440/390 for the overview,
+create flow, transitions, submission upload/download/hash, import evidence with failures and
+missing observations, per-job acceptances, four-eyes refusal and approval, reminders, badge
+and drawer. Zero page errors, no horizontal overflow.
+
+Limitations: reviewer names are self-declared (four-eyes is a process hint, not security).
+Not verified in a browser: erneut_pruefen with an approval dated before the effective date
+(unit-tested), the 8-row cap, derived document reminders, PDF/DOCX uploads and the 5 MB limit.
+The official ITSG name for the approval step is unknown; labels use "Zertifizierung/Freigabe".
+Restarting a server on the normal DB migrates its projects into `neu` versions (no approvals).
+
+Next actions: update scripts/*_smoke.cjs for the new overview and page; wire icons into
+`uiIcon`; remove unused CSS (.timeline*, .glossary-list) and unused `ws-waiting` /
+dashboard polling in automation.js; answer the spec's open questions (section 14).

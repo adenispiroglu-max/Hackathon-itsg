@@ -4,6 +4,7 @@ import base64
 import io
 import json
 import os
+import re
 import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -89,7 +90,7 @@ def handler_for(service):
                 if path=='/api/state':
                     docs=service.store.list('document');reqs=service.store.list('requirement');runs=service.store.list('run')
                     return self.send({'version':__version__,'documents':docs,'requirements':reqs,'cases':service.store.list('case'),
-                      'runs':list(reversed(runs)),'automation':service.automation.state(),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage()})
+                      'runs':list(reversed(runs)),'automation':service.automation.state(),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage(),'certification':service.certification.state()})
                 if path=='/api/health':return self.send({'status':'ok','version':__version__,'mode':'local-demo'})
                 if path=='/api/events':return self.send(service.store.events())
                 if path.startswith('/api/automation/'):
@@ -111,11 +112,22 @@ def handler_for(service):
                                 w.writerow([r['case_id'],r['profile_id'],r['status'],r['expected']['message_present'],r['actual']['message_present'],r['package_hash']])
                             return self.send(buf.getvalue().encode('utf-8-sig'),mime='text/csv; charset=utf-8',filename='AuditFlow-'+id+'.csv')
                     return self.send({'error':'Automatik-Endpunkt nicht gefunden.'},404)
+                if path.startswith('/api/cert/'):
+                    parts=path.split('/');query=parse_qs(urlparse(self.path).query)
+                    if len(parts)==5 and parts[3]=='version':
+                        try:offset=int(query.get('offset',['0'])[0]);limit=int(query.get('limit',['50'])[0])
+                        except ValueError:raise InputError('Ungültige Seitengröße.') from None
+                        return self.send(service.certification.detail(parts[4],offset,limit))
+                    if len(parts)==5 and parts[3]=='submission':
+                        data,mime,name=service.certification.download(parts[4])
+                        safe=re.sub(r'[^A-Za-z0-9._ -]','_',name)[:150] or 'Einreichung'
+                        return self.send(data,mime=mime,filename=safe)
+                    return self.send({'error':'Zertifizierungs-Endpunkt nicht gefunden.'},404)
                 if path.startswith('/api/runs/'):
                     parts=path.split('/');run=service.store.get('run',parts[3])
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
-                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8')}
+                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/customers.js':('customers.js','text/javascript; charset=utf-8')}
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
@@ -149,6 +161,13 @@ def handler_for(service):
                     elif path=='/api/automation/import':result=service.automation.import_results(body)
                     elif path=='/api/automation/cancel':result=service.automation.cancel(body['job_id'])
                     elif path=='/api/automation/resume':result=service.automation.resume(body['job_id'])
+                    elif path=='/api/cert/version':result=service.certification.create_version(body)
+                    elif path=='/api/cert/transition':result=service.certification.transition(body)
+                    elif path=='/api/cert/accept':result=service.certification.accept(body)
+                    elif path=='/api/cert/submission':result=service.certification.submit(body)
+                    elif path=='/api/cert/submission/review':result=service.certification.review_submission(body)
+                    elif path=='/api/cert/reminder':result=service.certification.create_reminder(body)
+                    elif path=='/api/cert/reminder/affected':result=service.certification.set_affected(body)
                     elif path=='/api/review':result=service.approve(body['kind'],body['id'],body)
                     elif path=='/api/import':result=service.import_document(body)
                     elif path=='/api/draft':result=service.draft(body)

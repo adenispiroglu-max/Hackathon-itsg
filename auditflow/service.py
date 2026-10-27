@@ -19,7 +19,8 @@ class Service:
     def __init__(self,store,sample):
         self.store=store;self.sample=sample
         from .automation import Automation
-        self.automation=Automation(store)
+        from .certification import Certification
+        self.automation=Automation(store);self.certification=Certification(store)
 
     def verify(self,req):
         doc=self.store.get('document',req['source_id'])
