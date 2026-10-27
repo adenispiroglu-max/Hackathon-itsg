@@ -60,6 +60,7 @@ document.addEventListener('change',ev=>{if(ev.target.id==='lib-version'){activeD
 document.addEventListener('click',async ev=>{
  const b=ev.target.closest('[data-action]');if(!b||!b.dataset.action.startsWith('lib-'))return;b.disabled=true;
  try{switch(b.dataset.action){
+ case 'lib-source':activeDoc=b.dataset.id;activeSection=null;navigate('sources');render();document.querySelector('.document-detail')?.scrollIntoView({block:'start'});break;
  case 'lib-document':activeDoc=b.dataset.id;activeSection=null;render();document.querySelector('.document-detail')?.scrollIntoView({block:'start'});break;
  case 'lib-close':activeDoc=null;render();break;
  case 'lib-open':await documentFile(b.dataset.id,'pdf',true);break;

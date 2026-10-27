@@ -199,9 +199,9 @@ def handler_for(service):
                     doc=service.import_document({**body,'smart_upload':True})
                     jobs=service.store.filtered('document_job','document_id',doc['id'])
                     if not doc.get('hidden') and (doc.get('upload_outcome')!='duplicate' or not jobs or jobs[-1]['status']=='failed'):
-                        service.documents.queue(doc['id'],body.get('mode','auto'))
+                        service.documents.queue(doc['id'],body.get('mode','auto'),resume=True)
                     return self.send(doc)
-                if path=='/api/documents/analyze':return self.send(service.documents.queue(body['document_id'],body.get('mode','auto')))
+                if path=='/api/documents/analyze':return self.send(service.documents.queue(body['document_id'],body.get('mode','auto'),resume=True))
                 if path=='/api/requirements/precheck':return self.send(service.documents.review(body['id'],body.get('mode','live')))
                 if path=='/api/requirements/revise':return self.send(service.documents.revise(body))
                 if path=='/api/assistant/explain':

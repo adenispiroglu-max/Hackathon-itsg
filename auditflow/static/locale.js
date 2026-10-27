@@ -532,6 +532,15 @@ Object.assign(UX_EN,{
  'SMTP hat die Nachricht angenommen; dies bestätigt noch keinen Empfang.':'SMTP accepted the message; receipt is not confirmed.',
  'Unveränderte Grundlage – bestehende Freigabe übernommen.':'Unchanged basis — existing approval inherited.'
 });
+Object.assign(UX_EN,{
+ 'In Quellen & KI öffnen':'Open in Sources & AI',
+ 'Quelldokument nicht verfügbar.':'Source document unavailable.',
+ 'Analyse pausiert':'Analysis paused',
+ 'Noch nicht analysiert':'Not analyzed yet',
+ 'Status unbekannt':'Unknown status',
+ 'Lokal vorbereitet · ohne KI':'Prepared locally · without AI',
+ 'Alle Abschnitte und KI-Vorprüfungen müssen vollständig sein. Danach erscheint automatisch die fachliche Anforderungsfreigabe.':'All sections and AI prechecks must finish. Human requirement approval then appears automatically.'
+});
 const uxTextOrigins=new WeakMap(),uxAttrOrigins=new WeakMap();
 function uxT(value){return state?.workspace?.settings?.language==='en'?(UX_EN[value]||value):value;}
 function uxTranslate(){

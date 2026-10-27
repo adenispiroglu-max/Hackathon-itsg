@@ -55,6 +55,17 @@ class WorkflowTests(unittest.TestCase):
             self.f.begin({'id':w['id']})
         after=self.s.store.filtered('document_job','document_id',d['id'])
         self.assertEqual(after,before);self.assertEqual(self.f.tick(w['id'])['phase'],'requirements')
+    def test_failed_workflow_uses_later_completed_library_job(self):
+        w=self.create();d=self.source(w)
+        self.s.store.put('document_job',{'id':'failed-retry','document_id':d['id'],'mode':'offline','status':'failed','error':'Synthetic timeout'})
+        self.assertIn('Synthetic timeout',self.f.tick(w['id'])['error'])
+        self.s.store.put('document_job',{'id':'library-success','document_id':d['id'],'mode':'offline','status':'completed','cursor':1,'total':1})
+        with patch.object(self.s.documents,'start',side_effect=AssertionError('Completed library work must be reused')):
+            self.f.retry({'id':w['id']})
+        result=self.f.tick(w['id'])
+        self.assertEqual(result['phase'],'requirements');self.assertIsNone(result['error'])
+        self.assertEqual(len(self.s.store.filtered('document_job','document_id',d['id'])),3)
+
     def test_sources_report_and_human_gate(self):
         w=self.create();d=self.source(w);w=self.f.tick(w['id'])
         self.assertEqual(w['phase'],'requirements');self.assertEqual(len(w['reports']),1)

@@ -38,3 +38,14 @@ assert.ok(!failedHtml.includes('class="spinner"'));assert.ok(failedHtml.includes
 assert.ok(failedHtml.includes('&lt;script&gt;'));assert.ok(!failedHtml.includes('<script>'));
 ctx.state.document_jobs[0].status='running';ctx.state.document_jobs[0].stage='review';ctx.state.document_jobs[0].review_cursor=1;ctx.state.document_jobs[0].review_total=3;
 const runningHtml=ctx.flowAnalysis({document_ids:['d'],phase:'sources'});assert.ok(runningHtml.includes('class="spinner"'));assert.ok(runningHtml.includes('KI-Vorprüfung'));assert.ok(runningHtml.includes('(1 / 3)'));
+
+// Stable file card structure keeps long metadata separate from progress and exposes the shared source.
+assert.ok(runningHtml.includes('class="flow-file-header"'));
+assert.ok(runningHtml.includes('class="flow-file-meta"'));
+assert.ok(runningHtml.includes('data-action="lib-source"'));
+assert.ok(runningHtml.includes('<strong data-user-content>Synthetic &lt;img&gt;.txt</strong>'));
+const css=fs.readFileSync('auditflow/static/style.css','utf8');
+assert.ok(!/\.flow-file-list span\s*\{/.test(css));
+ctx.state.document_jobs[0].status='completed';ctx.state.document_jobs[0].mode='offline';
+assert.ok(ctx.flowFiles({document_ids:['d'],phase:'sources'}).includes('Lokal vorbereitet · ohne KI'));
+ctx.state.documents=[];assert.ok(ctx.flowFiles({document_ids:['missing'],phase:'sources'}).includes('Quelldokument nicht verfügbar.'));

@@ -532,3 +532,21 @@ static JS syntax, compileall and diff checks pass. No live API or native browser
 Publishing to existing PR branch from expected head 8eb4a7d; keep same-terminal model
 environment on restart. Existing failed workflows can Retry after source analysis succeeds
 under Quellen & KI for the same stored document and processing mode.
+
+
+## Source cards and common resume path (2026-10-27)
+User reports vertical filename and working Sources & AI versus waiting workflow. Replaced
+broad descendant span flex rules with independent header grid, metadata, status, actions
+and progress blocks; nested source/error labels have normal inline layout. Added direct
+Sources & AI document action and explicit local versus live completion labels. Missing
+document records render a safe placeholder. Sources upload/re-analyze now use resume=True
+as workflow begin/retry already do: same document/mode reuses completion or section cursor.
+Added failed-workflow → later library completion regression; no human approval bypass.
+Both full-analysis paths use the same queue/worker. Single-section drafting in the library
+is less work than full-document extraction plus recommendation for every requirement.
+No live model/user database access; cannot prove local external timeout cause. Tests follow.
+
+Validation: 168 Python tests passed (17.090s), all three Node contract suites and static
+JS syntax/diff checks pass. No native visual verification or live model request this
+revision. User must pull shared branch and restart local server; existing configuration
+remains local. Target remote parent 7ffaec56; no main merge.
