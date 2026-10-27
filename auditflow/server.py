@@ -94,7 +94,7 @@ def handler_for(service):
                     with service.store.lock:service.review.refresh_validity()
                     docs=service.store.list('document');reqs=service.store.list('requirement');runs=service.store.list('run')
                     return self.send({'version':__version__,'documents':docs,'requirements':reqs,'cases':service.store.list('case'),
-                      'runs':list(reversed(runs)),'automation':service.automation.state(),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage(),'certification':service.certification.state(),'library':service.library.listing(),'results':service.review.results()})
+                      'runs':list(reversed(runs)),'automation':service.automation.state(),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage(),'certification':service.certification.state(),'library':service.library.listing(),'results':service.review.results(),'settings':service.settings()})
                 if path=='/api/health':return self.send({'status':'ok','version':__version__,'mode':'local-demo'})
                 if path=='/api/events':return self.send(service.store.events())
                 if path.startswith('/api/automation/'):
@@ -145,7 +145,7 @@ def handler_for(service):
                     parts=path.split('/');run=service.store.get('run',parts[3])
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
-                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/customers.js':('customers.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/results.js':('results.js','text/javascript; charset=utf-8')}
+                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/locale.js':('locale.js','text/javascript; charset=utf-8'),'/customers.js':('customers.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/results.js':('results.js','text/javascript; charset=utf-8')}
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
@@ -188,6 +188,7 @@ def handler_for(service):
                     elif path=='/api/cert/submission/review':result=service.certification.review_submission(body)
                     elif path=='/api/cert/reminder':result=service.certification.create_reminder(body)
                     elif path=='/api/cert/reminder/affected':result=service.certification.set_affected(body)
+                    elif path=='/api/settings':result=service.save_settings(body)
                     elif path=='/api/review':result=service.approve(body['kind'],body['id'],body)
                     elif path=='/api/library/analyse':result=service.library.analyse(body)
                     elif path=='/api/library/confirm':result=service.library.confirm(body)

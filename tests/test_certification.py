@@ -305,6 +305,15 @@ class CertHTTPTests(unittest.TestCase):
     def error(self,path,body=None,code=422):
         status,data,_=self.call(path,body);self.assertEqual(status,code,data);self.assertIn('error',json.loads(data))
 
+    def test_ui_settings(self):
+        self.assertEqual(self.ok('/api/state')['settings'],{'language':'de','theme':'light'})
+        self.assertEqual(self.ok('/api/settings',{'language':'en','theme':'dark'}),{'language':'en','theme':'dark'})
+        self.assertEqual(self.ok('/api/settings',{'theme':'system'}),{'language':'en','theme':'system'})
+        self.error('/api/settings',{'language':'fr'});self.error('/api/settings',{'theme':'blue'})
+        self.assertEqual(self.ok('/api/state')['settings'],{'language':'en','theme':'system'})
+        code,data,headers=self.call('/locale.js')
+        self.assertEqual(code,200);self.assertTrue(headers['Content-Type'].startswith('text/javascript'))
+
     def test_routes(self):
         state=self.ok('/api/state')['certification']
         self.assertEqual(set(state),{'today','manufacturers','versions','submissions','reminders','documents_pending'})

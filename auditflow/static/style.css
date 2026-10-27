@@ -240,3 +240,33 @@ mark.cite-mark{background:#e7f1fb;color:inherit;border-radius:2px;padding:0 1px}
 .lib-list-row{margin:0;padding:16px 4px;border-bottom:1px solid var(--line);border-radius:0;align-items:center}.lib-list-row:last-child{border-bottom:0}.lib-list-row .cert-row-main small.lib-desc{color:var(--ink);margin:3px 0 2px}.lib-list-row .cert-row-side{align-items:center;gap:8px}
 .drop-box{display:flex;flex-direction:column;align-items:center;gap:4px;padding:26px 16px;margin:12px 0;border:2px dashed var(--line);border-radius:12px;background:#fafbfc;color:var(--muted);text-align:center;cursor:pointer;transition:border-color .15s,background .15s}.drop-box svg{color:var(--brand);margin-bottom:4px}.drop-box strong{color:var(--ink);font-size:15px}.drop-box:hover,.drop-box:focus-within,.drop-box.dragging{border-color:var(--brand);background:#fff5f7}.drop-box.has-file{border-style:solid}.drop-name{margin-top:6px;font-size:13px;color:var(--ink);word-break:break-all}.drop-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.drop-box{position:relative}.drop-page{margin:0 0 20px}
 .scenario-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}.scenario-facts>div{background:#fafbfc;border:1px solid var(--line);border-radius:8px;padding:10px 12px}.scenario-facts dt{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.scenario-facts dd{margin:4px 0 0;font-weight:600;color:var(--ink)}.scenario-table{width:auto;min-width:min(100%,560px)}.scenario-table th,.scenario-table td{padding-right:28px}.scenario-table .num{text-align:right}.scenario-current td{font-weight:600}
+/* Upload row: hint on its own row so file field, name field and button share one baseline. */
+.cust-upload .btn{margin:0;min-height:44px}.cust-upload-hint{grid-column:1/-1;margin-top:-4px;color:var(--muted);font-size:12px}
+/* Settings trigger and dark theme (adapted from codex/auditflow-prototype; locale.js sets html[data-theme]). */
+.ux-settings-trigger{display:inline-grid;place-items:center;cursor:pointer}
+@media(hover:hover){.ux-settings-trigger:hover{color:var(--brand)}}
+.ux-settings-section{border-top:1px solid var(--line);padding:18px 0 4px}.ux-settings-section h3{margin-top:0}
+:root[data-theme=dark]{--bg:#15181e;--ink:#e4e8ef;--muted:#a0a8b6;--line:#363c47;--surface:#20252e;color-scheme:dark}
+html[data-theme=dark] body{background:var(--bg);color:var(--ink)}
+html[data-theme=dark] :is(.sidebar,.topbar,.panel,.rule-card,.case-card,.stage-card,.dashboard-kpi,.assistant-panel,.workspace-tools,.hero,.stat,dialog,.ux-settings-trigger,.drop-box,.dropzone,.lib-suggest,.lib-date-suggest,.rem-confirm,.scenario-facts>div){background:var(--surface);color:var(--ink);border-color:var(--line)}
+html[data-theme=dark] :is(h1,h2,h3,h4,strong,.itsg-label,label){color:var(--ink)}
+html[data-theme=dark] :is(.field input,.field select,.field textarea,select.control,.icon-button,.btn:not(.primary):not(.lime):not(.danger),.filter-chip,.res-chip,.close){background:#282e39;color:var(--ink);border-color:var(--line)}
+html[data-theme=dark] .btn.danger{background:#282e39;border-color:#6b2c3a;color:#ff9aac}
+html[data-theme=dark] :is(.notice,.source-text,.diff-text,pre,th,.source-entry.selected,.lib-selected-row td,.lib-doc-row.selected,.timeline-row .reason,.progress,.kpi-icon,.doc-row-icon,.package-row-icon,.avatar,.stage-number,.lib-step-mark,.workflow-step .circle,.res-chip.active){background:#292f3b;color:var(--ink);border-color:var(--line)}
+html[data-theme=dark] :is(.cert-row:hover,.doc-row:hover,.lib-doc-row:hover:not(.selected),.source-entry:hover,.nav-item:hover,.filter-chip a:hover){background:#2b313c}
+@media(hover:hover){html[data-theme=dark] .btn:not(.primary):not(.lime):not(.danger):hover{background:#343b48}}
+html[data-theme=dark] :is(.nav-item){color:#c7cfdb}
+html[data-theme=dark] :is(.nav-item.active,.nav-item.active:hover){background:#402432;color:#f4dfe5}
+html[data-theme=dark] .brand{background:#382631;color:var(--ink)}html[data-theme=dark] .brandmark{background:#4a2b3a}
+html[data-theme=dark] :is(.quote,mark.cite-mark){background:#233631;color:#d1e9e0}
+html[data-theme=dark] :is(.note,mark.ai-mark){background:#37301f;border-color:#655737;color:#f1d491}
+html[data-theme=dark] .note.danger-banner{background:#3b2228;border-color:#6b2c3a;color:#ffc2cd}
+html[data-theme=dark] .diff-text del{background:#4a2228;color:#ffc2cd}
+html[data-theme=dark] :is(.muted,small,.workspace,footer,.panel p,.page-heading p){color:var(--muted)}
+html[data-theme=dark] :is(.pill,.tag,.pill.neu,.pill.dark,.pill.unconfirmed,.pill.upcoming,.pill.sim-label,.pill.ai){background:#2c323d;color:#d5dbe5}
+html[data-theme=dark] :is(.pill.pass,.pill.approved,.pill.freigegeben,.pill.verified,.pill.done,.big-status.pass,.gate-list .ok .gate-mark,.lib-step.ok .lib-step-mark){background:#1f3a2f;color:#9fe0bf}
+html[data-theme=dark] :is(.pill.fail,.pill.rejected,.pill.abgelehnt,.pill.mismatch,.pill.overdue,.pill.technical_error,.big-status.fail,.big-status.technical_error,.gate-list .blocked .gate-mark,.lib-step.fail .lib-step-mark){background:#43232b;color:#ffadbd}
+html[data-theme=dark] :is(.pill.pending,.pill.in_pruefung,.pill.not_assessable,.pill.soon,.pill.stale,.pill.res-stale,.pill.erneut_pruefen,.pill.ai.ai-warn,.big-status.not_assessable,.lib-step.run .lib-step-mark){background:#3d3320;color:#f1d491}
+html[data-theme=dark] :is(.rem-row.overdue){background:#2e1f24}html[data-theme=dark] :is(.rem-row.soon){background:#2d2a1f}
+html[data-theme=dark] :is(td,th,tr,hr,.panel-header,.history-list li,.cert-row,.doc-row,.lib-doc-row,.rem-row){border-color:var(--line)}
+html[data-theme=dark] .res-track{fill:#2c323d}

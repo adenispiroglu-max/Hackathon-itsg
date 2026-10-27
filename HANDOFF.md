@@ -341,3 +341,11 @@ assistant ref; update `scripts/*_smoke.cjs` for the new routes.
 - CI: Python 3.13 installs the optional extras from `requirements.txt` (file already existed, unchanged); node --check added for library.js, results.js, customers.js, icons.js. The Windows job already existed.
 - Not ported: prototype contract scripts (they test prototype-only workflow.js/controls.js/customers.js), controls/trash, locale/dark theme, conveyor workflow, prototype Kunden and document library (incompatible store schemas for manufacturer/software_version/submission).
 - Observed: 140 tests OK (5 skipped), node --check on all static JS and scripts OK, workflow YAML parses. GitHub CI not yet run on this commit.
+
+## English interface + dark theme in settings (2026-10-27)
+- Adapted from codex/auditflow-prototype (locale.js/controls.js/workspace settings), rebuilt for this branch: `meta/ui_settings` {language de|en, theme light|dark|system}; `GET /api/state` → `settings`, `POST /api/settings` (validated, event-logged). No other records change.
+- `auditflow/static/locale.js`: gear button in the top bar opens Settings. English is applied after each render by translating authored text nodes and placeholder/aria-label/title attributes (exact dictionary plus number/date patterns); record content (names, requirement and source text, notes, `pre/code`, history notes) is protected and stays German. Dates follow the language (`fmt` uses en-GB/de-DE). Theme sets `html[data-theme]`; "system" follows prefers-color-scheme live.
+- Dark theme CSS appended for this branch's components (cards, nav, inputs, pills, notes, quotes, diff, results bars).
+- Also ported from ui/polish-overrides: evidence notice removed on the version page; upload row aligned (hint on its own row). Help text updated: the server can read HAI_API_KEY from a local .env.
+- Observed: 141 tests OK (5 skipped); node --check all JS. Browser (1440 and 390, disposable DB copy): all 8 pages in EN/dark have no untranslated interface text — the 12 remaining German strings are record content; DE↔EN and light↔dark toggle without reload and persist after reload; no page errors; no horizontal scroll at 390.
+- Not verified: dialogs other than Settings (e.g. upload, reminder, approve) were not walked in English. Strings missing from the dictionary simply stay German; add them to UX_EN or UX_RULES.

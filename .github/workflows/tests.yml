@@ -36,6 +36,7 @@ jobs:
       - run: node --check auditflow/static/results.js
       - run: node --check auditflow/static/customers.js
       - run: node --check auditflow/static/icons.js
+      - run: node --check auditflow/static/locale.js
   windows-runtime:
     runs-on: windows-latest
     steps:

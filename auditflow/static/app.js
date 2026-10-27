@@ -7,7 +7,7 @@ const badge=s=>`<span class="pill ${e(s)}">${e(labels[s]||s)}</span>`;
 const pretty=v=>e(typeof v==='object'?JSON.stringify(v,null,2):v);
 const btn=(text,action,attrs='',cls='')=>`<button class="btn ${cls}" data-action="${action}" ${attrs}>${text}</button>`;
 const heading=(eyebrow,title,desc,action='')=>`<div class="page-heading"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1><p>${desc}</p></div>${action}</div>`;
-const fmt=iso=>new Date(iso).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'});
+const fmt=iso=>new Date(iso).toLocaleString(state?.settings?.language==='en'?'en-GB':'de-DE',{dateStyle:'short',timeStyle:'short'});
 const token=()=>sessionStorage.getItem('auditflow-token')||'';
 async function api(path,body){const headers={};if(token())headers.Authorization='Bearer '+token();if(body!==undefined)headers['Content-Type']='application/json';const r=await fetch('/api/'+path,{method:body===undefined?'GET':'POST',headers,body:body===undefined?undefined:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Error(data.error||'Anfrage fehlgeschlagen');return data;}
 function toast(s){const t=document.getElementById('toast');t.textContent=s;t.classList.add('show');clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove('show'),6500);}

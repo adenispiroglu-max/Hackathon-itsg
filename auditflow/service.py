@@ -32,6 +32,19 @@ class Service:
         self.library=Library(store,Path(store.path).parent/'documents',on_new_version=self.review.apply_document_change)
         with store.lock:self.library.migrate();self.review.migrate()
 
+    # Interface preferences only (adapted from codex/auditflow-prototype). Records and approvals are untouched.
+    def settings(self):
+        try:stored=self.store.get('meta','ui_settings')
+        except KeyError:stored={}
+        return {'language':stored.get('language','de'),'theme':stored.get('theme','light')}
+
+    def save_settings(self,body):
+        old=self.settings();language=body.get('language',old['language']);theme=body.get('theme',old['theme'])
+        if language not in ['de','en'] or theme not in ['light','dark','system']:raise InputError('Ungültige Sprache oder Darstellung.')
+        self.store.put('meta',{'id':'ui_settings','language':language,'theme':theme})
+        self.store.event('ui_settings',{'language':language,'theme':theme})
+        return self.settings()
+
     def verify(self,req):
         doc=self.store.get('document',req['source_id'])
         sec=next((x for x in doc['sections'] if x['id']==req['section_id']),None)
