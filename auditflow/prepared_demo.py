@@ -11,7 +11,7 @@ from uuid import uuid4
 from .domain import InputError
 from .store import now
 
-VERSION='itsg-demo-v1'
+VERSION='itsg-demo-v2'
 NOTE='Vorbereitete Demo · kein Live-KI-Aufruf · ausgewählte Prüfpunkte, keine vollständige Rechtsprüfung.'
 
 @lru_cache(maxsize=1)
@@ -49,6 +49,10 @@ def prepare(service,doc,entry):
         current=service.store.get('document',doc['id'])
         if current.get('hidden') or current.get('trashed_at'):raise InputError('Demo-Quelle ist ausgeblendet oder im Papierkorb.')
         # Keep uploaded full text when already stored; never rewrite prior approved content.
+        if current.get('sections') and all(s.get('prepared_excerpt') for s in current['sections']):
+            selected=excerpts(entry)
+            if current.get('page_range'):selected=[s for s in selected if current['page_range']['from']<=s.get('page',0)<=current['page_range']['to']]
+            current['sections']=selected
         current.update(prepared_demo=VERSION,prepared_scope=entry['scope'],prepared_role=entry['role'],prepared_note=NOTE)
         old_reqs=service.store.filtered('requirement','source_id',doc['id'])
         superseded={v for r in old_reqs for v in [r.get('previous_requirement_id'),*r.get('previous_requirement_ids',[])] if v}
@@ -57,7 +61,13 @@ def prepare(service,doc,entry):
         for item in entry['requirements']:
             matching=[r for r in old_reqs if r.get('prepared_key')==item['key'] and r['id'] not in superseded]
             if matching:
-                # Deleted/hidden items stay deleted/hidden. Manual edits and approvals stay intact.
+                # Retain decisions on unchanged statements, refresh only the prepared precheck.
+                for prior in matching:
+                    section=next((s for s in current['sections'] if s['id']==prior['section_id']),None)
+                    if prior.get('trashed_at') or prior.get('hidden') or not section:continue
+                    if prior.get('ai_review',{}).get('basis_hash')!=review_basis(prior,current,section):
+                        prior['ai_review']={**review_result(prior),'id':str(uuid4()),'status':'completed','mode':'demo','model_id':None,'prompt_version':VERSION,'basis_hash':review_basis(prior,current,section),'created_at':now(),'document_id':doc['id'],'section_id':section['id']}
+                        writes.extend([('requirement',prior),('requirement_review',{**prior['ai_review'],'requirement_id':prior['id']})])
                 continue
             section=next((s for s in current['sections'] if s['id']==item['section_id']),None)
             if not section:continue # A partial PDF view never acquires an out-of-view requirement.
@@ -74,7 +84,8 @@ def prepare(service,doc,entry):
                  'citation_status':'verified','prepared_demo':VERSION,'prepared_key':item['key'],
                  'prepared_source_hash':entry['sha256'],'prepared_scope':entry['scope'],
                  'model_id':None,'prompt_version':VERSION,'note':NOTE,'previous_requirement_ids':predecessors}
-            service.verify(req)
+            from .service import normalize
+            req['citation_status']='verified' if normalize(req['source_excerpt']) in normalize(section['text']) else 'mismatch'
             review={**review_result(req),'id':str(uuid4()),'status':'completed','mode':'demo','model_id':None,
                     'prompt_version':VERSION,'basis_hash':review_basis(req,current,section),'created_at':now(),
                     'document_id':doc['id'],'section_id':section['id']}
@@ -108,6 +119,15 @@ def cases(req,count,offset):
         v('Exakte Sechsmonatsgrenze',{'Abstand_Kalendermonate':6},'sechsmonatsbedingung_erfuellt',None,'Grenzkonvention ist fachlich zu bestätigen.')
     elif kind=='days':
         for days in [30,29,31]:v(str(days)+' systemseitige Tage',{'AU_Tage_im_System':days,'Zeitraum':'letzte zwölf Monate einschließlich aktueller AU','sonstige_Voraussetzungen':'erfüllt'},'mindestdauer_erreicht',days>=30)
+    elif kind=='min_periods':
+        for n in [1,0,2]:v(str(n)+' übermittelte Vorerkrankungen',{'uebermittelte_Vorerkrankungen':n,'systemseitige_30_Tage_erfuellt':True},'mindestanzahl_erfuellt',n>=1)
+    elif kind in ['return61','reason41','marker_j','end_reason99','month_august','period_23','trailer_ncsz','record_dsko']:
+        field,value={'return61':('Abgabegrund','61'),'reason41':('ABGABEGRUND','41'),'marker_j':('MM_VOER','J'),'end_reason99':('Ende_EEL_Grund','99'),'month_august':('Bemessungsmonat','August'),'period_23':('Divisor_Kalendertage',23),'trailer_ncsz':('Nachlaufsatz','NCSZ'),'record_dsko':('Kommunikationssatz','DSKO')}[kind]
+        v('Konkrete Musterbelegung',{'Prüfgrundlage':item['criterion']},field,value)
+        v('Abweichende Musterbelegung',{'Prüfgrundlage':item['criterion'],'Herstellerwert':'abweichend'},field,value)
+    elif kind=='partial_october':
+        v('Beispiel 130',{'Zahlung_von':'27.10.','Zahlung_bis':'31.10.'},'Zahlungstage',5)
+        v('Abweichender Herstellerwert',{'Zahlung_von':'27.10.','Zahlung_bis':'31.10.','Herstellerwert':4},'Zahlungstage',5)
     elif kind=='insurance':
         for ins,mini,result in [('gesetzlich',False,True),('privat',False,False),('gesetzlich',True,False)]:
             v(ins+' · '+('geringfügig' if mini else 'regulär'),{'Versicherung':ins,'geringfuegig':mini,'sonstige_Voraussetzungen':'erfüllt'},'teilnahme_am_verfahren_moeglich',result)

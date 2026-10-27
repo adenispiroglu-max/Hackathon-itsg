@@ -11,9 +11,9 @@ Other existing live/offline modes remain available for unrelated files.
 
 1. Pull `codex/auditflow-prototype`, restart `python -m auditflow`, refresh the browser.
 2. Create a workflow, select prepared demo mode, enter synthetic customer details, choose 8 cases.
-3. Upload the supplied GG EEL V13.1 PDF. Its 4 prepared requirements appear immediately.
+3. Upload the supplied GG EEL V13.1 PDF. Its 6 prepared requirements appear immediately.
 4. Start the workflow. The source report is created; inspect quotations and prepared recommendations.
-5. A human reviews and approves all four requirements. Six-month boundary questions stay explicit.
+5. A human reviews and approves all six requirements. Six-month boundary questions stay explicit.
 6. Eight synthetic test specifications are assigned without an API. Profiles, inputs, steps and
    expectations are visible. Review expectations independently before releasing the package.
 7. Download the customer package, which omits internal expected values. Actual email needs SMTP
@@ -30,17 +30,17 @@ Prepared status is visible in sources, recommendations, workflow, reports and pa
 
 | Supplied source | Prepared checks | Scope |
 | --- | ---: | --- |
-| GG EEL V13.1, 06.05.2025 | 4 | Effective 01.01.2026 |
-| DTA EEL Vorerkrankung scenario DOCX | 4 | Supplied 2026 scenario |
-| Vorerkrankung test-constellation notes DOCX | 3 | Supplied 2026 scenario |
-| Procedure V13.4, 10.03.2026 | 4 | Effective 01.01.2027 |
-| Example paper V13.3, 10.03.2026 | 3 | Effective 01.01.2027 |
-| Rundschreiben 11.12.2024, Annex 3 | 3 | Selected historical/reference examples |
-| Rundschreiben 10.12.2025, Annex 1 | 2 | Selected child sickness benefit examples |
-| Rundschreiben 10.12.2025, Annex 2 | 2 | Selected maternity examples |
-| TEEL0-Test1-DBVO, extensionless sample | 2 | Technical specimen, not normative law |
+| GG EEL V13.1, 06.05.2025 | 6 | Effective 01.01.2026 |
+| DTA EEL Vorerkrankung scenario DOCX | 6 | Supplied 2026 scenario |
+| Vorerkrankung test-constellation notes DOCX | 5 | Supplied 2026 scenario |
+| Procedure V13.4, 10.03.2026 | 6 | Effective 01.01.2027 |
+| Example paper V13.3, 10.03.2026 | 5 | Effective 01.01.2027 |
+| Rundschreiben 11.12.2024, Annex 3 | 5 | Selected historical/reference examples |
+| Rundschreiben 10.12.2025, Annex 1 | 4 | Selected child sickness benefit examples |
+| Rundschreiben 10.12.2025, Annex 2 | 4 | Selected maternity examples |
+| TEEL0-Test1-DBVO, extensionless sample | 4 | Technical specimen, not normative law |
 
-Total: **9 exact original files and 27 selected requirements**. The 406-page Annex 3 is approximately
+Total: **9 exact original files and 45 selected requirements**. The 406-page Annex 3 is approximately
 5.54 MB: its known fingerprint bypasses the generic 5 MB file limit; the bounded HTTP upload limit
 is 10 MB to accommodate base64. Unknown files keep the 5 MB decoded limit.
 
@@ -70,7 +70,7 @@ old same-source model requirements become history through explicit supersession 
 Synthetic registry tests exercise fingerprint matching, renamed duplicate uploads, unknown-file
 rejection, no model calls, human gates, package/result comparison, scope separation, edited
 requirements and lifecycle behavior. A separate temporary HTTP check uploaded all nine actual
-provided originals and verified 27 matching citations without any model call. Browser inspection
+provided originals and verified the original 27 matching citations; the expanded nine-file importer check verified all 45 without any model call. Browser inspection
 verified the prepared requirement/recommendation view and source completion status using a
 disposable preview. No live manufacturer, SMTP or model call was made.
 
@@ -95,3 +95,25 @@ All customer imports compare only the released package and its recalculated hash
 Expanded cases remain open across decisions and polling in the current browser page;
 a full browser reload resets the expansion state. Existing cases receive precheck cards
 without regenerating their original inputs or expected values.
+
+## Earlier stations and presentation timing
+
+Use **← Zurück** or click an available station in the rail to view prior customer data,
+sources, requirement snapshots, cases and delivery information. This changes only the
+view; it does not reopen intake editing or revoke prior decisions. **Aktuellen Schritt
+öffnen** returns to the current gate. Future stations stay disabled. Case expansion state
+is preserved independently of station selection.
+
+New demo workflows created through the UI set `demo_presentation=true`. On Begin, the
+server stores the start time and holds the source station for 9000ms without blocking
+a thread. A clearly labelled simulated progress bar presents the prepared source data
+in four stages. This is presentation timing, not a measure of model processing. API
+clients can omit the flag for immediate processing; live/offline work is never delayed.
+Reloading does not restart the timer. Source completion and error checks still apply.
+
+Catalogue v2 adds two checks for every original file, for 45 total. Existing visible
+prepared sources receive additional pending requirements on application startup.
+Manually approved unchanged statements retain their decision; prepared source prechecks
+are refreshed against the expanded selected excerpts. Added requirements can invalidate
+an in-progress test package and require a new human decision. Reports and closed
+workflow snapshots remain retained. Deleted/hidden sources and requirements stay inactive.

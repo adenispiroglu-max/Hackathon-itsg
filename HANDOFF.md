@@ -645,3 +645,35 @@ null approval. Native disposable browser QA confirmed approved and rejected stat
 both cases still expanded across subsequent polling; visual layout inspected. No live API,
 SMTP, actual vendor test or user DB access. Preview stopped, helpers removed; ignored
 synthetic preview DB only. Local codex/case-approval-inline; remote expected0f2e5812.
+
+
+## Read-only station navigation, catalogue v2 and demo timing (2026-10-27)
+User requests back navigation, more requirements for every supplied source and a 9-second
+artificial source loading presentation. Implemented explicitly labelled demo animation;
+never claims live inference or real analysis progress. Station buttons/Back select a UI
+view only: past intake, source list/reports, requirement snapshots, cases and delivery;
+future stages disabled. Current-stage button returns to live human gate. No backend
+phase rollback, input edits, approval reset or email repetition caused by navigation.
+Demo UI creates workflows with validated demo_presentation boolean. Begin persists start
+ms/duration9000; tick waits nonblockingly after checking source completion/errors. Browser
+250ms progress updates with four stage labels and explicit simulation text; existing
+polling transitions to requirements. Reload does not restart; other modes have no delay.
+Catalogue v2 adds exactly2 authored source-linked checks per file:6,6,5,6,5,5,4,4,4=45.
+Added cases for minimum transmitted periods, explicit sample field codes, month/period
+selection and another arithmetic example; no general schema inferred from TEEL prefixes.
+Nine actual originals imported in a temporary DB, all45 quotes verified, all requirements
+pending and four generated cases per rule validated, Model.call prohibited throughout.
+Local importer total0.27s excluding presentation delay, not a latency guarantee.
+Visible old prepared sources upgrade on startup; curated excerpts extended, existing
+unchanged human decisions retained, prepared precheck hashes refreshed, additions pending.
+Deleted/hidden records not resurrected; full-text imports not overwritten. New catalogue
+requirements invalidate in-progress package basis as before; historical reports retained.
+Validation:187 Python tests passed17.110s, all three Node contracts/JS syntax/compileall/
+diff check passed. New tests cover exact9s gate via mocked clock and idempotent catalogue
+growth with unchanged human decisions. Frontend covers no editable controls in earlier
+intake view, navigation actions, explicit simulation markup. Native browser verified
+1→54% animated progress, automatic requirement gate0/6, Back into past Sources, and
+return to same current gate. Visual screenshot inspected. No live API/SMTP/vendor call.
+Preview stopped and helpers removed. Local codex/demo-navigation-expanded-catalogue.
+Publish from expected a21a4474 to existing feature branch; original files excluded,
+user's explicit approval for short excerpts in this repository remains applicable.

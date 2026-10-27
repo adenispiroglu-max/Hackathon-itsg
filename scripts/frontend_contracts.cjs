@@ -65,3 +65,10 @@ let caseHtml=ctx.flowCases({...w,id:'w',phase:'case_review',cases:[sampleCase]})
 assert.ok(caseHtml.includes('data-flow-panel="w|c" open'));assert.ok(caseHtml.includes('flow-case-approve'));assert.ok(caseHtml.includes('flow-case-reject'));assert.ok(caseHtml.includes('Vorbereitete Demo-Vorprüfung'));
 panel.open=false;ctx.flowRememberPanels();caseHtml=ctx.flowCases({...w,id:'w',phase:'case_review',cases:[sampleCase]});assert.ok(!caseHtml.includes('data-flow-panel="w|c" open'));
 sampleCase.expected.value=null;caseHtml=ctx.flowCases({...w,id:'w',phase:'case_review',cases:[sampleCase]});assert.ok(/flow-case-approve[^>]*disabled/.test(caseHtml));
+
+// Back navigation is a read-only view, and the staged progress is explicitly simulated.
+const pastHtml=ctx.flowPastStation({...w,phase:'case_review',document_ids:['d']},'intake');
+assert.ok(pastHtml.includes('Frühere Station ansehen'));assert.ok(!pastHtml.includes('flow-upload-form'));assert.ok(!pastHtml.includes('flow-detach'));
+assert.ok(ctx.flowObject({...w,phase:'case_review',document_ids:['d']}).includes('data-view="requirements"'));
+const progressHtml=ctx.flowDemoProgress({demo_source_started_ms:Date.now()-4500,demo_source_delay_ms:9000});
+assert.ok(progressHtml.includes('simulierter Ablauf'));assert.ok(progressHtml.includes('Keine Live-Analyse'));assert.ok(progressHtml.includes('data-demo-progress'));

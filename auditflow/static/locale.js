@@ -563,6 +563,16 @@ Object.assign(UX_EN,{
  'Lokal vorbereitet · ohne KI':'Prepared locally · without AI',
  'Alle Abschnitte und KI-Vorprüfungen müssen vollständig sein. Danach erscheint automatisch die fachliche Anforderungsfreigabe.':'All sections and AI prechecks must finish. Human requirement approval then appears automatically.'
 });
+Object.assign(UX_EN,{
+ '← Zurück':'← Back','Aktuellen Schritt öffnen':'Open current step','Aktueller Schritt':'Current step',
+ 'STATIONSANSICHT':'STAGE VIEW','Frühere Station':'Earlier stage',
+ 'Frühere Station ansehen. Der Bearbeitungsstand und bestehende Entscheidungen bleiben erhalten.':'Viewing an earlier stage. Workflow progress and existing decisions are retained.',
+ 'Demoanimation · simulierter Ablauf':'Demo animation · simulated flow',
+ 'Dateien zuordnen':'Match files','Quellenauszüge laden':'Load source excerpts',
+ 'Anforderungen zuordnen':'Assign requirements','Prüfpunkte verknüpfen':'Link checks',
+ 'Simulierter Demo-Fortschritt':'Simulated demo progress',
+ 'Vorbereitete Inhalte werden über etwa neun Sekunden eingeblendet. Keine Live-Analyse.':'Prepared content is shown over approximately nine seconds. No live analysis.'
+});
 const uxTextOrigins=new WeakMap(),uxAttrOrigins=new WeakMap();
 function uxT(value){return state?.workspace?.settings?.language==='en'?(UX_EN[value]||value):value;}
 function uxTranslate(){

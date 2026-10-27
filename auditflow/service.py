@@ -29,6 +29,10 @@ class Service:
         self.customers=Customers(self)
         from .workspace import Workspace
         self.workspace=Workspace(self)
+        for doc in self.store.list('document'):
+            if doc.get('prepared_demo') and doc['prepared_demo']!=prepared_demo.VERSION and not doc.get('hidden') and not doc.get('trashed_at'):
+                entry=prepared_demo.by_hash(doc.get('sha256'))
+                if entry:prepared_demo.prepare(self,doc,entry)
 
     def verify(self,req):
         doc=self.store.get('document',req['source_id'])

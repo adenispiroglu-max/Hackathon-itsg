@@ -82,3 +82,26 @@ class PreparedDemoTests(unittest.TestCase):
         d=self.upload();self.s.documents.process_section(d,d['sections'][0],'live')
         old=copy.deepcopy(self.req(d));old['id']='old-model-draft';old.pop('prepared_demo');self.s.store.put('requirement',old)
         with self.assertRaisesRegex(InputError,'Früherer Entwurf'):self.s.documents.review(old['id'],'live')
+
+    def test_nine_second_presentation_gate_is_durable_and_nonblocking(self):
+        d=self.upload()
+        with patch('auditflow.workflow.time.time',return_value=100.0):
+            w=self.workflow([d],demo_presentation=True)
+            self.assertEqual(w['demo_source_started_ms'],100000)
+            self.assertEqual(self.s.workflow.tick(w['id'])['phase'],'sources')
+        with patch('auditflow.workflow.time.time',return_value=108.99):
+            self.assertEqual(self.s.workflow.tick(w['id'])['phase'],'sources')
+        with patch('auditflow.workflow.time.time',return_value=109.0):
+            self.assertEqual(self.s.workflow.tick(w['id'])['phase'],'requirements')
+        self.assertEqual(self.s.store.get('workflow',w['id'])['demo_source_started_ms'],100000)
+
+    def test_catalogue_growth_adds_pending_rules_and_retains_unchanged_human_decision(self):
+        d=self.upload();before=self.approve(self.req(d));basis=before['ai_review']['basis_hash']
+        extra=copy.deepcopy(self.entry['requirements'][0]);extra.update(key='synthetic-added',title='Additional synthetic criterion',criterion='Additional selected evidence to review.',quote='Additional selected evidence.')
+        self.entry['requirements'].append(extra)
+        self.s.documents.queue(d['id'],'demo',resume=True)
+        reqs=self.s.store.filtered('requirement','source_id',d['id']);self.assertEqual(len(reqs),2)
+        self.assertEqual(reqs[0]['id'],before['id']);self.assertEqual(reqs[0]['status'],'approved')
+        self.assertNotEqual(reqs[0]['ai_review']['basis_hash'],basis)
+        self.assertEqual(reqs[1]['status'],'pending');self.assertEqual(reqs[1]['citation_status'],'verified')
+        self.s.documents.queue(d['id'],'demo',resume=True);self.assertEqual(len(self.s.store.filtered('requirement','source_id',d['id'])),2)

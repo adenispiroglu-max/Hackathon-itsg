@@ -10,6 +10,7 @@ import re
 import smtplib
 import ssl
 import threading
+import time
 from email.message import EmailMessage
 from uuid import uuid4
 from .documents import digest,review_basis
@@ -71,6 +72,8 @@ class Workflow:
         if not re.fullmatch(r'[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+',email):raise InputError('Gültige Kunden-E-Mail erforderlich.')
         mode=body.get('mode','auto')
         if mode not in ['auto','live','offline','demo']:raise InputError('Unbekannter KI-Modus.')
+        presentation=body.get('demo_presentation',False)
+        if type(presentation) is not bool:raise InputError('Demo-Präsentationsmodus muss wahr oder falsch sein.')
         requested=body.get('requested_cases')
         if requested is not None and (type(requested) is not int or not 1<=requested<=4000):raise InputError('1 bis 4.000 Testfälle wählen.')
         auto_send=body.get('auto_send',False)
@@ -80,7 +83,7 @@ class Workflow:
                           'email':email,'software':text(body.get('software',''),'Software'),
                           'software_version':text(body.get('software_version',''),'Softwareversion',100)},
               'mode':('live' if Model().key else 'offline') if mode=='auto' else mode,'auto_send':auto_send,
-              'requested_cases':requested,'phase':'intake','document_ids':[],'created_at':now(),'updated_at':now(),'error':None,
+              'requested_cases':requested,'demo_presentation':presentation,'phase':'intake','document_ids':[],'created_at':now(),'updated_at':now(),'error':None,
               'case_cursor':0,'cases':[],'reports':[],'generation_epoch':0,'delivery':{'status':'not_prepared'},'final_review':None}
         with self.store.lock:
             item.update(self.service.customers.workflow_customer(body))
@@ -126,6 +129,8 @@ class Workflow:
                 if d.get('trashed_at') or d.get('hidden'):raise InputError('Dokument liegt im Papierkorb.')
                 if d.get('is_historical'):raise InputError('Historische Quelle ist kein aktueller Eingang.')
                 self.service.documents.queue(id,w['mode'],resume=True)
+            if w['mode']=='demo' and w.get('demo_presentation'):
+                w.update(demo_source_started_ms=int(time.time()*1000),demo_source_delay_ms=9000)
             w['phase']='sources';self.save(w)
         self.start();return w
 
@@ -166,6 +171,7 @@ class Workflow:
                     w['error']='Quellenanalyse fehlgeschlagen: '+doc['name']+(' · '+failed['location'] if failed.get('location') else '')+'. '+(failed.get('error') or 'Fehlerursache nicht verfügbar.')+' Nach Beheben der Ursache „Erneut versuchen“ wählen.'
                     return self.save(w)
                 if not all(j['status']=='completed' for j in jobs):return w
+                if w['mode']=='demo' and w.get('demo_source_started_ms') is not None and int(time.time()*1000)-w['demo_source_started_ms']<w.get('demo_source_delay_ms',9000):return w
                 docs=[self.store.get('document',id) for id in w['document_ids']]
                 w['phase']='requirements';w['error']=None
                 self.report(w,'sources','Zwischenbericht · Quellenabgleich',[
