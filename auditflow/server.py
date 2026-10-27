@@ -69,12 +69,12 @@ def handler_for(service):
             # Do not log user input, credentials, paths with queries or source text.
             pass
 
-        def send(self,data,status=200,mime='application/json; charset=utf-8',filename=None):
+        def send(self,data,status=200,mime='application/json; charset=utf-8',filename=None,inline=False):
             if not isinstance(data,bytes):data=json.dumps(data,ensure_ascii=False).encode()
             self.send_response(status);self.send_header('Content-Type',mime);self.send_header('Content-Length',str(len(data)))
             self.send_header('X-Content-Type-Options','nosniff');self.send_header('Cache-Control','no-store')
             self.send_header('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'")
-            if filename:self.send_header('Content-Disposition',f'attachment; filename="{filename}"')
+            if filename:self.send_header('Content-Disposition',f'{"inline" if inline else "attachment"}; filename="{filename}"')
             self.end_headers();self.wfile.write(data)
 
         def authorized(self):
@@ -88,9 +88,10 @@ def handler_for(service):
             if path.startswith('/api/') and not self.authorized():return
             try:
                 if path=='/api/state':
+                    with service.store.lock:service.review.refresh_validity()
                     docs=service.store.list('document');reqs=service.store.list('requirement');runs=service.store.list('run')
                     return self.send({'version':__version__,'documents':docs,'requirements':reqs,'cases':service.store.list('case'),
-                      'runs':list(reversed(runs)),'automation':service.automation.state(),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage(),'certification':service.certification.state()})
+                      'runs':list(reversed(runs)),'automation':service.automation.state(),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage(),'certification':service.certification.state(),'library':service.library.listing(),'results':service.review.results()})
                 if path=='/api/health':return self.send({'status':'ok','version':__version__,'mode':'local-demo'})
                 if path=='/api/events':return self.send(service.store.events())
                 if path.startswith('/api/automation/'):
@@ -123,11 +124,25 @@ def handler_for(service):
                         safe=re.sub(r'[^A-Za-z0-9._ -]','_',name)[:150] or 'Einreichung'
                         return self.send(data,mime=mime,filename=safe)
                     return self.send({'error':'Zertifizierungs-Endpunkt nicht gefunden.'},404)
+                if path.startswith('/api/library'):
+                    parts=path.split('/');query=parse_qs(urlparse(self.path).query)
+                    if path=='/api/library':return self.send(service.library.listing())
+                    if len(parts)>=5 and parts[3]=='version':
+                        if len(parts)==5:return self.send(service.library.version(parts[4]))
+                        if parts[5]=='text':return self.send(service.library.text(parts[4]))
+                        if parts[5]=='file':
+                            data,mime,name=service.library.file(parts[4])
+                            return self.send(data,mime=mime,filename=re.sub(r'[^A-Za-z0-9._ -]','_',name)[:150] or 'Dokument',inline=query.get('download',['0'])[0]!='1')
+                    if len(parts)==5 and parts[3]=='diff':return self.send(service.library.diff(parts[4]))
+                    return self.send({'error':'Ablage-Endpunkt nicht gefunden.'},404)
+                if path=='/api/results':return self.send(service.review.results())
+                if path.startswith('/api/requirements/') and path.endswith('/versions'):
+                    return self.send(service.requirement_versions(path.split('/')[3]))
                 if path.startswith('/api/runs/'):
                     parts=path.split('/');run=service.store.get('run',parts[3])
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
-                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/customers.js':('customers.js','text/javascript; charset=utf-8')}
+                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/customers.js':('customers.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/results.js':('results.js','text/javascript; charset=utf-8')}
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
@@ -141,7 +156,7 @@ def handler_for(service):
                 return self.send({'error':'Fremde Herkunft nicht erlaubt.'},403)
             try:
                 length=int(self.headers.get('Content-Length','0'))
-                if length<1 or length>7_000_000:return self.send({'error':'Ungültige Anfragegröße.'},413)
+                if length<1 or length>7_500_000:return self.send({'error':'Ungültige Anfragegröße.'},413)
                 if self.headers.get_content_type()!='application/json':return self.send({'error':'JSON erwartet.'},415)
                 body=json.loads(self.rfile.read(length))
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
@@ -169,6 +184,14 @@ def handler_for(service):
                     elif path=='/api/cert/reminder':result=service.certification.create_reminder(body)
                     elif path=='/api/cert/reminder/affected':result=service.certification.set_affected(body)
                     elif path=='/api/review':result=service.approve(body['kind'],body['id'],body)
+                    elif path=='/api/library/analyse':result=service.library.analyse(body)
+                    elif path=='/api/library/confirm':result=service.library.confirm(body)
+                    elif path=='/api/library/withdraw':result=service.library.withdraw(body)
+                    elif path=='/api/requirements/edit':result=service.review.edit(body)
+                    elif path=='/api/requirements/prereview':result=service.review.schedule_prereview(body['id'])
+                    elif path=='/api/requirements/accept-suggestion':result=service.review.accept_suggestion(body)
+                    elif path=='/api/requirements/editorial-accept':result=service.review.editorial_accept(body)
+                    elif path=='/api/requirements/reclassify':result=service.review.reclassify(body)
                     elif path=='/api/import':result=service.import_document(body)
                     elif path=='/api/draft':result=service.draft(body)
                     elif path=='/api/cases':result=service.create_case(body)

@@ -247,3 +247,55 @@ Restarting a server on the normal DB migrates its projects into `neu` versions (
 Next actions: update scripts/*_smoke.cjs for the new overview and page; wire icons into
 `uiIcon`; remove unused CSS (.timeline*, .glossary-list) and unused `ws-waiting` /
 dashboard polling in automation.js; answer the spec's open questions (section 14).
+
+## Checkpoint 27.10.2026: document library, automatic version diff, AI pre-review, Ergebnisse & Abdeckung
+
+Spec: `.plans/dokumente-versionen-freigaben-spec.md` (German). Binding module/API contract:
+`.plans/dokumente-versionen-impl-contract.md`. Branch `feat/dokumente-versionen` (from 85924ae).
+
+- `auditflow/library.py`: document library. `library_doc` groups versions; existing kind
+  `document` now means one document version (old fields unchanged). Originals in
+  `<db dir>/documents/<sha256>.<ext>`. Upload = `analyse` (sha256 duplicate rejected regardless
+  of metadata; match suggestion, user must confirm; date suggestions by regex, never applied
+  automatically) + `confirm` (version n+1, old versions kept, paragraph diff via difflib that
+  ignores page boundaries, stored `document_diff`). PDF page-range import removed for new uploads.
+  Withdraw instead of delete. Legacy documents migrate to v1 with "Originaldatei nicht gespeichert".
+- `auditflow/review.py`: requirement versions (`requirement_version`, id `<req>@v<n>`), migration
+  keeps approvals, affected requirements per diff, AI classification redaktionell/fachlich and
+  AI revision drafts (live only), offline flag "Quelle geändert – Prüfung nötig", editorial bulk
+  confirmation, approval per version with `against_ai`, validity (superseded source in force or
+  valid_until passed), case inheritance/outdated/regeneration, `results()` for #results.
+  AI pre-review never falls back to rules: without key "nicht verfügbar"; marks are checked
+  against the real text and unprovable ones dropped. Model additions in `model.py`
+  (`classify_changes`, `draft_revision`, `prereview`, prompt `requirement-review-v1`).
+- `service.py`: wiring; `run()` uses `review.effective` / `case_usable`. New guard: the fixture
+  checker only computes C1–C4 if the APPROVED version still cites `DOC-CRITERIA`; otherwise
+  the result is not_assessable with a reason (no silent 2026-fixture/2027-rule mix).
+- UI: `library.js` (Quellen & KI library, upload dialog with live steps, stored diff with
+  word-level marks, editorial confirm, requirement detail with AI card, version history and
+  approval form), `results.js` (#results: two SVG charts, filterable table; #reports and
+  #coverage redirect). No `<pre>`/JSON in the normal flow; "Technische Details" collapsed;
+  ⓘ glossary tooltips. Fictional fixture `data/demo/Synthetic demo requirements v2 (fiktiv).txt`.
+
+Observed: `python3 -m unittest discover -s tests -q` 137 tests OK (5 skipped: PDF/DOCX packages
+missing), twice in a row; `node --check` passes on all static JS. Browser walkthrough (Windows
+headless Chrome via a CDP script, fresh DB, no model key): approve C2/C4 via form, upload v2
+in the dialog (suggestion score 0.86, date suggestion applied), stored diff with 30→32 word
+marks, C2/C4 flagged, manual C4 v2 edit + approval, scenario run (C1/C2 pass, C4 not_assessable
+with fixture reason), #results 2 of 4 covered with only C4 outdated, redirects, tooltip, no
+`<pre>` on 6 routes, no horizontal overflow at 390 px (sources, results, requirement detail).
+Fixed during the walkthrough: re-render blocked by focus left in the closed upload dialog;
+`[hidden]` buttons still shown; per-case instead of per-requirement outdated evidence; results
+table overflow at phone width; pre-review thread race in tests.
+
+Limitations: no live model run (no key), so AI classification, AI drafts and a finished
+pre-review card with marks are unit-tested with a mocked model only. PDF/DOCX parsing and the
+PDF blob viewer are untested here (optional packages missing). Withdrawn source versions do not
+invalidate approvals (open point, spec §13). Similarity thresholds (0.45 suggestion, 0.6
+paragraph pairing) are heuristics, not calibrated on real documents. Unconfirmed uploads keep
+their base64 in the store (no cleanup). The "Erklären" button needs a run (no requirement-only
+assistant ref yet). Automation packages keep their own approval (out of scope).
+
+Next actions: install the optional packages and test PDF/DOCX upload + viewer; run one live
+model pre-review; decide the withdrawn-version rule; add upload cleanup; add a requirement
+assistant ref; update `scripts/*_smoke.cjs` for the new routes.

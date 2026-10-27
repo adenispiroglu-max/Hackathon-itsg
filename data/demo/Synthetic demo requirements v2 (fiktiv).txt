@@ -1,0 +1,9 @@
+Fiktive Demo-Fassung v2. Keine Originalquelle und keine Rechtsgrundlage. Gilt ab 01.01.2027 (fiktives Datum).
+
+Demo requirement: allow an enquiry only when the current absence and at least one prior absence have confirmed certificate status.
+
+Demo requirement: check the calendar-month gap between current absence and the most recent certified prior absence. Leave the exact six-month boundary unresolved.
+
+Demo requirement: compare transmitted periods with the synthetic profile and check their descending order and calendar-month gaps.
+
+Demo requirement: test a 32-day threshold using the synthetic system-side absence stock, not only the transmitted period list. Unresolved counting assumptions prevent assessment. Fictional exception: absences shorter than three days are not counted.

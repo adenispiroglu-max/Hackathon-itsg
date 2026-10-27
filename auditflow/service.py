@@ -11,6 +11,9 @@ from .store import now
 from .model import Model, ModelError, PROMPT_VERSION
 
 
+FIXTURE_SOURCE='DOC-CRITERIA'
+
+
 def normalize(s):
     return re.sub(r'\s+',' ',re.sub(r'-\s*\n\s*','',s)).strip()
 
@@ -21,6 +24,13 @@ class Service:
         from .automation import Automation
         from .certification import Certification
         self.automation=Automation(store);self.certification=Certification(store)
+        from pathlib import Path
+        from .library import Library
+        from .review import Review
+        # Review migrates after the library so legacy requirements point at migrated version 1 documents.
+        self.review=Review(store)
+        self.library=Library(store,Path(store.path).parent/'documents',on_new_version=self.review.apply_document_change)
+        with store.lock:self.library.migrate();self.review.migrate()
 
     def verify(self,req):
         doc=self.store.get('document',req['source_id'])
@@ -30,6 +40,7 @@ class Service:
 
     def approve(self,kind,id,body):
         if kind not in ['requirement','case']:raise InputError('Unbekannte Freigabeart.')
+        if kind=='requirement':return self.review.approve({**body,'id':id})
         if not body.get('reviewer','').strip() or not body.get('note','').strip():
             raise InputError('Prüfername und fachliche Begründung sind erforderlich.')
         item=self.store.get(kind,id);approved=body.get('approve') is True
@@ -114,9 +125,22 @@ class Service:
                'semantic_review':'pending','mapping':None,'ruleset':'unmapped','citation_status':'unverified',
                'model_id':Model().model if live else 'offline-literal','prompt_version':PROMPT_VERSION,
                'note':'KI-Vorschlag' if live else 'Wörtlicher Offline-Vorschlag, keine KI-Ausführung'}
-            self.verify(r);self.store.put('requirement',r);created.append(r)
+            self.verify(r);self.store.put('requirement',r);created.append(self.review.register(r['id'],'ki_entwurf' if live else 'offline_literal'))
         self.store.event('requirements_drafted',{'document_id':doc['id'],'mode':'live' if live else 'offline','ids':[r['id'] for r in created]})
         return created
+
+    def _approved_source(self,rule):
+        try:return self.store.get('requirement_version',f"{rule['id']}@v{rule['approved_version_no']}")['source_id']
+        except (KeyError,TypeError):return rule.get('source_id')
+
+    def _versions(self,ids):
+        reqs=self.store.get_many('requirement',list(ids))
+        return {id:reqs[id].get('version_no',1) for id in ids if id in reqs}
+
+    def requirement_versions(self,id):
+        req=self.store.get('requirement',id)
+        versions=sorted(self.store.filtered('requirement_version','requirement_id',id),key=lambda v:v['version_no'])
+        return {'current':req,'approved_version_no':req.get('approved_version_no'),'versions':versions}
 
     def create_case(self,body):
         s=body['scenario'];validate_scenario(s)
@@ -130,7 +154,8 @@ class Service:
         if test_type not in ['custom','positive','negative','boundary','missing_data']:raise InputError('Unbekannte Testfallart.')
         item={'id':str(uuid4()),'name':name,'scenario':s,'expected_message':expected,'ruleset':ruleset,'test_type':test_type,
               'review_status':'pending','expectation_source':body.get('expectation_source','Manueller Entwurf; Quelle ergänzen.'),
-              'requirement_ids':['C1','C2','C4'],'fixture_questions':[]}
+              'requirement_ids':['C1','C2','C4'],'fixture_questions':[],'expectation_edited':False,'outdated':None,'regenerated_from':None}
+        item['requirement_versions']=self._versions(item['requirement_ids'])
         self.store.put('case',item);self.store.event('case_created',{'id':item['id']});return item
 
     def generate_cases(self,body):
@@ -139,7 +164,7 @@ class Service:
         baseline=self.store.get('case',body.get('case_id','CASE-001'))
         if baseline['ruleset']!='fixture-2026':raise InputError('Kein ausführbarer Vorlagenstand für diesen Ausgangsfall.')
         rules=[self.store.get('requirement',id) for id in ['C1','C2','C4']]
-        if any(r['status']!='approved' for r in rules):
+        if not all(self.review.effective(r) for r in rules):
             raise InputError('Zuerst C1, C2 und C4 fachlich freigeben.')
         mode=body.get('mode','boundary');drafts=[]
         test_type=body.get('test_type','boundary')
@@ -195,7 +220,7 @@ class Service:
         for item in created:
             item.update(generation_mode=mode,model_id=Model().model if mode=='live' else None,
                         prompt_version='test-drafts-v2',requirement_ids=[r['id'] for r in rules],
-                        requirements_snapshot=copy.deepcopy(rules))
+                        requirement_versions=self._versions([r['id'] for r in rules]),requirements_snapshot=copy.deepcopy(rules))
             self.store.put('case',item)
         self.store.event('cases_generated',{'mode':mode,'baseline':baseline['id'],'ids':[c['id'] for c in created]})
         return created
@@ -248,13 +273,17 @@ class Service:
             if rule:
                 result['source']={'document_id':rule['source_id'],'section_id':rule['section_id'],'excerpt':rule['source_excerpt']}
                 result['computed_status']=result['status']
-                if rule.get('status')!='approved':
+                if not self.review.effective(rule):
                     result['status']='not_assessable';result['note']+=' Fachregel noch nicht freigegeben.'
+                elif self._approved_source(rule)!=FIXTURE_SOURCE:
+                    # The fixture checker implements the synthetic v1 rules only; never apply it to a newer source version.
+                    result['status']='not_assessable'
+                    result['note']+=f" Freigegebene Version {rule.get('version_no')} beruht auf einem neueren Quellstand; der Fixture-Prüfer implementiert nur {FIXTURE_SOURCE}."
             elif result['requirement_id'] in ['FORMAT','GROUND_STATE']:
                 result['source']={'document_id':'fixture','section_id':'inferred-layout','excerpt':'Sample-specific structural check; normative technical schema not verified.'}
             if parsed and result['requirement_id']=='C3':
                 block=parsed['blocks']['DBVO'];result['evidence'].update(block='DBVO',position=block['position'],position_basis='byte-1-based',raw=block['raw'])
-        if case.get('review_status')!='approved':
+        if not self.review.case_usable(case):
             for row in comparison:
                 row['computed_status']=row['status'];row['status']='not_assessable'
         # Compliance of a message vs eligibility of a scenario are different result axes.
@@ -274,7 +303,7 @@ class Service:
         return run
 
     def coverage(self):
-        reqs=[r for r in self.store.list('requirement') if r.get('status')=='approved']
+        reqs=[r for r in self.store.list('requirement') if self.review.effective(r)]
         cases=self.store.list('case');runs=self.store.list('run');cells=[]
         for r in reqs:
             for c in cases:
@@ -282,7 +311,7 @@ class Service:
                 latest=next((v for v in reversed(runs) if v['case_id']==c['id'] and v['ruleset']==c['ruleset'] and any(x['requirement_id']==r['id'] for x in v['results'])),None)
                 result=next((x for x in latest['results'] if x['requirement_id']==r['id']),None) if latest else None
                 stale=bool(latest and (latest['snapshot']!=c or next((x for x in latest['requirements_snapshot'] if x['id']==r['id']),None)!=r))
-                cells.append({'requirement_id':r['id'],'case_id':c['id'],'case_approved':c['review_status']=='approved',
+                cells.append({'requirement_id':r['id'],'case_id':c['id'],'case_approved':self.review.case_usable(c),
                               'status':'stale' if stale else result['status'] if result else 'not_run'})
         gaps=[r['id'] for r in reqs if not any(c['requirement_id']==r['id'] and c['case_approved'] for c in cells)]
         return {'requirements':reqs,'cases':cases,'cells':cells,'gaps':gaps}

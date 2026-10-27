@@ -73,3 +73,26 @@ and new endpoints are documented in `AUTOMATION.md`. Single-case APIs remain com
   access token and same-origin requirements apply. Live inference failures return 502.
   The endpoint has no approval/update capability and does not hold the store lock over
   network inference. No persistent chat history is created.
+
+## Document library and requirement versions (0.4)
+
+Shapes are defined in `.plans/dokumente-versionen-impl-contract.md`.
+
+- `POST /api/library/analyse` `{name, base64, version_label, doc_type?, valid_from?, valid_until?}`:
+  duplicate (by SHA-256 only, nothing stored) or `upload_id` + match `suggestion` + `date_suggestions`.
+- `POST /api/library/confirm` `{upload_id, library_id|null, title?, doc_type?, valid_from?, valid_until?}`:
+  stores the version and the original file, builds the diff, updates affected requirements;
+  returns `document`, `library_doc`, `diff`, `steps`, `summary`.
+- `GET /api/library`, `GET /api/library/version/<id>`, `GET /api/library/version/<id>/text`,
+  `GET /api/library/version/<id>/file` (`?download=1` = attachment, else inline), `GET /api/library/diff/<id>`.
+- `POST /api/library/withdraw` `{document_id, reason, by}`. Versions are never deleted.
+- `POST /api/requirements/edit` `{id, title?, criterion?, conditions?, exceptions?, source_excerpt?, reason}`,
+  `POST /api/requirements/prereview` `{id}`, `POST /api/requirements/accept-suggestion` `{id}`,
+  `POST /api/requirements/editorial-accept` `{diff_id, reviewer, note, change_ids?}`,
+  `POST /api/requirements/reclassify` `{diff_id, change_id, classification:'fachlich'}`,
+  `GET /api/requirements/<id>/versions`.
+- `POST /api/review` with `kind:'requirement'` approves the current version; against an AI
+  recommendation other than "Freigabe empfohlen" the note must have at least 20 characters
+  and the record gets `against_ai:true`.
+- `GET /api/results`: data for "Ergebnisse & Abdeckung"; also in `/api/state` as `results`,
+  next to `library`. `/api/import` and `/api/diff` stay for compatibility; the UI no longer uses them.
