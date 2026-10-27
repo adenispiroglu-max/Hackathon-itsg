@@ -29,6 +29,11 @@ jobs:
       - run: node --check auditflow/static/automation.js
       - run: node --check scripts/automation_smoke.cjs
       - run: node --check auditflow/static/workspace.js
+      - run: node --check auditflow/static/library.js
+      - run: node --check auditflow/static/workflow.js
+      - run: node --check auditflow/static/icons.js
+      - run: node scripts/frontend_contracts.cjs
+      - run: node --check scripts/document_review_smoke.cjs
       - run: node --check scripts/workspace_smoke.cjs
   windows-runtime:
     runs-on: windows-latest

@@ -73,3 +73,40 @@ and new endpoints are documented in `AUTOMATION.md`. Single-case APIs remain com
   access token and same-origin requirements apply. Live inference failures return 502.
   The endpoint has no approval/update capability and does not hold the store lock over
   network inference. No persistent chat history is created.
+
+## 0.5 customer conveyor and 0.4 document library
+
+All `/api/*` routes retain existing token/origin protections. Calls use JSON objects and
+existing error distinctions (422 invalid input, 502 model failure). No secret is accepted
+from client-side workflow forms. See WORKFLOW.md for the manufacturer result contract.
+
+Document routes: POST `/api/documents/upload` (smart version recognition, stored original,
+background analysis), `/api/documents/analyze` (document_id, mode auto/live/offline),
+`/api/requirements/precheck` (id, mode live/offline), `/api/requirements/revise`
+(id, criterion; new pending revision and queued precheck). GET `/api/documents/{id}/original`
+and `/pdf`. State includes `document_jobs`, source families/history and current AI reviews.
+Recommendations contain recommendation/reason/issues with exact quote, target and validated
+Unicode-codepoint start/end positions. Invalid/unanchored revision output is rejected.
+
+State also includes `workflow: {items,reports,mail_configured}`. Report summaries omit their
+full contents; fetch a selected report to read it. Customer-bound cases are inside each
+workflow, separate from old fixture `cases` and `automation` entities.
+
+POST `/api/workflow/{action}`:
+
+- `create`: name, company, contact, email, software, software_version, mode (auto/live/offline), auto_send boolean.
+- `attach` / `detach`: id (workflow), document_id; only before start.
+- `begin`: id; queues document analysis and starts durable phase progression.
+- `retry`: id; retry failed source/generation preparation, retaining committed progress.
+- `edit-case`: id, case_id, expected (typed scalar), rationale, optional structured inputs/profile. Only before package release.
+- `release`: id, reviewer, note, acknowledged=true. Requires all expectations known and questions resolved.
+- `deliver`: id; attempt configured SMTP delivery. Unknown delivery is never blindly retried.
+- `manual-delivery`: id, reviewer, note; records an actual manual handoff.
+- `import`: id, data={workflow_id,package_hash,records:[{case_id,value}]}.
+- `close`: id, reviewer, signature (same repeated name), note, decision=accepted/rework, acknowledged=true.
+
+GET `/api/workflow/{id}/package` downloads approved customer JSON without expected values;
+`/{id}/customer-pdf` returns readable input-only instructions. GET
+`/api/workflow/reports/{report_id}` returns a selected immutable report; append `/html` or
+`/pdf` to download it. Report HTML escapes user/source text; PDF requires existing reportlab.
+New JS assets `/library.js`, `/workflow.js`, `/icons.js` are same-origin and buildless.

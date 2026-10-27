@@ -14,7 +14,7 @@ const output=path.resolve('test-results');fs.mkdirSync(output,{recursive:true});
  page.on('pageerror',x=>errors.push(x.message));
  await page.goto(base);await page.waitForSelector('h1');
  await page.screenshot({path:path.join(output,'desktop.png'),fullPage:true});
- const pages=['dashboard','sources','requirements','cases','reports','coverage','help'];
+ const pages=['dashboard','sources','requirements','cases','reports','help'];
  for(const name of pages){await page.goto(base+'/#'+name);await page.waitForTimeout(80);if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Desktop overflow: '+name);}
  async function review(kind,id){
   await page.goto(base+'/#'+(kind==='case'?'cases':'requirements'));
@@ -45,20 +45,18 @@ const output=path.resolve('test-results');fs.mkdirSync(output,{recursive:true});
  await page.goto(base+'/#cases');const countBefore=await page.locator('.case-card').count();
  await page.locator('[data-action="generate-cases"][data-mode="boundary"]').first().click();
  await page.waitForFunction(n=>document.querySelectorAll('.case-card').length===n+4,countBefore);
- await page.goto(base+'/#sources');await page.getByRole('button',{name:'+ Dokument importieren'}).click();
+ await page.goto(base+'/#sources');await page.getByRole('button',{name:'+ Dokument hochladen'}).click();
  await page.locator('#source-file').setInputFiles({name:'Synthetic UI import.txt',mimeType:'text/plain',buffer:Buffer.from('A synthetic source statement for testing document import and literal candidate extraction.')});
- await page.locator('input[name="version"]').fill('UI-test-1');await page.getByRole('button',{name:'Importieren',exact:true}).click();
+ await page.locator('input[name="version"]').fill('UI-test-1');await page.getByRole('button',{name:'Hochladen und verarbeiten',exact:true}).click();
  await page.waitForFunction(()=>!document.querySelector('dialog').open);
- await page.getByRole('button',{name:'Wörtliche Vorschläge',exact:true}).click();
- await page.waitForURL('**/#requirements');
- if(!await page.getByText('Wörtlicher Offline-Vorschlag, keine KI-Ausführung').count()){
-  // The note is exposed in data, while the UI clearly marks the rule as pending and unmapped.
-  if(!await page.getByText('unmapped',{exact:false}).count())throw Error('Imported candidate missing.');
- }
+ await page.waitForSelector('.document-detail');
+ await page.waitForFunction(()=>state.document_jobs.some(j=>j.document_id===activeDoc&&j.status==='completed'));
+ await page.goto(base+'/#requirements');await page.waitForSelector('.recommendation');
+ if(!await page.getByText('Lokaler Quellenabgleich · ohne KI',{exact:true}).count())throw Error('Offline preparation was not labelled');
  await page.setViewportSize({width:390,height:844});
  await page.goto(base+'/#dashboard');await page.waitForTimeout(100);
  await page.screenshot({path:path.join(output,'mobile.png'),fullPage:true});
  for(const name of pages){await page.goto(base+'/#'+name);await page.waitForTimeout(80);if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Mobile overflow: '+name);}
- console.log(JSON.stringify({pages:7,viewports:[1440,390],review:'passed',goldenSample:'passed',mutation:'detected',downloads:['json','pdf'],boundaryDrafts:4,documentImport:'passed',literalDraft:'passed',pageErrors:errors}));
+ console.log(JSON.stringify({pages:6,viewports:[1440,390],review:'passed',goldenSample:'passed',mutation:'detected',downloads:['json','pdf'],boundaryDrafts:4,documentImport:'passed',literalDraft:'passed',pageErrors:errors}));
  await browser.close();if(errors.length)process.exit(1);
 })().catch(e=>{console.error(e);process.exit(1)});

@@ -18,6 +18,7 @@ class Store:
         Path(path).parent.mkdir(parents=True,exist_ok=True)
         with self.connect() as db:
             db.execute('CREATE TABLE IF NOT EXISTS items(kind TEXT,id TEXT,data TEXT,PRIMARY KEY(kind,id))')
+            db.execute('CREATE TABLE IF NOT EXISTS document_files(sha TEXT PRIMARY KEY,data BLOB NOT NULL)')
             db.execute('CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY AUTOINCREMENT,at TEXT,action TEXT,data TEXT,prev TEXT,hash TEXT)')
         with self.lock:
             if not self.list('document'):

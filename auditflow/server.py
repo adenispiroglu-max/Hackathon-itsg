@@ -87,9 +87,14 @@ def handler_for(service):
             if path.startswith('/api/') and not self.authorized():return
             try:
                 if path=='/api/state':
-                    docs=service.store.list('document');reqs=service.store.list('requirement');runs=service.store.list('run')
-                    return self.send({'version':__version__,'documents':docs,'requirements':reqs,'cases':service.store.list('case'),
-                      'runs':list(reversed(runs)),'automation':service.automation.state(),'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),'coverage':service.coverage()})
+                    # Keep analysis progress and its generated recommendations in one coherent snapshot.
+                    with service.store.lock:
+                        docs=service.store.list('document');reqs=service.store.list('requirement');runs=service.store.list('run')
+                        data={'version':__version__,'documents':docs,'requirements':reqs,'cases':service.store.list('case'),
+                              'runs':list(reversed(runs)),'automation':service.automation.state(),
+                              'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),
+                              'coverage':service.coverage(),'document_jobs':service.store.list('document_job'),'workflow':service.workflow.state()}
+                    return self.send(data)
                 if path=='/api/health':return self.send({'status':'ok','version':__version__,'mode':'local-demo'})
                 if path=='/api/events':return self.send(service.store.events())
                 if path.startswith('/api/automation/'):
@@ -111,11 +116,34 @@ def handler_for(service):
                                 w.writerow([r['case_id'],r['profile_id'],r['status'],r['expected']['message_present'],r['actual']['message_present'],r['package_hash']])
                             return self.send(buf.getvalue().encode('utf-8-sig'),mime='text/csv; charset=utf-8',filename='AuditFlow-'+id+'.csv')
                     return self.send({'error':'Automatik-Endpunkt nicht gefunden.'},404)
+                if path.startswith('/api/workflow/'):
+                    parts=path.split('/')
+                    if len(parts)==5 and parts[4]=='customer-pdf':
+                        from .workflow import report_pdf as workflow_pdf
+                        return self.send(workflow_pdf(service.workflow.customer_report(parts[3])),mime='application/pdf',filename='AuditFlow-Testanleitung.pdf')
+                    if len(parts)==5 and parts[4]=='package':return self.send(service.workflow.package(parts[3]),filename='AuditFlow-Testpaket.json')
+                    if len(parts) in [5,6] and parts[3]=='reports':
+                        from .workflow import report_html,report_pdf as workflow_pdf
+                        report=service.store.get('workflow_report',parts[4])
+                        if len(parts)==6 and parts[5]=='pdf':return self.send(workflow_pdf(report),mime='application/pdf',filename='AuditFlow-Bericht.pdf')
+                        if len(parts)==5:return self.send(report)
+                        if parts[5]=='html':return self.send(report_html(report),mime='text/html; charset=utf-8',filename='AuditFlow-Bericht.html')
+                    return self.send({'error':'Vorgangsansicht nicht gefunden.'},404)
+                if path.startswith('/api/documents/'):
+                    parts=path.split('/')
+                    if len(parts)!=5:return self.send({'error':'Dokumenten-Endpunkt nicht gefunden.'},404)
+                    doc=service.store.get('document',parts[3])
+                    if parts[4]=='pdf':return self.send(service.documents.pdf(doc['id']),mime='application/pdf',filename='AuditFlow-Dokument.pdf')
+                    if parts[4]=='original':
+                        mime={'pdf':'application/pdf','docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','txt':'text/plain; charset=utf-8','md':'text/plain; charset=utf-8'}.get(doc.get('kind'),'application/octet-stream')
+                        ext=doc['name'].rsplit('.',1)[-1].lower()
+                        return self.send(service.documents.original(doc['id']),mime=mime,filename='AuditFlow-Original.'+ext)
+                    return self.send({'error':'Unbekannte Dokumentenansicht.'},404)
                 if path.startswith('/api/runs/'):
                     parts=path.split('/');run=service.store.get('run',parts[3])
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
-                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8')}
+                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/workflow.js':('workflow.js','text/javascript; charset=utf-8'),'/icons.js':('icons.js','text/javascript; charset=utf-8')}
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
@@ -134,6 +162,23 @@ def handler_for(service):
                 body=json.loads(self.rfile.read(length))
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
                 path=urlparse(self.path).path
+                if path.startswith('/api/workflow/'):
+                    actions={'create':service.workflow.create,'attach':service.workflow.attach,'detach':service.workflow.detach,
+                        'begin':service.workflow.begin,'retry':service.workflow.retry,'edit-case':service.workflow.edit_case,
+                        'release':service.workflow.release,'deliver':service.workflow.deliver,'manual-delivery':service.workflow.manual_delivery,
+                        'import':service.workflow.import_results,'close':service.workflow.close_workflow}
+                    action=path.rsplit('/',1)[-1]
+                    if action not in actions:return self.send({'error':'Vorgangsaktion nicht gefunden.'},404)
+                    return self.send(actions[action](body))
+                if path=='/api/documents/upload':
+                    doc=service.import_document({**body,'smart_upload':True})
+                    jobs=service.store.filtered('document_job','document_id',doc['id'])
+                    if doc.get('upload_outcome')!='duplicate' or not jobs or jobs[-1]['status']=='failed':
+                        service.documents.queue(doc['id'],body.get('mode','auto'))
+                    return self.send(doc)
+                if path=='/api/documents/analyze':return self.send(service.documents.queue(body['document_id'],body.get('mode','auto')))
+                if path=='/api/requirements/precheck':return self.send(service.documents.review(body['id'],body.get('mode','live')))
+                if path=='/api/requirements/revise':return self.send(service.documents.revise(body))
                 if path=='/api/assistant/explain':
                     from .assistant import explain
                     # Network inference must not hold the worker's database lock.
@@ -178,12 +223,16 @@ def main():
         p.error('Für Netzwerkbetrieb AUDITFLOW_ACCESS_TOKEN setzen. Keine öffentliche Produktion ohne zusätzliche Absicherung.')
     service=create_service()
     service.automation.start()
+    service.documents.start()
+    service.workflow.start()
     server=ThreadingHTTPServer((args.host,args.port),handler_for(service))
     server.daemon_threads=True
     print(f'AuditFlow läuft auf http://{args.host}:{args.port} — lokale Hackathon-Demo',flush=True)
     try:server.serve_forever()
     except KeyboardInterrupt:pass
     finally:
+        service.workflow.close()
+        service.documents.close()
         service.automation.close()
         server.server_close()
 

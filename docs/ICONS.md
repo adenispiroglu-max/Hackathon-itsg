@@ -52,3 +52,4 @@ The nav ids match the icon names, so `icon(id)` works directly.
    ```
    `.nav-item .glyph{font-size:18px}` is no longer needed. The existing `.nav-item .glyph` and `.nav-item.active .glyph` colour rules still apply through `currentColor`. The `@media(max-width:760px)` rule that hides `.glyph` still works.
 7. Run `node --check auditflow/static/icons.js` and the existing unittest suite.
+

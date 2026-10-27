@@ -33,3 +33,4 @@ function icon(name,opts){
  return `<svg${cls} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" ${a11y} focusable="false">${title}${body}</svg>`;
 }
 function statusIcon(status,opts){return icon(AUDITFLOW_STATUS_ICONS[status]||'',opts);}
+

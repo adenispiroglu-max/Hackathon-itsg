@@ -39,3 +39,16 @@ its overview. New package setup, source-change follow-up and complete lists rema
 with progressive disclosure. A white-ringed red chat/spark SVG replaces the labelled assistant
 trigger; title/aria-label preserve discoverability and keyboard accessibility. Softer panel
 radii, more whitespace and simplified headings apply throughout the application.
+
+## 0.5 ERP-style conveyor
+
+Vorgänge is now the default: compact customer worklist, object header, six-stage process
+rail, small clickable intermediate-document icons and a single active work area. Nine
+business steps are grouped without hiding human gates. Contact/email/software belong to
+the workflow input. Human-readable reports and structured forms replace ordinary JSON dumps.
+Versioned source library remains a separate reference view. Customer-bound cases and results
+also appear in their matching catalog views; legacy demo tools stay available at #packages.
+The existing ITSG-inspired red/white/charcoal styling and remote collapsible sidebar/icon
+work are preserved. No SAP assets or integration are implied. CSS adapts the rail to three
+columns and the worklist to a compact row on narrow screens. Form labels are programmatically
+linked to controls. Recommendations highlight exact quotations, with Unicode codepoint offsets.

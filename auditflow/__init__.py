@@ -1,2 +1,2 @@
 """AuditFlow: a source-linked DTA-EEL hackathon prototype."""
-__version__ = '0.3.2'
+__version__ = '0.5.0'

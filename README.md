@@ -1,6 +1,32 @@
 # AuditFlow
 
-**AuditFlow 0.3.2: software review projects → authorised templates → up to 4,000 profiles and cases → automatic execution → targeted change regression.**
+**AuditFlow 0.5: customer input → versioned sources → AI recommendations → human requirement approval → test specifications → reviewed customer delivery → manufacturer results → human final sign-off.**
+
+## Current workspace: customer audit conveyor (0.5)
+
+Open **Vorgänge → Neuer Vorgang**. Enter customer contact/email and software version,
+inspect/upload source files and start the workflow. Automatic source comparison, resumable
+requirement preparation and exact-quote AI revision marks lead to a human approval gate.
+After approval, test cases/profiles are drafted automatically. Independently check their
+inputs/expected values and release the package for download or optional SMTP delivery.
+Import the manufacturer's response and review/sign off the automatically prepared final report.
+
+Small **document icons** open immutable intermediate reports at each completed station.
+The source library retains originals, PDF reading/downloads and version history. Requirements,
+profiles/cases and results are also accessible in their corresponding navigation views.
+Changed active requirements invalidate old packages and require a new review.
+
+Live AI needs a working server-side model connection. Offline mode is explicitly local:
+unknown case expectations must be concretized, never silently treated as AI-approved.
+Email requires server-side SMTP configuration and per-workflow auto-send opt-in. Without it,
+use download/manual handoff. A typed name records human sign-off; it is not a qualified
+signature or official certification. Neither real model inference nor real SMTP delivery
+was verified in development. See [workflow and setup](docs/WORKFLOW.md).
+
+The earlier synthetic bulk/demo workspace remains at **Demopakete & Werkzeuge** (`/#packages`).
+It supports up to 4,000 bounded C1/C2/C4 cases. The older sections below document those
+retained demo capabilities; their old “Übersicht” links now correspond to that tools view.
+
 
 A complete local demo with three Python backend modules and a responsive German web UI.
 Core runtime uses Python's standard library. No Node build, cloud account or model key is needed to explore the offline workflow.
@@ -97,8 +123,8 @@ text, and retains a clear hackathon-prototype label. See `docs/DESIGN.md`.
 
 ## Simplified navigation (0.3.1)
 
-The navigation contains Übersicht, Quellen & KI, Anforderungen, Profile & Testfälle,
-Prüfberichte, Testabdeckung and Hilfe & Ablauf. The former Änderungen view is part of
+The current navigation contains Vorgänge, Quellen & KI, Anforderungen, Profile & Testfälle,
+Ergebnisse & Abdeckung and Hilfe & Ablauf. Reports and coverage share one view. The former Änderungen view is part of
 Quellen & KI. Separate Automatisierung, Prüfung starten, Nachrichtenfolge and Glossar
 screens are removed; old bookmarked routes redirect to the relevant current workspace.
 Existing reports and database records remain available. Legacy execution APIs remain for
@@ -141,6 +167,7 @@ Use **Quellen & KI → KI-Verbindung testen**. The development-environment conne
 ```bash
 python -m unittest discover -s tests -v
 node --check auditflow/static/app.js
+node scripts/frontend_contracts.cjs
 ```
 
 The tests use temporary databases and synthetic review identities. They do not approve the shipped seed data. See `docs/VALIDATION.md` for observed results and limitations.

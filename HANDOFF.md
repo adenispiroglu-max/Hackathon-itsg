@@ -208,3 +208,53 @@ trigger, collapsed setup, completion-time/import-only summary semantics, graphic
 matching stored counts and expanding/collapsing the full package list. Final desktop/mobile
 screenshots inspected. Sources/reviews/imports/PDF/assistant and backend 4,000-case checks
 remain covered. Publish to existing codex/auditflow-prototype with expected-head lease.
+
+# Active checkpoint — 0.5 customer audit conveyor (2026-10-27)
+
+Latest user requests an ERP-style conveyor: customer/input files, automatic source identity
+and version comparison, intermediate reports behind document icons, AI recommendations with
+exact revision marks, HUMAN requirement approval, automatic case/profile drafting, reviewed
+package delivery, manufacturer result import and human final sign-off.
+
+Local branch codex/document-review-workflow. Unpublished 0.4 work is included. Remote PR #1
+head observed c37cbf00ffafa278726038120e7675ce36fc9e01 on codex/auditflow-prototype.
+Remote-only sidebar/polish/icons changes from 122281a were inspected and preserved locally.
+Do not overwrite them or merge main. Publish verified files using expected-head lease.
+
+Implemented documents.py/library.js: original BLOB persistence, source families/version
+history, automatic compare and resumable section jobs, exact-quote validated AI recommendations,
+Unicode-safe highlights, human-readable UI, merged results/coverage, new pending revisions.
+Older versions stay historical; partial PDF views remain separate. Changed complete source
+basis never silently inherits a human approval. Local mode never claims AI inference.
+
+Implemented workflow.py/workflow.js: customer-bound SQLite worklist, immutable input after
+start, durable phase/case cursor, requirement gate, AI 2–4 cases per approved requirement or
+explicit local skeletons with unknown expectations, case/expectation review gate, snapshots,
+JSON package excluding expected values, SMTP TLS auto-send opt-in, manual handoff, exact package
+result import, missing-safe typed comparisons, final report and human named acceptance/rework.
+Source/approval changes invalidate live packages and return to requirement review. Closed
+records preserve their historic basis. Intermediate HTML/PDF reports are append-only snapshots.
+SMTP ambiguous delivery is unknown, never automatically retried. Real SMTP and real AI calls
+have NOT been verified; all tests use synthetic data/mocked inference and SMTP.
+
+Observed at this checkpoint: 115 Python tests passed (14.466s); pure Node frontend contracts
+pass all nine phases, escaping, report controls and Unicode marks. Current subsequent catalog/help
+and polling changes still need final checks. Native cloud browser confirmed input creation,
+source attachment, automatic source analysis → requirement gate and readable document-icon
+report. One synthetic human decision persisted; no real rules approved. Preview uses an ignored
+package.json and preview_dev.py with synthetic-only var/conveyor-preview.sqlite3; remove temporary
+preview files before final handoff. Do not commit runtime DB or screenshots/originals/secrets.
+
+Next: finish targeted backend/frontend tests, inspect updated browser flow, update docs, commit,
+publish to existing PR branch, observe CI. Earlier browser suites were adapted for #packages
+but are not claimed rerun for 0.5. Live AI, real mail, SAP integration, arbitrary payroll evaluation,
+cryptographic signatures, official certification and multi-user auth remain unverified/out of scope.
+
+0.5 final local checkpoint: 117 Python tests passed (15.936 s), all JS syntax/compileall/diff
+checks passed; Node contracts now also verify German Ja/Nein parsing. Native browser verified
+all four synthetic human approvals → automatic eight local skeletons → package gate, with
+three readable intermediate reports. Final HTML/PDF includes source versions, approvals,
+package release, handoff and results; signed report retains that full evidence snapshot.
+Customer JSON/HTML/PDF hides internal expected values. New revisions queue fresh prechecks;
+missing/stale prechecks prevent generation even after human approval. No real inference or
+mail was performed. Publish next, then record actual remote SHA and CI run.

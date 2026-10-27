@@ -20,6 +20,10 @@ class Service:
         self.store=store;self.sample=sample
         from .automation import Automation
         self.automation=Automation(store)
+        from .documents import DocumentLibrary
+        self.documents=DocumentLibrary(self)
+        from .workflow import Workflow
+        self.workflow=Workflow(self)
 
     def verify(self,req):
         doc=self.store.get('document',req['source_id'])
@@ -44,6 +48,12 @@ class Service:
         return item
 
     def import_document(self,body):
+        if not isinstance(body.get('name'),str):raise InputError('Dateiname muss Text sein.')
+        for field,limit in [('version',100),('title',200),('folder',100)]:
+            if body.get(field) is not None and (not isinstance(body[field],str) or len(body[field])>limit):raise InputError('Ungültige Dokumentangabe: '+field)
+        if body.get('valid_from'):
+            from .domain import iso
+            iso(body['valid_from'])
         name=body.get('name','').strip()
         if not name or len(name)>200:raise InputError('Dateiname fehlt oder ist zu lang.')
         try:raw=base64.b64decode(body['base64'],validate=True)
@@ -86,12 +96,25 @@ class Service:
         else:raise InputError('Unterstützt: TXT, MD, PDF, DOCX.')
         if not sections or not any(x['text'].strip() for x in sections):raise InputError('Kein Text erkannt. Für Scans ist externe OCR erforderlich.')
         hash=hashlib.sha256(raw).hexdigest()
-        existing=next((d for d in self.store.list('document') if d['sha256']==hash and d.get('version')==(body.get('version') or 'unbekannt') and d.get('valid_from')==(body.get('valid_from') or None) and d.get('page_range')==page_range),None)
-        if existing:return existing
+        if body.get('smart_upload'):
+            identical=next((d for d in self.store.list('document') if d['sha256']==hash and d.get('page_range')==page_range and d.get('valid_from')==(body.get('valid_from') or None) and (not body.get('version') or d.get('version')==body.get('version')) and (not body.get('family_id') or d.get('family_id',d['id'])==body['family_id'])),None)
+            if identical:
+                with self.store.connect() as db:db.execute('INSERT OR IGNORE INTO document_files(sha,data) VALUES(?,?)',(hash,raw))
+                if not identical.get('file_available'):
+                    identical['file_available']=True;self.store.put('document',identical)
+                return {**identical,'upload_outcome':'duplicate'}
+            body=self.documents.identify(name,sections,body)
+        existing=next((d for d in self.store.list('document') if d['sha256']==hash and (not body.get('family_id') or d.get('family_id',d['id'])==body['family_id']) and d.get('version')==(body.get('version') or 'unbekannt') and d.get('valid_from')==(body.get('valid_from') or None) and d.get('page_range')==page_range),None)
+        if existing:
+            with self.store.connect() as db:db.execute('INSERT OR IGNORE INTO document_files(sha,data) VALUES(?,?)',(hash,raw))
+            if not existing.get('file_available'):
+                existing['file_available']=True;self.store.put('document',existing)
+            return {**existing,'upload_outcome':'duplicate'}
         doc={'id':str(uuid4()),'name':name,'version':body.get('version') or 'unbekannt','valid_from':body.get('valid_from') or None,
              'sha256':hash,'sections':sections,'kind':suffix,'page_range':page_range,
              'note':('Teilimport: Originalseiten '+str(page_range['from'])+'–'+str(page_range['to'])+'. ' if page_range else '')+'Importiert; Gültigkeit und Vollständigkeit prüfen.'}
-        self.store.put('document',doc);self.store.event('document_import',{'id':doc['id'],'name':name,'hash':hash})
+        doc=self.documents.register(doc,raw,body)
+        self.store.event('document_import',{'id':doc['id'],'name':name,'hash':hash})
         return doc
 
     def draft(self,body):
@@ -119,6 +142,12 @@ class Service:
 
     def create_case(self,body):
         s=body['scenario'];validate_scenario(s)
+        if not isinstance(body.get('name'),str):raise InputError('Dateiname muss Text sein.')
+        for field,limit in [('version',100),('title',200),('folder',100)]:
+            if body.get(field) is not None and (not isinstance(body[field],str) or len(body[field])>limit):raise InputError('Ungültige Dokumentangabe: '+field)
+        if body.get('valid_from'):
+            from .domain import iso
+            iso(body['valid_from'])
         name=body.get('name','').strip()
         if not name:raise InputError('Testfallname fehlt.')
         ruleset=body.get('ruleset','fixture-2026')
@@ -280,14 +309,16 @@ class Service:
                 if r['id'] not in c['requirement_ids']:continue
                 latest=next((v for v in reversed(runs) if v['case_id']==c['id'] and v['ruleset']==c['ruleset'] and any(x['requirement_id']==r['id'] for x in v['results'])),None)
                 result=next((x for x in latest['results'] if x['requirement_id']==r['id']),None) if latest else None
-                stale=bool(latest and (latest['snapshot']!=c or next((x for x in latest['requirements_snapshot'] if x['id']==r['id']),None)!=r))
+                def relevant(rule):
+                    return {k:rule.get(k) for k in ['id','title','criterion','conditions','exceptions','source_id','section_id','source_excerpt','status','ruleset','mapping']} if rule else None
+                stale=bool(latest and (latest['snapshot']!=c or relevant(next((x for x in latest['requirements_snapshot'] if x['id']==r['id']),None))!=relevant(r)))
                 cells.append({'requirement_id':r['id'],'case_id':c['id'],'case_approved':c['review_status']=='approved',
                               'status':'stale' if stale else result['status'] if result else 'not_run'})
         gaps=[r['id'] for r in reqs if not any(c['requirement_id']==r['id'] and c['case_approved'] for c in cells)]
         return {'requirements':reqs,'cases':cases,'cells':cells,'gaps':gaps}
 
-    def diff(self,body):
-        old=self.store.get('document',body['old_id']);new=self.store.get('document',body['new_id'])
+    def diff(self,body,new_document=None):
+        old=self.store.get('document',body['old_id']);new=new_document or self.store.get('document',body['new_id'])
         if old['id']==new['id']:raise InputError('Zwei unterschiedliche Dokumentstände auswählen.')
         a={s['id']:s for s in old['sections']};b={s['id']:s for s in new['sections']};changes=[]
         for id in sorted(a.keys()|b.keys()):

@@ -108,3 +108,29 @@ setup, last-completed-import-only result selection, chart values against stored 
 full-list expansion. Dashboard screenshots were inspected at desktop/mobile widths. Existing
 review/source/PDF/import/targeted-package/assistant paths still pass. Figma concept is editable
 and uses labelled illustrative values; it is not evidence of real vendor inference or tests.
+
+## 0.5 customer conveyor / integrated 0.4 sources — observed 2026-10-27
+
+- Full Python suite: **117 tests passed (15.936 s)** on the local runtime. Includes original
+  persistence/dedup/version history, exact anchored AI marks and Unicode offsets, malformed
+  model outputs, source/review changes, customer validation, source/precheck/human gates,
+  resumable per-requirement case cursors, automatic fresh prechecks after revision, expected-
+  value release gate, hidden expected values in customer exports, strict package imports,
+  boolean-vs-number distinction, missing-safe results, positive final acceptance blocking,
+  final human signature checks, immutable report history, HTML escaping/PDF and HTTP routes.
+- SMTP tests use mocked transport: missing configuration, ambiguous failure, successful
+  acknowledgement and duplicate-send prevention. No real customer was emailed.
+- Node frontend contracts passed all nine phases, escaped source/customer text, report icon
+  controls, Unicode quote slicing and readable boolean parsing. JS syntax checks across all
+  tracked static/script JS and Python compileall passed; `git diff --check` passed.
+- Native browser QA on disposable synthetic data confirmed customer input, existing-source
+  attachment, automatic source-analysis transition to requirement gate, readable intermediate
+  report via document icon and persisted synthetic human decisions. After all four demo
+  approvals the workflow automatically produced eight explicitly local test skeletons and
+  three intermediate reports, then stopped at package review. Visual process/worklist checked.
+- The four older Playwright suites were adapted/retained for the revised routes but were NOT
+  rerun for the final 0.5 change. Do not report old 0.3/0.4 browser results as fresh 0.5 results.
+- Real model connectivity remains unverified (prior attempt HTTP 403). Live tests are mocked,
+  not live legal assessment. Real SMTP, customer software, arbitrary law-to-code compilation,
+  SAP integration, full payroll/monetary correctness, qualified signatures and multi-user
+  production operation are not established by these tests.

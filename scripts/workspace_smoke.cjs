@@ -10,7 +10,7 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];
  page.on('pageerror',x=>errors.push(x.message));
  const api=async(p,body)=>{const r=await page.request.post(base+'/api/'+p,{data:body});if(!r.ok())throw Error(await r.text());return r.json();};
- await page.goto(base);await page.waitForSelector('.workspace-stages');
+ await page.goto(base+'/#packages');await page.waitForSelector('.workspace-stages');
  if(await page.locator('.dashboard-kpi').count()!==3)throw Error('Overview must show exactly three metrics');
  if((await page.locator('#assistant-toggle').textContent()).trim())throw Error('Assistant trigger must be icon-only');
  if(await page.locator('#assistant-toggle').getAttribute('aria-label')!=='Befund-Assistent öffnen')throw Error('Assistant accessibility label missing');
@@ -21,20 +21,20 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
   {id:'new-created-old-import',suite_id:'a',mode:'import',status:'completed',created_at:'2026-10-26T11:00:00Z',finished_at:'2026-10-26T12:00:00Z'}],suites:[{generated:9}]}));
  if(proof.latest.id!=='old-created-new-import'||proof.profiles!==9||proof.packages!==3)throw Error('Dashboard mixed historical or repeated results');
 
- const expectedNav=['Übersicht','Quellen & KI','Anforderungen','Profile & Testfälle','Prüfberichte','Testabdeckung','Hilfe & Ablauf'];
+ const expectedNav=['Vorgänge','Quellen & KI','Anforderungen','Profile & Testfälle','Ergebnisse & Abdeckung','Hilfe & Ablauf'];
  const actualNav=await page.locator('#nav a').evaluateAll(links=>links.map(a=>a.childNodes[1].textContent.trim()));
  if(JSON.stringify(actualNav)!==JSON.stringify(expectedNav))throw Error('Unexpected navigation: '+actualNav);
- for(const [old,target] of [['automation','dashboard'],['check','reports'],['changes','sources'],['chain','dashboard'],['glossary','dashboard']]){
+ for(const [old,target] of [['automation','dashboard'],['check','reports'],['changes','sources'],['chain','dashboard'],['glossary','dashboard'],['coverage','reports']]){
   await page.goto(base+'/#'+old);await page.waitForURL('**/#'+target);
   if(await page.locator('#run-form').count())throw Error('Retired execution screen still present');
  }
- await page.goto(base+'/#sources');await page.waitForSelector('#diff-form');
- if(await page.locator('a[href="#automation"],a[href="#changes"],a[href="#chain"],a[href="#glossary"],a[href="#check"]').count())throw Error('Retired route linked');
- const doc1=await api('import',{name:'Synthetic version comparison.txt',version:'1',base64:Buffer.from('Synthetic original requirement with a deliberately long source statement.').toString('base64')});
- const doc2=await api('import',{name:'Synthetic version comparison.txt',version:'2',base64:Buffer.from('Synthetic revised requirement with a deliberately long changed source statement.').toString('base64')});
- await page.reload();await page.waitForSelector('#diff-form');
- await page.locator('#diff-form [name="old_id"]').selectOption(doc1.id);await page.locator('#diff-form [name="new_id"]').selectOption(doc2.id);
- await page.locator('#diff-form button').click();await page.waitForSelector('#diff-results details');
+ await page.goto(base+'/#sources');await page.waitForSelector('.document-grid');
+ if(await page.locator('#diff-form').count())throw Error('Manual comparison form must be removed');
+ const doc1=await api('documents/upload',{name:'Synthetic version comparison.txt',version:'1',mode:'offline',base64:Buffer.from('Synthetic original requirement with a deliberately long source statement.').toString('base64')});
+ const doc2=await api('documents/upload',{name:'Synthetic version comparison.txt',version:'2',mode:'offline',base64:Buffer.from('Synthetic revised requirement with a deliberately long changed source statement.').toString('base64')});
+ if(doc1.family_id!==doc2.family_id||doc2.comparison.changes.length!==1)throw Error('Automatic version comparison failed');
+ await page.reload();await page.locator(`[data-action="lib-document"][data-id="${doc2.id}"]`).click();await page.waitForSelector('.document-comparison details');
+ const docDownload=page.waitForEvent('download');await page.getByRole('button',{name:'PDF herunterladen',exact:true}).click();await docDownload;
 
  for(const id of ['C1','C2','C3','C4'])await api('review',{kind:'requirement',id,approve:true,reviewer:'Workspace E2E',note:'Synthetic test only'});
  await page.goto(base+'/#cases');
@@ -71,10 +71,10 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  // Import original PDF pages 2-3 through the actual file input and range fields.
  const pdf=spawnSync(process.env.PYTHON||'python3',['-c',"import io,sys;from reportlab.pdfgen import canvas;b=io.BytesIO();c=canvas.Canvas(b);[(c.drawString(40,700,'Synthetic original source page '+str(i)+' with a statement for the import test.'),c.showPage()) for i in range(1,4)];c.save();sys.stdout.buffer.write(b.getvalue())"]);
  if(pdf.status!==0)throw Error('Synthetic PDF generation failed');
- await page.goto(base+'/#sources');await page.getByRole('button',{name:'+ Dokument importieren',exact:true}).click();
+ await page.goto(base+'/#sources');await page.getByRole('button',{name:'+ Dokument hochladen',exact:true}).click();
  await page.locator('#source-file').setInputFiles({name:'Workspace Synthetic.pdf',mimeType:'application/pdf',buffer:pdf.stdout});
- await page.locator('input[name=version]').fill('test-1');await page.locator('#pages-from').fill('2');await page.locator('#pages-to').fill('3');
- await page.getByRole('button',{name:'Importieren',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('dialog').open);
+ await page.locator('input[name=version]').fill('test-1');await page.locator('#lib-upload-form details').evaluate(el=>el.open=true);await page.locator('#pages-from').fill('2');await page.locator('#pages-to').fill('3');
+ await page.getByRole('button',{name:'Hochladen und verarbeiten',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('dialog').open);
  await page.waitForFunction(()=>document.querySelector('#source-section option')?.value==='page-2');
  const options=await page.locator('#source-section option').allTextContents();
  if(JSON.stringify(options)!==JSON.stringify(['PDF-Seite 2','PDF-Seite 3']))throw Error('PDF page identity lost: '+options);
@@ -85,10 +85,10 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
  const project=await api('automation/project',{manufacturer:'Synthetic',software:'WorkspaceExample',software_version:'1'});
  const job=await api('automation/start',{project_id:project.id,package_id:pkg.id,count:9,mode:'simulation',behavior:'healthy'});
  for(let i=0;i<100;i++){const j=await (await page.request.get(base+'/api/automation/jobs/'+job.id)).json();if(j.status==='completed')break;await page.waitForTimeout(100);}
- await page.goto(base+'/#dashboard');await page.reload();await page.locator(`[data-action="auto-open"][data-id="${job.id}"]`).click();
+ await page.goto(base+'/#packages');await page.reload();await page.locator(`[data-action="auto-open"][data-id="${job.id}"]`).click();
  await page.waitForSelector('.auto-detail');await page.locator('.auto-detail [data-action="ws-explain"]').first().click();
  await page.locator('#assistant-mode').selectOption('offline');await page.locator('#ws-assistant-form button').click();await page.waitForSelector('#assistant-answer .assistant-prose');
- if(!(await page.locator('#assistant-answer').textContent()).includes('package_hash'))throw Error('Automation evidence missing');
+ if(!(await page.locator('#assistant-answer').textContent()).includes('Regelpaket-Fingerabdruck'))throw Error('Automation evidence missing');
  await page.locator('#assistant-close').click();
  await page.getByRole('button',{name:'Bericht schließen',exact:true}).click();
  const latest=await page.evaluate(()=>dashboardSummary(state.automation).latest);
@@ -104,12 +104,12 @@ if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))throw Error('Local disp
    await page.goto(base+'/#'+route);await page.waitForTimeout(100);
    if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Overflow '+route+' '+width);
   }
-  await page.goto(base+'/#dashboard');await page.screenshot({path:path.join('test-results',`workspace-${width}.png`),fullPage:true});
+  await page.goto(base+'/#packages');await page.screenshot({path:path.join('test-results',`workspace-${width}.png`),fullPage:true});
   await page.locator('#assistant-toggle').click();
   if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw Error('Assistant overflow');
   await page.screenshot({path:path.join('test-results',`assistant-${width}.png`),fullPage:true});
   await page.locator('#assistant-close').click();
  }
- console.log(JSON.stringify({views:[1440,390],navigation:7,overviewMetrics:3,assistantTrigger:'icon-only',chart:'stored-import-only',retiredRoutes:'redirected',sourceVersionComparison:'passed',typedDrafts:3,negativeCase:'pass',pdfOriginalPages:[2,3],assistant:['stored-single','stored-bulk','escaped-mock-output','explicit-failure'],pageErrors:errors}));
+ console.log(JSON.stringify({views:[1440,390],navigation:6,overviewMetrics:3,assistantTrigger:'icon-only',chart:'stored-import-only',retiredRoutes:'redirected',sourceVersionComparison:'passed',typedDrafts:3,negativeCase:'pass',pdfOriginalPages:[2,3],assistant:['stored-single','stored-bulk','escaped-mock-output','explicit-failure'],pageErrors:errors}));
  await browser.close();if(errors.length)process.exit(1);
 })().catch(e=>{console.error(e);process.exit(1)});

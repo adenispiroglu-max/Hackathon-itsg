@@ -51,3 +51,20 @@ The server runs this endpoint outside the store-wide mutation lock. Document imp
 can retain a selected physical PDF page range, with range-aware deduplication. Existing
 ruleset execution, review gates, bulk jobs and database entities are preserved. MERGE.md
 documents the source comparison, retained boundaries and deliberately excluded paths.
+
+## 0.4/0.5 additions
+
+`documents.py` owns persisted original BLOBs, assistive source identity/version recognition,
+append-only source comparison, per-section resumable extraction and exact-quote AI review
+validation. `workflow.py` owns customer-bound phase orchestration and immutable report
+snapshots. Generation is committed per approved requirement and network operations run
+outside the store lock. Active semantic-basis changes invalidate package preparation;
+finished records preserve historic evidence. `library.js` supplies human-readable documents,
+structured forms, Unicode-safe marks and merged result/coverage views. `workflow.js`
+supplies ERP-style worklist/object/process views, customer input, gate forms, case catalog,
+result import and sign-off. Remote sidebar polish and icons are preserved.
+
+No destructive migration or new runtime dependency. Original files and customers remain
+in runtime SQLite, never source control. Per-workflow SMTP opt-in and human release precede
+transport; unknown transmission states are never automatically retried. The free-text case
+specification contract is distinct from existing bounded executable C1/C2/C4 templates.
