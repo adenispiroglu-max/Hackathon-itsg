@@ -130,6 +130,8 @@ def handler_for(service):
                     if len(parts)==5 and parts[4]=='customer-pdf':
                         from .workflow import report_pdf as workflow_pdf
                         return self.send(workflow_pdf(service.workflow.customer_report(parts[3])),mime='application/pdf',filename='AuditFlow-Testanleitung.pdf')
+                    if len(parts)==7 and parts[4]=='cases' and parts[6] in ['instruction','reference']:
+                        data,mime,filename=service.workflow.attachment(parts[3],parts[5],parts[6]);return self.send(data,mime=mime,filename=filename)
                     if len(parts)==5 and parts[4]=='package':return self.send(service.workflow.package(parts[3]),filename='AuditFlow-Testpaket.json')
                     if len(parts) in [5,6] and parts[3]=='reports':
                         from .workflow import report_html,report_pdf as workflow_pdf
@@ -190,7 +192,7 @@ def handler_for(service):
                 if path.startswith('/api/workflow/'):
                     actions={'create':service.workflow.create,'attach':service.workflow.attach,'detach':service.workflow.detach,
                         'begin':service.workflow.begin,'count':service.workflow.set_count,'retry':service.workflow.retry,'edit-case':service.workflow.edit_case,
-                        'review-case':service.workflow.review_case,'release':service.workflow.release,'deliver':service.workflow.deliver,'manual-delivery':service.workflow.manual_delivery,
+                        'review-case':service.workflow.review_case,'review-cases':service.workflow.review_cases,'back':service.workflow.back,'import-cases':service.workflow.import_cases,'advance':service.workflow.advance,'release':service.workflow.release,'deliver':service.workflow.deliver,'manual-delivery':service.workflow.manual_delivery,
                         'import':service.workflow.import_results,'close':service.workflow.close_workflow}
                     action=path.rsplit('/',1)[-1]
                     if action not in actions:return self.send({'error':'Vorgangsaktion nicht gefunden.'},404)
@@ -203,6 +205,7 @@ def handler_for(service):
                     return self.send(doc)
                 if path=='/api/documents/analyze':return self.send(service.documents.queue(body['document_id'],body.get('mode','auto'),resume=True))
                 if path=='/api/requirements/precheck':return self.send(service.documents.review(body['id'],body.get('mode','live')))
+                if path=='/api/requirements/import':return self.send(service.documents.import_requirements(body))
                 if path=='/api/requirements/revise':return self.send(service.documents.revise(body))
                 if path=='/api/assistant/explain':
                     from .assistant import explain

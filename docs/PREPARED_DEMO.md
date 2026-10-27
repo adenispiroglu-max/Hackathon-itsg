@@ -30,17 +30,17 @@ Prepared status is visible in sources, recommendations, workflow, reports and pa
 
 | Supplied source | Prepared checks | Scope |
 | --- | ---: | --- |
-| GG EEL V13.1, 06.05.2025 | 4 | Effective 01.01.2026 |
-| DTA EEL Vorerkrankung scenario DOCX | 4 | Supplied 2026 scenario |
-| Vorerkrankung test-constellation notes DOCX | 3 | Supplied 2026 scenario |
-| Procedure V13.4, 10.03.2026 | 4 | Effective 01.01.2027 |
-| Example paper V13.3, 10.03.2026 | 3 | Effective 01.01.2027 |
-| Rundschreiben 11.12.2024, Annex 3 | 3 | Selected historical/reference examples |
-| Rundschreiben 10.12.2025, Annex 1 | 2 | Selected child sickness benefit examples |
-| Rundschreiben 10.12.2025, Annex 2 | 2 | Selected maternity examples |
-| TEEL0-Test1-DBVO, extensionless sample | 2 | Technical specimen, not normative law |
+| GG EEL V13.1, 06.05.2025 | 8 | Effective 01.01.2026 |
+| DTA EEL Vorerkrankung scenario DOCX | 7 | Supplied 2026 scenario |
+| Vorerkrankung test-constellation notes DOCX | 7 | Supplied 2026 scenario |
+| Procedure V13.4, 10.03.2026 | 9 | Effective 01.01.2027 |
+| Example paper V13.3, 10.03.2026 | 7 | Effective 01.01.2027 |
+| Rundschreiben 11.12.2024, Annex 3 | 7 | Selected historical/reference examples |
+| Rundschreiben 10.12.2025, Annex 1 | 5 | Selected child sickness benefit examples |
+| Rundschreiben 10.12.2025, Annex 2 | 5 | Selected maternity examples |
+| TEEL0-Test1-DBVO, extensionless sample | 3 | Technical specimen, not normative law |
 
-Total: **9 exact original files and 27 selected requirements**. The 406-page Annex 3 is approximately
+Total: **9 exact original files and 58 selected requirements**. The 406-page Annex 3 is approximately
 5.54 MB: its known fingerprint bypasses the generic 5 MB file limit; the bounded HTTP upload limit
 is 10 MB to accommodate base64. Unknown files keep the 5 MB decoded limit.
 
@@ -95,3 +95,25 @@ All customer imports compare only the released package and its recalculated hash
 Expanded cases remain open across decisions and polling in the current browser page;
 a full browser reload resets the expansion state. Existing cases receive precheck cards
 without regenerating their original inputs or expected values.
+
+## Catalogue extension, pacing, bulk approval and stepping back (2026-10-27)
+
+31 requirements were added (27 → 58). Each quote was cut mechanically from the locally
+extracted original text (pdfplumber/python-docx, newline → space) between start/end markers;
+the generator asserts each marker exists before writing. New `kind: "table"` items carry
+catalogue-authored `variants` whose expected values restate only figures/outcomes stated in, or
+directly bounded by, the quote (e.g. "mehr als 50,00 EUR" → exactly 50 EUR is negative). Open-end
+one-week evaluation keeps its counting convention as an explicit question. Older excerpt-only
+imports gain new quotes as additional sections (`section~key` when the page already exists);
+existing sections, requirements and approvals are not rewritten.
+
+Demo-mode workflows pause the Quellen station for `AUDITFLOW_DEMO_PACING_SECONDS` (default 9,
+0–60, 0 disables) and show a staged per-file progress bar. The station states that this display
+is a presentation pause and that contents come from the stored catalogue, not a live analysis.
+
+Requirements and cases can be approved in one step after ticking a required confirmation
+checkbox. Requirement bulk approval records one ordinary review per requirement with the session
+reviewer label (or the transparent unauthenticated operator fallback). Case bulk approval runs
+the same per-case precheck and skips null expectations/clarifications. Completed stations are
+clickable for review; `back` returns to intake, requirement approval or package approval until
+the package has been handed over.

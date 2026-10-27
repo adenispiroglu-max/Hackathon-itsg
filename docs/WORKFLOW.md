@@ -23,6 +23,24 @@ Intermediate files are small accessible document-icon buttons at the completed s
 A collapsible **Vorgangsakte** retains every report, including superseded snapshots.
 Reports show the actual processing mode, never a fabricated live AI result.
 
+## Reviewing and stepping back
+
+Completed stations in the rail are clickable and open a read-only look back; the active station
+stays one click away. Before customer handoff the operator can return to Eingang (files editable,
+generated cases discarded), Anforderungen (cases discarded, generation waits for an explicit
+**Weiter zur Testfallerstellung**) or Testpaket (package release withdrawn, rejected drafts shown
+again). After handoff a follow-up workflow is required. Reports remain in the Vorgangsakte.
+
+## Test case attachments and imports
+
+Every case offers **Testanleitung.txt** (profile, inputs, steps, observed field; no expected value).
+Prepared Vorerkrankungs cases that expect a request 41 additionally offer an internal synthetic
+**Soll-Datensatz DSLW/DBVO.txt** (scenario AU periods, or periods derived from the case's month gap;
+example years 20XX shown as 2026). It contains only the DSLW record in the sample-specific layout;
+VOSZ/DSKO/NCSZ layouts are not modelled. Requirements and test cases can be imported as JSON;
+every entry is checked against the source text and against existing entries before it becomes a
+pending draft.
+
 ## Human and model boundaries
 
 A quote match establishes provenance, not legal correctness. A recommendation is not an

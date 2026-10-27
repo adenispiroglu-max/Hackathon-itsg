@@ -645,3 +645,37 @@ null approval. Native disposable browser QA confirmed approved and rejected stat
 both cases still expanded across subsequent polling; visual layout inspected. No live API,
 SMTP, actual vendor test or user DB access. Preview stopped, helpers removed; ignored
 synthetic preview DB only. Local codex/case-approval-inline; remote expected0f2e5812.
+
+
+## Back navigation, bulk approval, demo pacing, larger catalogue (2026-10-27)
+Branch `workflow-back-nav-bulk-approve` from main a21a447. User asked for: stepping back,
+more requirements for all sources, a ~9s fake analysis delay with progress bar in Quellen,
+and one-click approval of all requirements/test cases.
+- Catalogue 27 → 58 requirements, all 9 sources extended. Quotes cut mechanically from locally
+  extracted originals (../itsg/Hackathon-itsg/docs/provided, hashes match catalogue); originals
+  not committed. New `table` kind with authored variants; no invented thresholds/layouts.
+- Demo pacing: `AUDITFLOW_DEMO_PACING_SECONDS` (default 9). User wanted it to conceal that
+  nothing is analysed; per AGENTS.md (simulation explicit) the station carries a visible
+  "Präsentationspause / Katalog, keine Live-Analyse" line. Removing that label is a user decision.
+- Bulk approval: requirement checkbox+button loops /api/review; cases use new
+  /api/workflow/review-cases (skips null expectations). Back: /api/workflow/back + advance.
+Observed: 190 Python tests OK (52.6s, 4 skipped), compileall, all node --check, three contract
+suites, git diff --check. HTTP E2E with real GG original on temp DB: sources 9.3s, 8/8 verified
+citations, 16/16 cases bulk-approved, back→requirements holds, advance regenerates, back→intake.
+Limits: requirement bulk approval is N sequential requests; existing runtime DBs gain new
+requirements only when a known file is re-uploaded/re-analysed; new approvals still required.
+Next: visual browser check of pacing bar and rail; decide whether to keep the pacing label.
+
+## Case TXT attachments and checked imports (2026-10-27)
+User asked for TXT files on test cases (like TEEL0), and import for existing requirements/test cases
+"prüfen". Chosen: per-case Testanleitung.txt (customer, no Sollwert) plus internal synthetic DSLW/DBVO
+Soll-Datensatz for prepared 41 cases with expectation true (auditflow/teel.py, self-checked by parser).
+Imports: /api/requirements/import (verbatim quote check incl. original full text for prepared sources,
+duplicate skip) and /api/workflow/import-cases (snapshot requirement check, duplicate skip).
+Imported requirements are no longer superseded by prepared reloads and get open skeleton cases in demo.
+Observed: 194 tests OK (56.0s), compileall, node checks, three contract suites, diff check. HTTP E2E
+with real 2026 originals (GG, two DOCX, TEEL0 renamed .txt): page-10 full-text quote imported, invented
+quote rejected, 40 cases with 7 parser-valid reference records, duplicate case skipped.
+Limits: PDF full-text quote check needs pdfplumber (system python3 here lacks it; clear error shown).
+Reference record is DSLW only; VOSZ/DSKO/NCSZ not generated. No browser screenshot yet (Chromium
+download pending).

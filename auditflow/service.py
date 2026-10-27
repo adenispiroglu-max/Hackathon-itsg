@@ -16,6 +16,37 @@ def normalize(s):
     return re.sub(r'\s+',' ',re.sub(r'-\s*\n\s*','',s)).strip()
 
 
+def extract_sections(raw,suffix,page_range=None):
+    sections=[]
+    if suffix in ['txt','md']:
+        try:text=raw.decode('utf-8-sig')
+        except UnicodeError:raise InputError('Textdatei muss UTF-8 sein.') from None
+        parts=re.split(r'\n\s*\n',text)
+        sections=[{'id':f'p{i+1}','location':f'Abschnitt {i+1}','text':s} for i,s in enumerate(parts) if s.strip()]
+    elif suffix=='pdf':
+        try:
+            import pdfplumber
+            with pdfplumber.open(io.BytesIO(raw)) as pdf:
+                if len(pdf.pages)>500:raise InputError('Maximal 500 PDF-Seiten.')
+                if page_range and page_range['to']>len(pdf.pages):
+                    raise InputError(f'Der Seitenbereich liegt außerhalb des PDF ({len(pdf.pages)} Seiten).')
+                selected=range(page_range['from']-1,page_range['to']) if page_range else range(len(pdf.pages))
+                sections=[{'id':f'page-{i+1}','page':i+1,'location':f'PDF-Seite {i+1}','text':pdf.pages[i].extract_text() or ''} for i in selected]
+        except ImportError:raise InputError('PDF-Import benötigt die optionalen Pakete aus requirements.txt.') from None
+    elif suffix=='docx':
+        try:
+            from zipfile import ZipFile
+            with ZipFile(io.BytesIO(raw)) as z:
+                if sum(x.file_size for x in z.infolist())>30_000_000:raise InputError('Entpacktes DOCX ist zu groß.')
+            from docx import Document
+            doc=Document(io.BytesIO(raw))
+            sections=[{'id':f'p{i+1}','location':f'Absatz {i+1}','text':p.text} for i,p in enumerate(doc.paragraphs) if p.text.strip()]
+            sections += [{'id':f't{ti+1}r{ri+1}','location':f'Tabelle {ti+1}, Zeile {ri+1}','text':' | '.join(c.text for c in r.cells)} for ti,t in enumerate(doc.tables) for ri,r in enumerate(t.rows)]
+        except ImportError:raise InputError('DOCX-Import benötigt python-docx.') from None
+    else:raise InputError('Unterstützt: TXT, MD, PDF, DOCX.')
+    return sections
+
+
 class Service:
     def __init__(self,store,sample):
         self.store=store;self.sample=sample
@@ -80,32 +111,7 @@ class Service:
         if known and page_range is None:
             sections=prepared_demo.excerpts(known)
             suffix='pdf' if known['name'].endswith('.pdf') else 'docx' if known['name'].endswith('.docx') else 'txt'
-        elif suffix in ['txt','md']:
-            try:text=raw.decode('utf-8-sig')
-            except UnicodeError:raise InputError('Textdatei muss UTF-8 sein.') from None
-            parts=re.split(r'\n\s*\n',text)
-            sections=[{'id':f'p{i+1}','location':f'Abschnitt {i+1}','text':s} for i,s in enumerate(parts) if s.strip()]
-        elif suffix=='pdf':
-            try:
-                import pdfplumber
-                with pdfplumber.open(io.BytesIO(raw)) as pdf:
-                    if len(pdf.pages)>500:raise InputError('Maximal 500 PDF-Seiten.')
-                    if page_range and page_range['to']>len(pdf.pages):
-                        raise InputError(f'Der Seitenbereich liegt außerhalb des PDF ({len(pdf.pages)} Seiten).')
-                    selected=range(page_range['from']-1,page_range['to']) if page_range else range(len(pdf.pages))
-                    sections=[{'id':f'page-{i+1}','page':i+1,'location':f'PDF-Seite {i+1}','text':pdf.pages[i].extract_text() or ''} for i in selected]
-            except ImportError:raise InputError('PDF-Import benötigt die optionalen Pakete aus requirements.txt.') from None
-        elif suffix=='docx':
-            try:
-                from zipfile import ZipFile
-                with ZipFile(io.BytesIO(raw)) as z:
-                    if sum(x.file_size for x in z.infolist())>30_000_000:raise InputError('Entpacktes DOCX ist zu groß.')
-                from docx import Document
-                doc=Document(io.BytesIO(raw))
-                sections=[{'id':f'p{i+1}','location':f'Absatz {i+1}','text':p.text} for i,p in enumerate(doc.paragraphs) if p.text.strip()]
-                sections += [{'id':f't{ti+1}r{ri+1}','location':f'Tabelle {ti+1}, Zeile {ri+1}','text':' | '.join(c.text for c in r.cells)} for ti,t in enumerate(doc.tables) for ri,r in enumerate(t.rows)]
-            except ImportError:raise InputError('DOCX-Import benötigt python-docx.') from None
-        else:raise InputError('Unterstützt: TXT, MD, PDF, DOCX.')
+        else:sections=extract_sections(raw,suffix,page_range)
         if not sections or not any(x['text'].strip() for x in sections):raise InputError('Kein Text erkannt. Für Scans ist externe OCR erforderlich.')
         hash=hashlib.sha256(raw).hexdigest()
         if known:

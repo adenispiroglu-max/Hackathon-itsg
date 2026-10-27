@@ -5,6 +5,7 @@ import copy
 import hashlib
 import json
 import re
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from uuid import uuid4
@@ -52,7 +53,7 @@ def prepare(service,doc,entry):
         current.update(prepared_demo=VERSION,prepared_scope=entry['scope'],prepared_role=entry['role'],prepared_note=NOTE)
         old_reqs=service.store.filtered('requirement','source_id',doc['id'])
         superseded={v for r in old_reqs for v in [r.get('previous_requirement_id'),*r.get('previous_requirement_ids',[])] if v}
-        predecessors=[r['id'] for r in old_reqs if not r.get('prepared_demo') and not r.get('trashed_at') and r['id'] not in superseded]
+        predecessors=[r['id'] for r in old_reqs if not r.get('prepared_demo') and not r.get('imported') and not r.get('trashed_at') and r['id'] not in superseded]
         writes=[('document',current)]
         for item in entry['requirements']:
             matching=[r for r in old_reqs if r.get('prepared_key')==item['key'] and r['id'] not in superseded]
@@ -60,6 +61,14 @@ def prepare(service,doc,entry):
                 # Deleted/hidden items stay deleted/hidden. Manual edits and approvals stay intact.
                 continue
             section=next((s for s in current['sections'] if s['id']==item['section_id']),None)
+            if current['sections'] and all(s.get('prepared_excerpt') for s in current['sections']) and (not section or item['quote'] not in section['text']):
+                # Older excerpt-only imports gain later catalogue quotes as separate sections; existing sections stay unchanged.
+                sid=item['section_id'] if not section else item['section_id']+'~'+item['key']
+                section=next((s for s in current['sections'] if s['id']==sid),None)
+                if not section:
+                    section={'id':sid,'location':item['location'],'text':item['quote'],'prepared_excerpt':True}
+                    if item['section_id'].startswith('page-'):section['page']=int(item['section_id'][5:])
+                    current['sections'].append(section);service.store.put('document',current) # verify() reads the stored sections.
             if not section:continue # A partial PDF view never acquires an out-of-view requirement.
             # Locate a whitespace-tolerant quote in an older full-text import.
             normalized=lambda s:re.sub(r'-\s*\n\s*','',re.sub(r'\s+',' ',s)).strip()
@@ -99,7 +108,10 @@ def cases(req,count,offset):
     kind=item['kind'];variants=[]
     def v(title,inputs,field,value,rationale=None):
         variants.append((title,inputs,field,value,rationale or item['criterion']))
-    if kind in ['attest','certificates']:
+    if kind=='table':
+        # Catalogue-authored variants restate only values stated in or directly bounded by the quoted source.
+        for x in item['variants']:v(x['title'],x['inputs'],x['field'],x['value'])
+    elif kind in ['attest','certificates']:
         for label,a,b in [('Nachweise vorhanden',True,True),('Nachweis fehlt',False,True),('Vorerkrankung nicht attestiert',True,False)]:
             v(label,{'aktuelle_AU_attestiert':a,'fruehere_AU_attestiert':b,'sonstige_Voraussetzungen':'erfüllt'},'nachweis_voraussetzung_erfuellt',a and (b if kind=='certificates' else True))
     elif kind=='months':
@@ -144,3 +156,25 @@ def cases(req,count,offset):
                        'expected':{'field':field,'value':value,'rationale':rationale+' '+NOTE},
                        'questions':['Sollwert und Fehlerbehandlung unabhängig fachlich festlegen.'] if value is None else [],'prepared_demo':VERSION})
     return result
+
+# DBVO periods of the supplied scenario notes / technical sample (current AU 11.03.2026).
+SCENARIO=('2026-03-11',[('2026-03-01','2026-03-03'),('2025-12-01','2025-12-03'),('2025-10-01','2025-10-17'),('2025-07-14','2025-07-15')])
+REQUEST_FIELDS={'nachweis_voraussetzung_erfuellt','anfrage_zulaessig','anfrage_berechtigt','sechsmonatsbedingung_erfuellt'}
+
+def months_before(iso,n):
+    d=date.fromisoformat(iso);m=d.month-1-n
+    return date(d.year+m//12,m%12+1,min(d.day,28)).isoformat()
+
+def reference_scenario(req,case):
+    """Synthetic DBVO data for prepared cases whose expectation is that a request 41 is produced.
+    Returns (au_ab_ag, periods, note) or None. Example years 20XX are shown as 2026."""
+    item=template(req)
+    if not item or case['expected']['value'] is not True:return None
+    kind,inputs,field=item['kind'],case['inputs'],case['expected']['field']
+    if kind=='count_one':return ('2026-08-31',[('2026-06-01','2026-06-25')],'Beispiel 13.1 der Quelle; Jahr 20XX als 2026 dargestellt.')
+    if kind=='count_two':return ('2026-08-31',[('2026-06-01','2026-06-25'),('2026-05-03','2026-05-06')],'Beispiel 13.2 der Quelle; Jahr 20XX als 2026 dargestellt.')
+    if kind=='months' and type(inputs.get('Abstand_Kalendermonate')) is int:
+        end=months_before(SCENARIO[0],inputs['Abstand_Kalendermonate']);begin=date.fromordinal(date.fromisoformat(end).toordinal()-2).isoformat()
+        return (SCENARIO[0],[(begin,end)],'Synthetische Vorerkrankung mit dem angegebenen Abstand in Kalendermonaten.')
+    if field in REQUEST_FIELDS:return (*SCENARIO,'AU-Zeiten des gelieferten Szenarios (Hinweise zur Testkonstellation).')
+    return None
