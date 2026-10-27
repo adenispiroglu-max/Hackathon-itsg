@@ -1,6 +1,24 @@
 # AuditFlow
 
-**AuditFlow 0.5: customer input → versioned sources → AI recommendations → human requirement approval → test specifications → reviewed customer delivery → manufacturer results → human final sign-off.**
+**AuditFlow 0.6: customer input → versioned sources → AI recommendations → human requirement approval → test specifications → reviewed customer delivery → manufacturer results → human final sign-off.**
+
+## Workspace controls (0.6)
+
+Filter/sort lists by human status, new/read and visibility. **Bearbeiten** enables multi-select
+with trash, JSON/HTML/PDF export and explicit email forwarding. Approved requirements use
+**Korrigieren** to create a new revision. New requirements/cases show a red dot until opened.
+Source card actions align, and uploads list already stored documents.
+
+Document hide/show dims and strikes through linked records. Source deletion moves its family
+and downstream requirements/cases/workflows/results into one recoverable trash group.
+**Settings → Trash** restores the group or permanently removes it after typing `DELETE`.
+Original bytes shared with other sources remain retained. See [workspace behavior](docs/WORKSPACE.md).
+
+The bottom-left gear controls English/German UI (documents unchanged), dark/light/system theme,
+SMTP connection settings and manual session time tracking/CSV. The top-left envelope contains
+system notifications and actual outbox states. The corner assistant answers system questions
+without requiring a selected finding; local help and live AI remain explicitly distinct.
+Requested case quantity (1–4,000; minimum one per requirement) is chosen before workflow generation.
 
 ## Current workspace: customer audit conveyor (0.5)
 

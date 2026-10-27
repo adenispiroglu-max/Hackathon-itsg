@@ -110,3 +110,33 @@ GET `/api/workflow/{id}/package` downloads approved customer JSON without expect
 `/api/workflow/reports/{report_id}` returns a selected immutable report; append `/html` or
 `/pdf` to download it. Report HTML escapes user/source text; PDF requires existing reportlab.
 New JS assets `/library.js`, `/workflow.js`, `/icons.js` are same-origin and buildless.
+
+## Workspace controls (0.6)
+
+GET `/api/workspace/state`: settings (no secrets), unread IDs, trash groups, time sessions,
+messages and read-message IDs. Included in ordinary `/api/state` as `workspace`.
+GET `/api/workspace/chat`: up to 50 non-trashed stored chat turns.
+
+POST `/api/workspace/{action}`:
+
+- `settings`: language=de/en, theme=light/dark/system, compact boolean; optional
+  smtp={host,port,tls=starttls/ssl,sender,user}. Secrets are rejected; password is environment-only.
+- `smtp-test`: TLS/auth connectivity check only, no message.
+- `seen`: entries=[{kind,id}] persists read marks.
+- `trash`: entries; documents cover their full family and explicit downstream dependency closure.
+- `hide`: entries, hidden boolean; propagates independent hidden-source tags.
+- `restore`: entries=[{kind:'trash_batch',id}] or supported standalone trash records.
+- `purge`: entries and confirmation='DELETE'; only trash can be permanently removed.
+- `export`: entries, format=json/html/pdf; returns an authenticated file download.
+- `forward`: entries, email, subject, note; queues actual selected snapshot delivery.
+- `timer`: action=start/heartbeat/stop; start accepts ISO work_date.
+- `messages-read`: ids of current mailbox items.
+- `chat`: question, mode=offline/live, language=de/en, optional stored finding ref.
+
+Selection kinds: document, requirement, case, workflow, run, auto_job, workflow_case.
+Nested workflow cases use `workflow_id|case_id` as selection ID. Draft-case removal requires
+at least one case per requirement; approved packages cannot be edited by this route.
+Source cascade trash pauses processing and retains original phases for restore. Permanent
+purge redacts linked event payloads and rebuilds the explicitly local hash chain.
+POST `/api/workflow/count`: id, count integer 1–4,000 before generation.
+Workflow create additionally accepts requested_cases. Missing total retains legacy 2/requirement.

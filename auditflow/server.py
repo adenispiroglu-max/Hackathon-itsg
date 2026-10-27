@@ -89,12 +89,14 @@ def handler_for(service):
                 if path=='/api/state':
                     # Keep analysis progress and its generated recommendations in one coherent snapshot.
                     with service.store.lock:
-                        docs=service.store.list('document');reqs=service.store.list('requirement');runs=service.store.list('run')
-                        data={'version':__version__,'documents':docs,'requirements':reqs,'cases':service.store.list('case'),
+                        docs=[d for d in service.store.list('document') if not d.get('trashed_at')];reqs=[r for r in service.store.list('requirement') if not r.get('trashed_at')];runs=[r for r in service.store.list('run') if not r.get('trashed_at')]
+                        data={'version':__version__,'documents':docs,'requirements':reqs,'cases':[c for c in service.store.list('case') if not c.get('trashed_at')],
                               'runs':list(reversed(runs)),'automation':service.automation.state(),
                               'chain':service.store.get('meta','chain')['steps'],'model':Model().status(),
-                              'coverage':service.coverage(),'document_jobs':service.store.list('document_job'),'workflow':service.workflow.state()}
+                              'coverage':service.coverage(),'document_jobs':service.store.list('document_job'),'workflow':service.workflow.state(),'workspace':service.workspace.state()}
                     return self.send(data)
+                if path=='/api/workspace/state':return self.send(service.workspace.state())
+                if path=='/api/workspace/chat':return self.send([m for m in service.store.list('chat_message') if not m.get('trashed_at')][-50:])
                 if path=='/api/health':return self.send({'status':'ok','version':__version__,'mode':'local-demo'})
                 if path=='/api/events':return self.send(service.store.events())
                 if path.startswith('/api/automation/'):
@@ -133,6 +135,7 @@ def handler_for(service):
                     parts=path.split('/')
                     if len(parts)!=5:return self.send({'error':'Dokumenten-Endpunkt nicht gefunden.'},404)
                     doc=service.store.get('document',parts[3])
+                    if doc.get('trashed_at'):raise InputError('Dokument liegt im Papierkorb.')
                     if parts[4]=='pdf':return self.send(service.documents.pdf(doc['id']),mime='application/pdf',filename='AuditFlow-Dokument.pdf')
                     if parts[4]=='original':
                         mime={'pdf':'application/pdf','docx':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','txt':'text/plain; charset=utf-8','md':'text/plain; charset=utf-8'}.get(doc.get('kind'),'application/octet-stream')
@@ -143,7 +146,7 @@ def handler_for(service):
                     parts=path.split('/');run=service.store.get('run',parts[3])
                     if len(parts)==5 and parts[4]=='pdf':return self.send(report_pdf(run),mime='application/pdf',filename='AuditFlow-'+run['id']+'.pdf')
                     return self.send(run,filename='AuditFlow-'+run['id']+'.json')
-                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/workflow.js':('workflow.js','text/javascript; charset=utf-8'),'/icons.js':('icons.js','text/javascript; charset=utf-8')}
+                files={'/':('index.html','text/html; charset=utf-8'),'/app.js':('app.js','text/javascript; charset=utf-8'),'/style.css':('style.css','text/css; charset=utf-8'),'/automation.js':('automation.js','text/javascript; charset=utf-8'),'/workspace.js':('workspace.js','text/javascript; charset=utf-8'),'/library.js':('library.js','text/javascript; charset=utf-8'),'/workflow.js':('workflow.js','text/javascript; charset=utf-8'),'/icons.js':('icons.js','text/javascript; charset=utf-8'),'/controls.js':('controls.js','text/javascript; charset=utf-8'),'/locale.js':('locale.js','text/javascript; charset=utf-8')}
                 if path not in files:return self.send({'error':'Nicht gefunden.'},404)
                 file,mime=files[path];return self.send((STATIC/file).read_bytes(),mime=mime)
             except KeyError:return self.send({'error':'Datensatz nicht gefunden.'},404)
@@ -162,9 +165,18 @@ def handler_for(service):
                 body=json.loads(self.rfile.read(length))
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
                 path=urlparse(self.path).path
+                if path.startswith('/api/workspace/'):
+                    if path=='/api/workspace/export':
+                        data,mime,filename=service.workspace.export(body);return self.send(data,mime=mime,filename=filename)
+                    actions={'settings':service.workspace.update_settings,'seen':service.workspace.mark_read,'trash':service.workspace.trash,
+                             'hide':service.workspace.hide,'purge':service.workspace.purge,'restore':service.workspace.restore_batch,'forward':service.workspace.forward,'timer':service.workspace.timer,
+                             'messages-read':service.workspace.read_messages,'chat':service.workspace.chat,'smtp-test':lambda b:service.workspace.smtp_test()}
+                    action=path.rsplit('/',1)[-1]
+                    if action not in actions:return self.send({'error':'Nicht gefunden.'},404)
+                    return self.send(actions[action](body))
                 if path.startswith('/api/workflow/'):
                     actions={'create':service.workflow.create,'attach':service.workflow.attach,'detach':service.workflow.detach,
-                        'begin':service.workflow.begin,'retry':service.workflow.retry,'edit-case':service.workflow.edit_case,
+                        'begin':service.workflow.begin,'count':service.workflow.set_count,'retry':service.workflow.retry,'edit-case':service.workflow.edit_case,
                         'release':service.workflow.release,'deliver':service.workflow.deliver,'manual-delivery':service.workflow.manual_delivery,
                         'import':service.workflow.import_results,'close':service.workflow.close_workflow}
                     action=path.rsplit('/',1)[-1]
@@ -173,7 +185,7 @@ def handler_for(service):
                 if path=='/api/documents/upload':
                     doc=service.import_document({**body,'smart_upload':True})
                     jobs=service.store.filtered('document_job','document_id',doc['id'])
-                    if doc.get('upload_outcome')!='duplicate' or not jobs or jobs[-1]['status']=='failed':
+                    if not doc.get('hidden') and (doc.get('upload_outcome')!='duplicate' or not jobs or jobs[-1]['status']=='failed'):
                         service.documents.queue(doc['id'],body.get('mode','auto'))
                     return self.send(doc)
                 if path=='/api/documents/analyze':return self.send(service.documents.queue(body['document_id'],body.get('mode','auto')))
@@ -225,12 +237,14 @@ def main():
     service.automation.start()
     service.documents.start()
     service.workflow.start()
+    service.workspace.boot()
     server=ThreadingHTTPServer((args.host,args.port),handler_for(service))
     server.daemon_threads=True
     print(f'AuditFlow läuft auf http://{args.host}:{args.port} — lokale Hackathon-Demo',flush=True)
     try:server.serve_forever()
     except KeyboardInterrupt:pass
     finally:
+        service.workspace.close()
         service.workflow.close()
         service.documents.close()
         service.automation.close()

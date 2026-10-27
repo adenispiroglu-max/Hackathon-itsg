@@ -66,7 +66,7 @@ class DocumentLibrary:
 
     def register(self,doc,raw,body):
         with self.store.lock:
-            docs=self.store.list('document')
+            docs=[d for d in self.store.list('document') if not d.get('trashed_at')]
             requested=body.get('family_id')
             if requested and not any(d.get('family_id',d['id'])==requested for d in docs):
                 raise InputError('Die ausgewählte Dokumentengruppe existiert nicht.')
@@ -81,6 +81,7 @@ class DocumentLibrary:
                        folder=str(body.get('folder') or (old or {}).get('folder') or 'Allgemein')[:100],
                        created_at=now(),file_available=True,previous_id=old['id'] if old else None,
                        identity_mode=body.get('identity_mode','local'),identity_note=body.get('identity_note','Titelzuordnung'))
+            if old and old.get('hidden'):doc.update(hidden=True,hidden_sources=old.get('hidden_sources',[]))
             def version_tuple(value):
                 value=str(value or '').strip().lower().removeprefix('v')
                 return tuple(map(int,value.split('.'))) if re.fullmatch(r'\d+(?:\.\d+)*',value) else None
@@ -108,6 +109,7 @@ class DocumentLibrary:
     def queue(self,doc_id,mode='auto'):
         if mode not in ['auto','live','offline']:raise InputError('Unbekannter Analysemodus.')
         doc=self.store.get('document',doc_id)
+        if doc.get('trashed_at') or doc.get('hidden'):raise InputError('Dokument liegt im Papierkorb; zuerst wiederherstellen.')
         with self.store.lock:
             existing=self.store.filtered('document_job','document_id',doc_id)
             if existing and existing[-1]['status'] in ['queued','running']:return existing[-1]
@@ -127,32 +129,46 @@ class DocumentLibrary:
         self.stop.set();self.wake.set()
         if self.thread:self.thread.join(2)
 
+    def save_job(self,job):
+        with self.store.lock:
+            try:current=self.store.get('document_job',job['id'])
+            except KeyError:return
+            for key in ['trashed_at','trash_batch_id','hidden','hidden_sources']:
+                if key in current:job[key]=current[key]
+            if current.get('trashed_at') or current.get('hidden'):job['status']='paused'
+            self.store.put('document_job',job)
+
     def _worker(self):
         # A process interrupted after a committed section resumes from its stored cursor.
         for j in self.store.list('document_job'):
-            if j['status']=='running':j['status']='queued';self.store.put('document_job',j)
+            if j['status']=='running':j['status']='queued';self.save_job(j)
         while not self.stop.is_set():
-            jobs=[j for j in self.store.list('document_job') if j['status']=='queued']
+            jobs=[j for j in self.store.list('document_job') if j['status'] in ['queued','paused'] and not j.get('trashed_at') and not j.get('hidden')]
             if not jobs:self.wake.wait(.5);self.wake.clear();continue
-            j=jobs[0];j['status']='running';self.store.put('document_job',j)
+            j=jobs[0];j.update(status='running',error=None);self.save_job(j)
             try:
                 doc=self.store.get('document',j['document_id'])
                 for i in range(j['cursor'],j['total']):
                     if self.stop.is_set():break
+                    current_doc=self.store.get('document',doc['id'])
+                    if current_doc.get('trashed_at') or current_doc.get('hidden'):
+                        j['status']='paused';self.save_job(j);break
                     sec=doc['sections'][i]
                     if sec['text'].strip():self.process_section(doc,sec,j['mode'])
-                    j.update(cursor=i+1);self.store.put('document_job',j)
-                if not self.stop.is_set():j.update(status='completed',finished_at=now());self.store.put('document_job',j)
+                    j.update(cursor=i+1);self.save_job(j)
+                if not self.stop.is_set() and j['status']=='running':j.update(status='completed',finished_at=now());self.save_job(j)
             except Exception as error:
                 j.update(status='failed',error=str(error)[:500] if isinstance(error,(InputError,ModelError)) else 'Analyse konnte nicht abgeschlossen werden.',finished_at=now())
-                self.store.put('document_job',j)
+                self.save_job(j)
 
     def process_section(self,doc,sec,mode):
         old=self.store.get('document',doc['previous_id']) if doc.get('previous_id') else None
         oldsec=next((s for s in old['sections'] if s['id']==sec['id']),None) if old else None
-        existing=[r for r in self.store.list('requirement') if r['source_id']==doc['id'] and r['section_id']==sec['id']]
+        existing=[r for r in self.store.list('requirement') if r['source_id']==doc['id'] and r['section_id']==sec['id'] and not r.get('trashed_at')]
         if not existing:
-            oldreqs=[r for r in self.store.list('requirement') if old and r['source_id']==old['id'] and r['section_id']==sec['id']]
+            oldreqs=[r for r in self.store.list('requirement') if old and r['source_id']==old['id'] and r['section_id']==sec['id'] and not r.get('trashed_at')]
+            superseded={id for r in oldreqs for id in [r.get('previous_requirement_id'),*r.get('previous_requirement_ids',[])] if id}
+            oldreqs=[r for r in oldreqs if r['id'] not in superseded]
             # Only byte-equivalent section text AND unchanged validity may inherit an approval.
             unchanged=oldsec and old.get('sha256')==doc.get('sha256') and oldsec['text']==sec['text'] and old.get('valid_from')==doc.get('valid_from') and [(s['id'],s['text']) for s in old['sections']]==[(s['id'],s['text']) for s in doc['sections']]
             if unchanged and oldreqs:
@@ -161,7 +177,10 @@ class DocumentLibrary:
                     item=copy.deepcopy(r);item.update(id=str(uuid4()),source_id=doc['id'],previous_requirement_id=r['id'],
                         mapping=None,ruleset='unmapped',approval_inherited_from=r['id'] if r['status']=='approved' else None)
                     item.pop('ai_review',None);items.append(item)
-                self.store.put_many([('requirement',r) for r in items]);existing=items
+                with self.store.lock:
+                    current_doc=self.store.get('document',doc['id'])
+                    if current_doc.get('trashed_at') or current_doc.get('hidden'):raise InputError('Quelle während Analyse ausgeblendet oder gelöscht.')
+                    self.store.put_many([('requirement',r) for r in items]);existing=items
             else:
                 existing=self.service.draft({'document_id':doc['id'],'section_id':sec['id'],'mode':mode})
                 # Mark predecessors as history, never rewrite their content or frozen reports.
@@ -213,6 +232,7 @@ class DocumentLibrary:
                 'prompt_version':REVIEW_PROMPT,'basis_hash':basis,'created_at':now(),'document_id':doc['id'],'section_id':sec['id']}
         with self.store.lock:
             current=self.store.get('requirement',req_id)
+            if current.get('trashed_at') or current.get('hidden'):raise InputError('Anforderung ausgeblendet oder im Papierkorb.')
             if review_basis(current,self.store.get('document',doc['id']),sec)!=basis:raise InputError('Anforderung wurde während der Vorprüfung verändert; erneut prüfen.')
             current['ai_review']=review
             self.store.put_many([('requirement_review',{**review,'requirement_id':req_id}),('requirement',current)])
@@ -224,7 +244,7 @@ class DocumentLibrary:
         if not criterion or len(criterion)>12000:raise InputError('Überarbeitete Anforderung fehlt oder ist zu lang.')
         if criterion==old['criterion']:raise InputError('Keine inhaltliche Änderung vorhanden.')
         item=copy.deepcopy(old);item.update(id=str(uuid4()),criterion=criterion,status='pending',semantic_review='pending',
-             previous_requirement_id=old['id'],revision=int(old.get('revision',1))+1,mapping=None,ruleset='unmapped')
+             created_at=now(),previous_requirement_id=old['id'],revision=int(old.get('revision',1))+1,mapping=None,ruleset='unmapped')
         for field in ['ai_review','reviewer','reviewed_at','review_note','approval_inherited_from']:item.pop(field,None)
         self.store.put('requirement',item);self.store.event('requirement_revised',{'old_id':old['id'],'new_id':item['id']})
         self.queue(item['source_id'],body.get('mode','auto'))

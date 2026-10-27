@@ -121,11 +121,11 @@ class Automation:
             self.thread.start();self.wake.set()
 
     def state(self):
-        jobs=self.store.list('auto_job')
+        jobs=[j for j in self.store.list('auto_job') if not j.get('trashed_at')]
         for job in jobs:
             if job.get('plan'):job['plan']={k:v for k,v in job['plan'].items() if k!='selected'}
         return {'packages':self.store.list('auto_package'),'projects':self.store.list('auto_project'),
-                'suites':self.store.list('auto_suite'),'jobs':list(reversed(jobs)),
+                'suites':[s for s in self.store.list('auto_suite') if not s.get('trashed_at')],'jobs':list(reversed(jobs)),
                 'limit':LIMIT,'version':VERSION,'scope':'synthetic_demo'}
 
     def package_version(self,body):
@@ -158,6 +158,10 @@ class Automation:
 
     def _package(self,id):
         p=self.store.get('auto_package',id)
+        for rule_id in p['rules']:
+            try:rule=self.store.get('requirement',rule_id)
+            except KeyError:raise InputError('Demogrundlage wurde entfernt; Quelle und Anforderungen zuerst wiederherstellen.') from None
+            if rule.get('hidden') or rule.get('trashed_at'):raise InputError('Demogrundlage ist ausgeblendet oder im Papierkorb.')
         if p['status']!='approved':raise InputError('Regel-/Vorlagenpaket zuerst einmalig freigeben.')
         if fingerprint(p['rules'])!=p['rules_hash']:raise InputError('Paketintegrität stimmt nicht.')
         validate_package(p['rules']);return p
@@ -307,18 +311,22 @@ class Automation:
     def _worker(self):
         while not self.stop.is_set():
             with self.store.lock:self._dispatch_changes()
-            candidates=[j for j in self.store.list('auto_job') if j['status']=='queued']
+            candidates=[j for j in self.store.list('auto_job') if j['status']=='queued' and not j.get('hidden') and not j.get('trashed_at')]
             if not candidates:self.wake.wait(.3);self.wake.clear();continue
             job=candidates[0]
             try:self._execute(job['id'])
             except Exception as e:
                 with self.store.lock:
-                    job=self.detail(job['id']);job.update(status='failed',error='Automatikfehler: '+type(e).__name__+': '+str(e)[:240],finished_at=now())
+
+                    try:job=self.detail(job['id'])
+                    except KeyError:continue
+                    job.update(status='failed',error='Automatikfehler: '+type(e).__name__+': '+str(e)[:240],finished_at=now())
                     self.store.put('auto_job',job)
 
     def _execute(self,id):
         with self.store.lock:
             job=self.detail(id)
+            if job.get('trashed_at') or job.get('hidden'):return
             if job.get('cancel_requested'):job['status']='cancelled';self.store.put('auto_job',job);return
             job['status']='running';job.setdefault('started_at',now());self.store.put('auto_job',job)
         suite=self.store.get('auto_suite',job['suite_id'])
@@ -328,6 +336,8 @@ class Automation:
             if self.stop.is_set():return
             with self.store.lock:
                 current=self.detail(id)
+                if current.get('trashed_at') or current.get('hidden'):
+                    current['status']='queued';self.store.put('auto_job',current);return
                 if current['cancel_requested']:current['status']='cancelled';self.store.put('auto_job',current);return
                 end=min(suite['generated']+100,suite['count'])
                 items=[('auto_case',generate_case(i,suite['id'],generation_package)) for i in range(suite['generated'],end)]
@@ -345,6 +355,8 @@ class Automation:
             if self.stop.is_set():return
             with self.store.lock:
                 current=self.detail(id)
+                if current.get('trashed_at') or current.get('hidden'):
+                    current['status']='queued';self.store.put('auto_job',current);return
                 if current['cancel_requested']:current.update(status='cancelled',finished_at=now());self.store.put('auto_job',current);return
                 job=current
                 results=[]

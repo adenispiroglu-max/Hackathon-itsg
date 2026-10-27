@@ -24,6 +24,8 @@ class Service:
         self.documents=DocumentLibrary(self)
         from .workflow import Workflow
         self.workflow=Workflow(self)
+        from .workspace import Workspace
+        self.workspace=Workspace(self)
 
     def verify(self,req):
         doc=self.store.get('document',req['source_id'])
@@ -35,7 +37,9 @@ class Service:
         if kind not in ['requirement','case']:raise InputError('Unbekannte Freigabeart.')
         if not body.get('reviewer','').strip() or not body.get('note','').strip():
             raise InputError('Prüfername und fachliche Begründung sind erforderlich.')
-        item=self.store.get(kind,id);approved=body.get('approve') is True
+        item=self.store.get(kind,id)
+        if item.get('trashed_at') or item.get('hidden'):raise InputError('Eintrag ist ausgeblendet oder im Papierkorb.')
+        approved=body.get('approve') is True
         if kind=='requirement':
             self.verify(item)
             if approved and item['citation_status']!='verified':raise InputError('Quellenzitat stimmt nicht überein.')
@@ -99,6 +103,7 @@ class Service:
         if body.get('smart_upload'):
             identical=next((d for d in self.store.list('document') if d['sha256']==hash and d.get('page_range')==page_range and d.get('valid_from')==(body.get('valid_from') or None) and (not body.get('version') or d.get('version')==body.get('version')) and (not body.get('family_id') or d.get('family_id',d['id'])==body['family_id'])),None)
             if identical:
+                if identical.get('trashed_at') or identical.get('hidden'):raise InputError('Dokument bereits vorhanden; zuerst aus Papierkorb wiederherstellen oder einblenden.')
                 with self.store.connect() as db:db.execute('INSERT OR IGNORE INTO document_files(sha,data) VALUES(?,?)',(hash,raw))
                 if not identical.get('file_available'):
                     identical['file_available']=True;self.store.put('document',identical)
@@ -106,6 +111,7 @@ class Service:
             body=self.documents.identify(name,sections,body)
         existing=next((d for d in self.store.list('document') if d['sha256']==hash and (not body.get('family_id') or d.get('family_id',d['id'])==body['family_id']) and d.get('version')==(body.get('version') or 'unbekannt') and d.get('valid_from')==(body.get('valid_from') or None) and d.get('page_range')==page_range),None)
         if existing:
+            if existing.get('trashed_at') or existing.get('hidden'):raise InputError('Dokument bereits vorhanden; zuerst wiederherstellen oder einblenden.')
             with self.store.connect() as db:db.execute('INSERT OR IGNORE INTO document_files(sha,data) VALUES(?,?)',(hash,raw))
             if not existing.get('file_available'):
                 existing['file_available']=True;self.store.put('document',existing)
@@ -119,6 +125,7 @@ class Service:
 
     def draft(self,body):
         doc=self.store.get('document',body['document_id'])
+        if doc.get('trashed_at') or doc.get('hidden'):raise InputError('Quelle ausgeblendet oder im Papierkorb.')
         sec=next((s for s in doc['sections'] if s['id']==body['section_id']),None)
         if not sec:raise InputError('Quellabschnitt nicht gefunden.')
         if len(sec['text'])>35000:raise InputError('Pilotabschnitt zu lang; kleineren Abschnitt auswählen.')
@@ -132,15 +139,21 @@ class Service:
                      'questions':['Wörtlicher Offline-Kandidat: Kontext, Ausnahmen und Regelzuordnung fachlich ergänzen.']} for s in sentences]
         created=[]
         for item in drafts:
-            r={**item,'id':str(uuid4()),'source_id':doc['id'],'section_id':sec['id'],'status':'pending',
+            r={**item,'id':str(uuid4()),'created_at':now(),'source_id':doc['id'],'section_id':sec['id'],'status':'pending',
                'semantic_review':'pending','mapping':None,'ruleset':'unmapped','citation_status':'unverified',
                'model_id':Model().model if live else 'offline-literal','prompt_version':PROMPT_VERSION,
                'note':'KI-Vorschlag' if live else 'Wörtlicher Offline-Vorschlag, keine KI-Ausführung'}
-            self.verify(r);self.store.put('requirement',r);created.append(r)
+            with self.store.lock:
+                current_doc=self.store.get('document',doc['id'])
+                if current_doc.get('trashed_at') or current_doc.get('hidden'):raise InputError('Quelle während Analyse ausgeblendet oder gelöscht.')
+                self.verify(r);self.store.put('requirement',r);created.append(r)
         self.store.event('requirements_drafted',{'document_id':doc['id'],'mode':'live' if live else 'offline','ids':[r['id'] for r in created]})
         return created
 
     def create_case(self,body):
+        for rule_id in ['C1','C2','C4']:
+            rule=self.store.get('requirement',rule_id)
+            if rule.get('trashed_at') or rule.get('hidden'):raise InputError('Demogrundlage ausgeblendet oder im Papierkorb.')
         s=body['scenario'];validate_scenario(s)
         if not isinstance(body.get('name'),str):raise InputError('Dateiname muss Text sein.')
         for field,limit in [('version',100),('title',200),('folder',100)]:
@@ -156,7 +169,7 @@ class Service:
         if expected is not None and not isinstance(expected,bool):raise InputError('Erwartung muss true, false oder null sein.')
         test_type=body.get('test_type','custom')
         if test_type not in ['custom','positive','negative','boundary','missing_data']:raise InputError('Unbekannte Testfallart.')
-        item={'id':str(uuid4()),'name':name,'scenario':s,'expected_message':expected,'ruleset':ruleset,'test_type':test_type,
+        item={'id':str(uuid4()),'created_at':now(),'name':name,'scenario':s,'expected_message':expected,'ruleset':ruleset,'test_type':test_type,
               'review_status':'pending','expectation_source':body.get('expectation_source','Manueller Entwurf; Quelle ergänzen.'),
               'requirement_ids':['C1','C2','C4'],'fixture_questions':[]}
         self.store.put('case',item);self.store.event('case_created',{'id':item['id']});return item
@@ -167,7 +180,7 @@ class Service:
         baseline=self.store.get('case',body.get('case_id','CASE-001'))
         if baseline['ruleset']!='fixture-2026':raise InputError('Kein ausführbarer Vorlagenstand für diesen Ausgangsfall.')
         rules=[self.store.get('requirement',id) for id in ['C1','C2','C4']]
-        if any(r['status']!='approved' for r in rules):
+        if any(r.get('trashed_at') or r.get('hidden') or r['status']!='approved' for r in rules):
             raise InputError('Zuerst C1, C2 und C4 fachlich freigeben.')
         mode=body.get('mode','boundary');drafts=[]
         test_type=body.get('test_type','boundary')

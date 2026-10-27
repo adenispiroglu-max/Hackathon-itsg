@@ -35,6 +35,9 @@ jobs:
       - run: node --check auditflow/static/workflow.js
       - run: node --check auditflow/static/icons.js
       - run: node scripts/frontend_contracts.cjs
+      - run: node --check auditflow/static/controls.js
+      - run: node --check auditflow/static/locale.js
+      - run: node scripts/controls_contracts.cjs
       - run: node --check scripts/document_review_smoke.cjs
       - run: node --check scripts/workspace_smoke.cjs
   windows-runtime:

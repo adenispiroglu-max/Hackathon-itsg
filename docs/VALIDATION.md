@@ -151,3 +151,32 @@ https://github.com/adenispiroglu-max/Hackathon-itsg/actions/runs/40436631573:
 Linux Python 3.11, 3.12, 3.13 (with optional PDF/DOCX extras), 3.14; frontend syntax/contracts;
 and Windows/Python 3.14. Subsequent documentation-only commits record this exact verified
 code result. Real model/SMTP connections and full browser regression remain unverified.
+
+## 0.6 workspace controls — observed local validation
+
+134 Python tests passed with document extras (13.905 s); the standard-library-only run also
+passed 134 discovered tests (14.130 s, four optional tests skipped). Later lifecycle guards
+require final confirmation before publish. New controls contracts cover human status,
+new/read and visibility filtering, title/unread sorting (including nested workflow cases),
+edit-only checkboxes, red dots and reversible English UI translation while leaving source
+text unchanged. Existing nine-phase render contracts and JS syntax/compileall checks pass.
+
+New Python tests exercise source-family cascade trash/restoration, independent hide causes,
+paused workflow gates, confirmed permanent purge, shared original bytes, earlier-trash
+closure, local audit-payload erasure and valid rebuilt chain, readonly no-ref chat/model
+failure, settings with no returned/accepted secrets, capped time sessions, authenticated
+workspace routes, exact requested case totals, export snapshots and durable outbox history.
+
+Native browser QA on authored synthetic data verified English/dark mode, aligned source
+card actions, checkbox multi-selection/export dialog, new-dot dismissal, no-ref system chat
+answer with actual counts, dimmed/struck source, source+requirement cascade trash and common
+restore through Settings → Trash. Permanent purge is verified in disposable backend tests;
+no actual user data was purged and no real mail/model inference was performed. Full older
+Playwright suites remain retained but were not rerun for 0.6. Screenshot synchronization to
+the main container is unavailable; do not link a nonexistent screenshot.
+
+Final 0.6 local rerun after lifecycle guards: **134 tests pass with extras (14.943s)**;
+**134 discovered tests pass without site packages (13.751s, four optional skips)**. Both Node
+contract suites and all JS syntax/compileall/diff checks pass. Source-job/automation/workflow
+workers respect hidden/trash state without recreating purged progress records. Publication
+and remote Linux/Windows results are recorded separately below when actually observed.

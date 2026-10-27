@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const e=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const ctx={console,document:{addEventListener(){}},setInterval(){},fieldNames:{},labels:{},sessionStorage:{getItem(){return ''}},e,
+const ctx={console,uxItems:(v,x)=>x,uxToolbar:()=>'',uxEntry:()=>'',document:{addEventListener(){}},setInterval(){},fieldNames:{},labels:{},sessionStorage:{getItem(){return ''}},e,
  btn:(t,a,attrs='')=>`<button data-action="${a}" ${attrs}>${t}</button>`,icon:()=>'<svg></svg>',fmt:()=> 'Synthetic date',badge:x=>`<span>${e(x)}</span>`,reviewCard:()=>'<p>Untersuchung erforderlich</p>',markText:t=>e(t),
  readable:x=>e(JSON.stringify(x)),state:{workflow:{items:[],reports:[],mail_configured:false},documents:[],requirements:[],document_jobs:[]}};
 vm.createContext(ctx);vm.runInContext(fs.readFileSync('auditflow/static/workflow.js','utf8'),ctx);

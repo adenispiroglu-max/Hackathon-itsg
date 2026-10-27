@@ -284,3 +284,53 @@ requirements.txt if PDF/DOCX support is missing. Choose Vorgänge → Neuer Vorg
 preparation configure a working server-side HAI_API_KEY/model endpoint; for real delivery
 configure SMTP as docs/WORKFLOW.md, then opt in per workflow. No key, originals, customer
 runtime data or screenshot was uploaded. The preview was disposable and is stopped.
+
+# Active 0.6 checkpoint — list controls, settings, system chat and lifecycle
+
+User requested sort/filter icons throughout useful lists, edit mode with multi-checkbox
+selection, trash/export/forward actions, aligned source card actions, Correct instead of
+re-approving approved requirements, a system-wide Joule-like read-only chat, bottom-left
+settings (English UI only, dark/light/system, SMTP, time tracking), top-left mailbox,
+new/unread red dots for requirements/cases, uploaded-file inventory and exact case count.
+Additional steering: document deletion cascades to all linked business records; hide dims
+and strikes through source/dependants; visibility sorting/filtering; settings trash supports
+explicit permanent deletion. All authorized as app behavior; no actual customer mail sent.
+
+Local branch codex/workspace-controls. Remote starting head b0d9ad8b14a87210390c5d32562d5e7b6bf2641a.
+New workspace.py handles read migration/marks, settings without secrets, SMTP test, time
+sessions with capped heartbeats, read-only chat/history, selection export/forward/outbox,
+explicit dependency closure, cascade trash batches/restoration, independently layered hide
+sources and confirmed permanent purge. workflow.py now supports exact 1–4,000 requested
+cases using durable batches <=4 each; legacy unspecified total still gives 2/requirement.
+New controls.js/locale.js supply controls/theme/static UI translations while protecting
+source text and record content. No subagents used. Git publication is still pending.
+
+Observed so far: 130 Python tests passed (15.631s), prior Node frontend contracts pass.
+New 13 tests cover lifecycle versions/linked workflows, read migration, hide layering,
+purge/blob removal, no-secret settings, readonly/no-ref chat, live failure, time cap and
+exact 17-case output. Subsequent worker race protection/locale patches need final rerun.
+Native browser on isolated synthetic preview confirmed EN+dark, original source text
+unchanged, new-dot clears on click, edit checkboxes and two-item export dialog; system chat
+opened without finding. Still finish source hide/trash/restore UI and chat response checks.
+
+Preview running through sites-preview with ignored package.json/preview_dev.py and
+var/controls-preview.sqlite3, containing authored synthetic data only. Stop/remove those
+helpers before commit. Real keys cleared for preview; never commit any DB/secret/original.
+Live AI/SMTP not verified. Permanent deletion can only act on trash with DELETE confirmation.
+No production multi-user auth, SAP connection, independent legal oracle or official signature.
+
+0.6 checkpoint: 134 tests passed with extras (13.905s) and without site packages (14.130s,
+four optional skips). Native browser confirmed system chat with actual counts, dark/EN UI,
+source dim/strike, cascade trash and restoring source+requirement through settings. Follow-up
+fixes protect in-flight worker writes from lifecycle races, persist package mail history,
+purge earlier-trash dependants and redact linked event payloads while rebuilding the local
+(non-sealed) chain. Document shared-byte retention is tested. Final guards and docs still
+need final run, commit, GitHub publication and CI. Working tree is authorized, not published.
+
+0.6 final local verification: 134 tests passed with optional document extras (14.943s) and
+without site packages (13.751s, four optional skips). Both Node contract suites, all static
+JS/script syntax checks, compileall and diff checks pass. Final sidebar ARIA translation
+state was also covered by controls contracts. Native QA used synthetic fixtures only;
+preview was stopped and ignored package.json/preview_dev.py removed. Source original bytes,
+DBs, customer data and credentials are excluded from git. Publish to existing PR branch
+using b0d9ad8b14a87210390c5d32562d5e7b6bf2641a as expected head; observe new CI next.
