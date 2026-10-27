@@ -208,3 +208,14 @@ is implied by this result.
   browser regression/mobile/dark rerun and no real SMTP/model calls were performed.
 - No official certification, authenticated reviewer identities, independent payroll oracle
   or cross-checkout runtime database transfer is claimed.
+
+
+## 0.7.1 Native Gemini adapter
+
+159 Python tests passed locally (15.917s). Eight new mocked native provider tests cover
+Google request headers/body/response parts, omission of thought parts, separate credentials,
+stale Hessian URL isolation, wrong model/provider, blocked/truncated/malformed output, HTTP
+errors without payload/secret echo, and compatibility with the existing extraction schema.
+All static JS syntax, three Node contract suites, compileall and diff check pass.
+No live Gemini access, model alias availability, quota, browser settings changes or real
+credential storage was tested. A published credential was not used; replacement is local.

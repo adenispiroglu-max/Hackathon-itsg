@@ -436,3 +436,32 @@ Remote parent before this fix 0994dda2530ec8ba2fbc99ee4925c171ddad4dd1; do not m
 Demo-gate fix validation: 151 Python tests passed (15.912s), all static JS syntax, three
 Node contract suites including the new empty-list regression, compileall and diff check
 passed. No new native browser or live model test. Publication on existing PR branch follows.
+# 0.7.1 native Gemini provider (2026-10-27)
+
+User wants to change providers and supplied a native Google Gemini cURL example. The
+message included a credential; do NOT reproduce, save, inspect in external services or use
+it. User was told to revoke it and generate a replacement locally. No actual key is in any
+source, test, log or docs created in this revision. No live model request was made.
+
+Read official https://ai.google.dev/api/generate-content for native request/response fields.
+Model now selects AUDITFLOW_MODEL_PROVIDER=hessian (default) or gemini explicitly. Gemini
+reads only GEMINI_API_KEY, defaults to the user-provided gemini-flash-latest alias and uses
+the fixed official Google HTTPS generateContent endpoint, ignoring stale Hessian URL
+overrides. Wrong provider key/model and unknown provider fail explicitly. Headers differ;
+there is no credential fallback. Response parsing excludes thought parts, rejects blocked,
+empty, malformed or truncated responses, and preserves existing extraction/review gates.
+Status/settings expose provider/model/key variable name, never key contents. Existing
+stored approvals/drafts remain intact; switching affects subsequent model requests.
+
+Local branch codex/gemini-provider. Eight mocked provider tests passed; full suite below.
+README documents masked PowerShell setup, same-terminal environment and restart; .env is
+still NOT auto-loaded. A set key/available model/free-tier quota remain unverified until the
+user tests locally. No keys from chat should ever be re-used. Publish on existing PR branch
+after checking current head; do not merge main. Original source files/DBs stay out of git.
+
+Gemini final local validation: 159 Python tests pass (15.917s), including eight native
+provider protocol/error/credential-isolation tests. Three Node contract suites and all
+static JS syntax checks pass; compileall and diff check pass. No live API call, browser
+credential entry, original customer data upload or actual key storage was performed.
+Provider UI additions use the existing settings dialog. Publish with expected remote
+parent 41b44ba5222528b68a0f5c8319d0793934ec528a; no main merge.

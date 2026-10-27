@@ -183,6 +183,38 @@ mode: the manufacturer executes the tests and returns observations.
 
 ## Optional model connection
 
+### Native Google Gemini (0.7.1)
+
+The app supports Google's native `generateContent` format in addition to Hessian chat.
+Stop the server and set the following in the **same PowerShell window**, one command at a
+time. Use a new local key; never paste it in chat, git, screenshots or `.env.example`.
+
+```powershell
+$geminiSecret = Read-Host "New Gemini API key" -AsSecureString
+$env:GEMINI_API_KEY = [System.Net.NetworkCredential]::new("", $geminiSecret).Password
+Remove-Variable geminiSecret
+$env:AUDITFLOW_MODEL_PROVIDER = "gemini"
+$env:AUDITFLOW_MODEL = "gemini-flash-latest"
+python -m auditflow
+```
+
+Then Settings → AI connection → Test AI connection. The settings show the selected provider,
+model and required environment variable, never the key. A configured key is not proof of a
+working connection or available quota. No live Gemini request was made in development.
+
+The Gemini alias is taken from the user's example; availability is checked only by the live
+connection test. The native adapter uses `X-goog-api-key`, text `systemInstruction` and
+`contents`; response text comes from candidate content parts. Blocked, empty and truncated
+responses remain explicit errors and never count as completed extraction. A stale
+`AUDITFLOW_MODEL_URL` is ignored for Gemini: its key is sent only to the fixed official Google
+API host. Explicitly select the provider; keys are never shared/fallback between providers.
+Reference: https://ai.google.dev/api/generate-content .
+
+### Hessian.AI
+
+Default provider is `hessian`. To switch back from Gemini, first set
+`$env:AUDITFLOW_MODEL_PROVIDER = "hessian"`, then use the Hessian settings below.
+
 The user-supplied Hessian.AI cURL example specifies the chat route below and the exact model ID `vllm/GLM-Flash:Latest`. The adapter uses these defaults. Credentials must be supplied locally:
 
 ```powershell

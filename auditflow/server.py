@@ -230,7 +230,7 @@ def handler_for(service):
                         r=service.store.get('requirement',body['id']);service.verify(r);result=service.store.put('requirement',r)
                     elif path=='/api/model/test':
                         reply=Model().call('Reply only with OK.','Connection test.')
-                        result={'status':'connected','model':Model().model,'reply':reply[:100]}
+                        result={'status':'connected','provider':Model().provider,'model':Model().model,'reply':reply[:100]}
                     else:return self.send({'error':'Nicht gefunden.'},404)
                 return self.send(result)
             except ModelError as e:return self.send({'error':str(e)},502)
