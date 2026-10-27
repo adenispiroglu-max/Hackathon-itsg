@@ -573,3 +573,49 @@ Final validation: 174 Python tests passed (16.624s); all three Node contracts, J
 compileall and diff checks passed. Status budget matches provider-specific behavior. No
 live request, real key, user PDF/DB, or native browser verification. Publish to existing
 feature branch from 383e8098, not main. User restarts same terminal and retries saved job.
+
+
+## Prepared challenge demonstration (2026-10-27)
+User changes plan: fixed supplied inputs, pre-authored requirements/cases, no model reasoning
+at runtime. Built explicit prepared demo mode, default in new workflow/upload forms. Do not
+present this as live inference or complete legal analysis. Used PDF/document reading skills
+for source inspection. Six PDFs, two DOCX, one extensionless technical specimen inspected.
+Catalogue: exact SHA-256 recognition for nine supplied originals, 27 curated requirements
+with source page/paragraph/table snippets, version/scope metadata, synthetic case patterns.
+No original bytes, source dump, local DB, key, runtime logs or real profile data in git.
+Import known full files uses selected excerpts (full original PDF still downloadable), bypasses
+external identity/extraction/review; synchronous queue writes prepared drafts and completed
+demo marker. Known ~5.54MB Annex3 supported; bounded HTTP body10MB for base64, unknown
+files retain5MB decoded cap. Renaming works; altered bytes rejected in strict demo mode.
+No model call even with live mode/key configured for known sources. Other live/offline paths
+retained. Prior workers cannot start fresh model inference for recognized sources; restart
+local server to end any already in-flight request. Prior same-source requirements retained
+as history via supersession links; human approvals never invented/inherited.
+Workflow generation uses prepared synthetic profiles, concrete threshold/arithmetic/sample
+cases or clearly specified scenario assertions. Exact boundary/missing-data expectations may
+remain null and block release. Large counts repeat finite patterns; no extra legal coverage
+claim. Manual edits block outdated case templates; recommendations for revised text clarify.
+2026 and2027 sources cannot share a workflow; library can hold both. Reference docs kept
+separate in metadata. DOCX March2025/2026 inconsistency explicitly marked.
+Demo provenance shown in UI/source completion/recommendations, reports and customer package
+execution_mode/preparation_note, with internal Sollwerte still excluded from customer export.
+Human requirement approval, expectation review, handoff, import and final sign-off retained.
+No mock vendor results sent or automatically accepted; no SMTP or live model request used.
+Actual local HTTP QA uploaded all nine provided originals and verified27 quote matches,
+all drafts pending, no Model.call allowed; total0.31s on this environment (not a speed SLA).
+Native browser inspected requirement gate/demo recommendations and library completion
+status in disposable Sites preview with curated metadata; no original uploaded to preview.
+Preview stopped, helper files removed; ignored disposable DB only.
+Synthetic unit tests cover fingerprint/dedup/unknown files, human gates, results, scope,
+revisions, lifecycle, null expectations and stale worker behavior. Full checks follow.
+Local branch codex/prepared-challenge-demo, expected remote parent b4f274a5.
+
+Final validation:181 Python tests pass (16.005s). Three Node contract suites, JS syntax,
+compileall and diff check pass; added explicit prepared-mode UI assertions. Actual nine-file
+HTTP upload QA verified27 citations/no model calls including the over5MB source. No live
+API/SMTP/manufacturer test or official legal certification. No helpers/originals staged.
+
+Publication approval follow-up: automatic review previously rejected the tree upload
+because source excerpts were not explicitly approved for GitHub disclosure. The user
+has now expressly authorized publishing the prepared requirements and short quotations
+to codex/auditflow-prototype, excluding original files. Retrying that authorized scope.

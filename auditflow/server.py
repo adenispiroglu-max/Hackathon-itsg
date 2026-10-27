@@ -167,7 +167,7 @@ def handler_for(service):
                 return self.send({'error':'Fremde Herkunft nicht erlaubt.'},403)
             try:
                 length=int(self.headers.get('Content-Length','0'))
-                if length<1 or length>7_000_000:return self.send({'error':'Ungültige Anfragegröße.'},413)
+                if length<1 or length>10_000_000:return self.send({'error':'Ungültige Anfragegröße.'},413)
                 if self.headers.get_content_type()!='application/json':return self.send({'error':'JSON erwartet.'},415)
                 body=json.loads(self.rfile.read(length))
                 if not isinstance(body,dict):raise InputError('JSON-Objekt erwartet.')
@@ -198,7 +198,7 @@ def handler_for(service):
                 if path=='/api/documents/upload':
                     doc=service.import_document({**body,'smart_upload':True})
                     jobs=service.store.filtered('document_job','document_id',doc['id'])
-                    if not doc.get('hidden') and (doc.get('upload_outcome')!='duplicate' or not jobs or jobs[-1]['status']=='failed'):
+                    if not doc.get('hidden') and (doc.get('prepared_demo') or doc.get('upload_outcome')!='duplicate' or not jobs or jobs[-1]['status']=='failed'):
                         service.documents.queue(doc['id'],body.get('mode','auto'),resume=True)
                     return self.send(doc)
                 if path=='/api/documents/analyze':return self.send(service.documents.queue(body['document_id'],body.get('mode','auto'),resume=True))

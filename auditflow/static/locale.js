@@ -534,6 +534,14 @@ Object.assign(UX_EN,{
 });
 Object.assign(UX_EN,{
  'In Quellen & KI öffnen':'Open in Sources & AI',
+ 'Vorbereitete Demo · ohne Live-KI':'Prepared demo · no live AI',
+ 'Demo-Vorbereitung abgeschlossen':'Prepared demo ready',
+ 'Vorbereitete Demo-Empfehlung':'Prepared demo recommendation',
+ 'Demo-Anforderungen laden':'Load demo requirements',
+ 'Vorbereitete Challenge-Demo · ohne API':'Prepared challenge demo · no API',
+ 'Vorbereitete Demo':'Prepared demo',
+ 'Automatische Analyse für andere Dokumente':'Automatic analysis for other documents',
+ 'Vorbereitete synthetische Demo-Testfälle werden zugeordnet.':'Prepared synthetic demo cases are being assigned.',
  'Zeitlimit je Anfrage (Sekunden)':'Timeout per request (seconds)',
  'Ausgabelimit (Tokens)':'Output limit (tokens)',
  'Quelldokument nicht verfügbar.':'Source document unavailable.',

@@ -1,5 +1,16 @@
 # AuditFlow
 
+## Prepared challenge demo
+
+New workflow and source-upload forms default to **Vorbereitete Challenge-Demo · ohne API**.
+The nine supplied original files are recognized by SHA-256 and immediately receive 27
+selected, source-linked draft requirements and prepared recommendations. Human approval
+unlocks deterministic synthetic case templates without a model connection. Exact original
+bytes are required; filenames can change. Unknown demo files and mixed 2026/2027 workflow
+scopes are blocked. Originals remain in runtime storage, outside git.
+See [presentation steps and limits](docs/PREPARED_DEMO.md).
+
+
 ## Customers (0.7)
 
 The navigation entry is **Kunden** (Customers). It stores customer/manufacturer contact details,

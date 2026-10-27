@@ -11,6 +11,7 @@ from pathlib import Path
 from uuid import uuid4
 from .domain import InputError
 from .model import Model, ModelError
+from . import prepared_demo
 from .store import now
 
 REVIEW_PROMPT = 'requirement-review-v1'
@@ -108,9 +109,12 @@ class DocumentLibrary:
         return bytes(row[0])
 
     def queue(self,doc_id,mode='auto',resume=False):
-        if mode not in ['auto','live','offline']:raise InputError('Unbekannter Analysemodus.')
+        if mode not in ['auto','live','offline','demo']:raise InputError('Unbekannter Analysemodus.')
         doc=self.store.get('document',doc_id)
         if doc.get('trashed_at') or doc.get('hidden'):raise InputError('Dokument liegt im Papierkorb; zuerst wiederherstellen.')
+        entry=prepared_demo.by_hash(doc.get('sha256'))
+        if entry:return prepared_demo.prepare(self.service,doc,entry)
+        if mode=='demo':raise InputError('Datei gehört nicht zum vorbereiteten Demo-Katalog. Originaldatei verwenden.')
         with self.store.lock:
             existing=self.store.filtered('document_job','document_id',doc_id)
             if existing and existing[-1]['status'] in ['queued','running','paused']:
@@ -177,6 +181,7 @@ class DocumentLibrary:
             finally:self.local.job=None
 
     def process_section(self,doc,sec,mode):
+        if prepared_demo.by_hash(doc.get('sha256')):return # Any older worker job is superseded by prepared data.
         old=self.store.get('document',doc['previous_id']) if doc.get('previous_id') else None
         oldsec=next((s for s in old['sections'] if s['id']==sec['id']),None) if old else None
         existing=[r for r in self.store.list('requirement') if r['source_id']==doc['id'] and r['section_id']==sec['id'] and not r.get('trashed_at')]
@@ -216,7 +221,11 @@ class DocumentLibrary:
         req=self.store.get('requirement',req_id);doc=self.store.get('document',req['source_id'])
         sec=next(s for s in doc['sections'] if s['id']==req['section_id'])
         basis=review_basis(req,doc,sec)
-        if mode=='live':
+        if prepared_demo.by_hash(doc.get('sha256')) and not req.get('prepared_demo'):
+            raise InputError('Früherer Entwurf: Für diese Quelle gelten jetzt die vorbereiteten Demo-Anforderungen.')
+        if req.get('prepared_demo'):
+            result=prepared_demo.review_result(req);mode='demo'
+        elif mode=='live':
             payload={'requirement':{k:req.get(k) for k in ['title','criterion','source_excerpt','conditions','exceptions','questions']},
                      'document':{'name':doc['name'],'version':doc.get('version'),'valid_from':doc.get('valid_from')},'section':sec}
             if len(json.dumps(payload))>60000:raise InputError('Quellabschnitt zu lang für die Vorprüfung. Kleineren Abschnitt verwenden.')

@@ -49,3 +49,11 @@ assert.ok(!/\.flow-file-list span\s*\{/.test(css));
 ctx.state.document_jobs[0].status='completed';ctx.state.document_jobs[0].mode='offline';
 assert.ok(ctx.flowFiles({document_ids:['d'],phase:'sources'}).includes('Lokal vorbereitet · ohne KI'));
 ctx.state.documents=[];assert.ok(ctx.flowFiles({document_ids:['missing'],phase:'sources'}).includes('Quelldokument nicht verfügbar.'));
+// Prepared demonstrations remain distinguishable from live model work in both views.
+ctx.state.documents=[{id:'d',name:'Prepared original.pdf',version:'13.1',prepared_demo:'itsg-demo-v1'}];
+ctx.state.document_jobs=[{document_id:'d',status:'completed',mode:'demo',cursor:2,total:2}];
+assert.ok(ctx.flowFiles({document_ids:['d'],phase:'sources'}).includes('Demo-Vorbereitung abgeschlossen'));
+assert.ok(ctx.flowObject({...w,mode:'demo',phase:'requirements',document_ids:['d']}).includes('Vorbereitete Demo · ohne Live-KI'));
+assert.ok(fs.readFileSync('auditflow/static/workflow.js','utf8').includes('<option value="demo">Vorbereitete Challenge-Demo · ohne API</option>'));
+libContext.fmt=()=> 'Synthetic date';
+assert.ok(libContext.reviewCard({ai_review:{mode:'demo',recommendation:'clarify',reason:'Prepared recommendation',issues:[],created_at:'2026-10-27'}}).includes('Vorbereitete Demo-Empfehlung'));

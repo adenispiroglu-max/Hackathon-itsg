@@ -9,6 +9,7 @@ from .domain import InputError, assess, check_chain, aggregate, check, validate_
 from .parser import parse, mutate, PARSER_VERSION
 from .store import now
 from .model import Model, ModelError, PROMPT_VERSION
+from . import prepared_demo
 
 
 def normalize(s):
@@ -64,7 +65,9 @@ class Service:
         if not name or len(name)>200:raise InputError('Dateiname fehlt oder ist zu lang.')
         try:raw=base64.b64decode(body['base64'],validate=True)
         except (KeyError,ValueError):raise InputError('Ungültiger Datei-Upload.') from None
-        if len(raw)>5_000_000:raise InputError('Maximal 5 MB je Dokument.')
+        known=prepared_demo.recognize(raw)
+        if body.get('mode')=='demo' and not known:raise InputError('Datei nicht im Demo-Katalog. Eine der neun unveränderten Originaldateien verwenden; umbenennen ist möglich.')
+        if len(raw)>5_000_000 and not known:raise InputError('Maximal 5 MB je Dokument; bekannte Demo-Dateien sind separat freigegeben.')
         sections=[]
         suffix=name.lower().rsplit('.',1)[-1]
         page_range=None
@@ -74,7 +77,10 @@ class Service:
             if type(start) is not int or type(end) is not int or not 1<=start<=end or end-start>=100:
                 raise InputError('PDF-Seitenbereich: positive ganze Zahlen, höchstens 100 Seiten, von ≤ bis.')
             page_range={'from':start,'to':end}
-        if suffix in ['txt','md']:
+        if known and page_range is None:
+            sections=prepared_demo.excerpts(known)
+            suffix='pdf' if known['name'].endswith('.pdf') else 'docx' if known['name'].endswith('.docx') else 'txt'
+        elif suffix in ['txt','md']:
             try:text=raw.decode('utf-8-sig')
             except UnicodeError:raise InputError('Textdatei muss UTF-8 sein.') from None
             parts=re.split(r'\n\s*\n',text)
@@ -102,6 +108,9 @@ class Service:
         else:raise InputError('Unterstützt: TXT, MD, PDF, DOCX.')
         if not sections or not any(x['text'].strip() for x in sections):raise InputError('Kein Text erkannt. Für Scans ist externe OCR erforderlich.')
         hash=hashlib.sha256(raw).hexdigest()
+        if known:
+            body={**body,'mode':'offline','version':known['version'],'valid_from':known['valid_from'],
+                  'title':known['role']+' · '+known['version'],'identity_mode':'demo','identity_note':prepared_demo.NOTE}
         if body.get('smart_upload'):
             identical=next((d for d in self.store.list('document') if d['sha256']==hash and d.get('page_range')==page_range and d.get('valid_from')==(body.get('valid_from') or None) and (not body.get('version') or d.get('version')==body.get('version')) and (not body.get('family_id') or d.get('family_id',d['id'])==body['family_id'])),None)
             if identical:
@@ -110,7 +119,7 @@ class Service:
                 if not identical.get('file_available'):
                     identical['file_available']=True;self.store.put('document',identical)
                 return {**identical,'upload_outcome':'duplicate'}
-            body=self.documents.identify(name,sections,body)
+            if not known:body=self.documents.identify(name,sections,body)
         existing=next((d for d in self.store.list('document') if d['sha256']==hash and (not body.get('family_id') or d.get('family_id',d['id'])==body['family_id']) and d.get('version')==(body.get('version') or 'unbekannt') and d.get('valid_from')==(body.get('valid_from') or None) and d.get('page_range')==page_range),None)
         if existing:
             if existing.get('trashed_at') or existing.get('hidden'):raise InputError('Dokument bereits vorhanden; zuerst wiederherstellen oder einblenden.')
@@ -121,6 +130,7 @@ class Service:
         doc={'id':str(uuid4()),'name':name,'version':body.get('version') or 'unbekannt','valid_from':body.get('valid_from') or None,
              'sha256':hash,'sections':sections,'kind':suffix,'page_range':page_range,
              'note':('Teilimport: Originalseiten '+str(page_range['from'])+'–'+str(page_range['to'])+'. ' if page_range else '')+'Importiert; Gültigkeit und Vollständigkeit prüfen.'}
+        if known:doc.update(prepared_demo=prepared_demo.VERSION,prepared_scope=known['scope'],prepared_role=known['role'],prepared_note=prepared_demo.NOTE)
         doc=self.documents.register(doc,raw,body)
         self.store.event('document_import',{'id':doc['id'],'name':name,'hash':hash})
         return doc
@@ -131,6 +141,9 @@ class Service:
         sec=next((s for s in doc['sections'] if s['id']==body['section_id']),None)
         if not sec:raise InputError('Quellabschnitt nicht gefunden.')
         if len(sec['text'])>35000:raise InputError('Pilotabschnitt zu lang; kleineren Abschnitt auswählen.')
+        if prepared_demo.by_hash(doc.get('sha256')):
+            self.documents.queue(doc['id'],resume=True)
+            return [r for r in self.store.filtered('requirement','source_id',doc['id']) if r['section_id']==sec['id'] and r.get('prepared_demo') and not r.get('trashed_at')]
         live=body.get('mode')=='live'
         if live:
             drafts=Model().extract(doc,sec)
@@ -148,6 +161,7 @@ class Service:
             with self.store.lock:
                 current_doc=self.store.get('document',doc['id'])
                 if current_doc.get('trashed_at') or current_doc.get('hidden'):raise InputError('Quelle während Analyse ausgeblendet oder gelöscht.')
+                if current_doc.get('prepared_demo'):raise InputError('Quelle nutzt jetzt vorbereitete Demo-Daten; ausstehende Live-Ausgabe verworfen.')
                 self.verify(r);self.store.put('requirement',r);created.append(r)
         self.store.event('requirements_drafted',{'document_id':doc['id'],'mode':'live' if live else 'offline','ids':[r['id'] for r in created]})
         return created
